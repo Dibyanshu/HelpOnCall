@@ -1,10 +1,6 @@
 import Navbar from './components/Navbar';
-import HeroSection from './components/HeroSection';
-import ServiceToggle from './components/ServiceToggle';
-import BookingForm from './components/BookingForm';
-import TrustSignals from './components/TrustSignals';
-import CertificationStrip from './components/CertificationStrip';
 import Footer from './components/Footer';
+import Home from './pages/Home';
 
 function App() {
   return (
@@ -17,11 +13,7 @@ function App() {
       </a>
       <Navbar />
       <main id="main-content">
-        <HeroSection />
-        <ServiceToggle />
-        <BookingForm />
-        <TrustSignals />
-        <CertificationStrip />
+        <Home />
       </main>
       <Footer />
     </div>
