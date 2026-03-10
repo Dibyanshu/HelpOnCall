@@ -12,10 +12,10 @@ export default function HeroSection() {
             id="hero-heading"
             className="text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl"
           >
-            Compassionate Care Meets World‑Class Hospitality in the GTA.
+            Compassionate Care Meets World‑Class Hospitality in the Greater Toronto.
           </h1>
           <p className="mt-4 max-w-lg text-base text-teal-100 sm:text-lg">
-            Compassionate Care Meets Hospitality in the GTA.
+            Compassionate Care Meets Hospitality in the Greater Toronto.
           </p>
           <div className="mt-8">
             <a

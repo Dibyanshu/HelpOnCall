@@ -35,7 +35,7 @@ export default function Navbar() {
             />
           </svg>
           <span className="text-lg font-bold text-gray-900">
-            Toronto <span className="italic text-teal-700">Care &amp; Stay</span>
+            Help <span className="italic text-teal-700">On Call</span>
           </span>
         </a>
 
