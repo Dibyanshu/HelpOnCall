@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const navLinks = [
-  { label: 'Home', href: '/' },
+  { label: 'Home', href: '/', isRoute: true },
   { label: 'Nursing Services', href: '#nursing' },
   { label: 'Hospitality Services', href: '#hospitality' },
+  { label: 'About Us', href: '/about', isRoute: true },
+  { label: 'Contact Us', href: '/contact', isRoute: true },
 ];
 
 export default function Navbar() {
@@ -41,30 +43,23 @@ export default function Navbar() {
         <ul className="hidden items-center gap-6 md:flex" role="list">
           {navLinks.map((link) => (
             <li key={link.href}>
-              <a
-                href={link.href}
-                className="text-sm font-medium text-gray-700 transition-colors hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
-              >
-                {link.label}
-              </a>
+              {link.isRoute ? (
+                <Link
+                  to={link.href}
+                  className="text-sm font-medium text-gray-700 transition-colors hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <a
+                  href={link.href}
+                  className="text-sm font-medium text-gray-700 transition-colors hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                >
+                  {link.label}
+                </a>
+              )}
             </li>
           ))}
-          <li>
-            <Link
-              to="/about"
-              className="text-sm font-medium text-gray-700 transition-colors hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
-            >
-              About Us
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/#contact"
-              className="text-sm font-medium text-gray-700 transition-colors hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
-            >
-              Contact Us
-            </Link>
-          </li>
           <li>
             <a
               href="#booking"
@@ -100,33 +95,25 @@ export default function Navbar() {
           <ul className="space-y-2 pt-2" role="list">
             {navLinks.map((link) => (
               <li key={link.href}>
-                <a
-                  href={link.href}
-                  className="block rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-teal-700"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {link.label}
-                </a>
+                {link.isRoute ? (
+                  <Link
+                    to={link.href}
+                    className="block rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-teal-700"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ) : (
+                  <a
+                    href={link.href}
+                    className="block rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-teal-700"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {link.label}
+                  </a>
+                )}
               </li>
             ))}
-            <li>
-              <Link
-                to="/about"
-                className="block rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-teal-700"
-                onClick={() => setMobileOpen(false)}
-              >
-                About Us
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/#contact"
-                className="block rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-teal-700"
-                onClick={() => setMobileOpen(false)}
-              >
-                Contact Us
-              </Link>
-            </li>
             <li>
               <a
                 href="#booking"
