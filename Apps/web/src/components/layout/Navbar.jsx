@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 
 const navLinks = [
   { label: 'Home', href: '/', isRoute: true },
-  { label: 'Nursing Services', href: '#nursing' },
-  { label: 'Hospitality Services', href: '#hospitality' },
+  { label: 'Our Services', href: '/services', isRoute: true },
   { label: 'About Us', href: '/about', isRoute: true },
   { label: 'Contact Us', href: '/contact', isRoute: true },
 ];
