@@ -17,14 +17,14 @@ export default function HeroSection() {
           <p className="mt-4 max-w-lg text-base text-teal-100 sm:text-lg">
             Compassionate Care Meets Hospitality in the Greater Toronto.
           </p>
-          <div className="mt-8">
+          {/* <div className="mt-8">
             <a
               href="#services"
               className="inline-flex items-center rounded-md bg-amber-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-amber-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500"
             >
               Explore Services
             </a>
-          </div>
+          </div> */}
         </div>
 
         {/* Hero image */}
