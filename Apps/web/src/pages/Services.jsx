@@ -1,4 +1,5 @@
 import { Home, Heart, Accessibility, Check } from 'lucide-react';
+import serviceHero from '../assets/Service_Hero.png';
 
 const services = [
   {
@@ -46,21 +47,41 @@ const cardVariants = {
 
 export default function ServiceCard() {
   return (
-    <section
-      id="services"
-      className="bg-gray-50 py-16 sm:py-20"
-      aria-labelledby="services-heading"
-    >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="bg-gray-50">
+      <section className="relative overflow-hidden px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+        <img
+          src={serviceHero}
+          alt="Healthcare professional supporting a senior at home"
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="eager"
+        />
+        <div className="absolute inset-0 bg-teal-900/75" aria-hidden="true" />
+        <div className="relative mx-auto max-w-5xl">
+          <p className="text-sm font-semibold uppercase tracking-wider text-teal-100">Our Services</p>
+          <h1 className="mt-3 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+          </h1>
+          <p className="mt-4 max-w-3xl text-base leading-relaxed text-teal-100 sm:text-lg">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          </p>
+        </div>
+      </section>
+
+      <section
+        id="services"
+        className="py-16 sm:py-20"
+        aria-labelledby="services-heading"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2
               id="services-heading"
-          className="text-center text-2xl font-bold text-gray-900 sm:text-3xl"
+              className="text-center text-2xl font-bold text-gray-900 sm:text-3xl"
             >
-          Our Services
+              Our Services
             </h2>
-        <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-gray-600 sm:text-base">
-          Comprehensive care services tailored to meet your unique needs and ensure your comfort and well-being.
-        </p>
+          <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-gray-600 sm:text-base">
+            Comprehensive care services tailored to meet your unique needs and ensure your comfort and well-being.
+          </p>
 
             <div
           className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
@@ -118,7 +139,8 @@ export default function ServiceCard() {
             </div>
           ))}
         </div>
-      </div>
-    </section>
+        </div>
+      </section>
+    </div>
   );
 }
