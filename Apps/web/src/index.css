@@ -12,3 +12,41 @@ body {
   margin: 0;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
+
+.hero-kenburns {
+  transform-origin: center;
+  animation: hero-kenburns 12s ease-in-out infinite alternate;
+}
+
+.hero-breathing-light {
+  background: radial-gradient(circle at 70% 30%, rgb(255 255 255 / 14%), rgb(255 255 255 / 0%) 45%);
+  animation: hero-light 7s ease-in-out infinite;
+}
+
+@keyframes hero-kenburns {
+  0% {
+    transform: scale(1.03) translateX(0);
+  }
+
+  100% {
+    transform: scale(1.1) translateX(-1.5%);
+  }
+}
+
+@keyframes hero-light {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-kenburns,
+  .hero-breathing-light {
+    animation: none;
+  }
+}
