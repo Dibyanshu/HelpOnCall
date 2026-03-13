@@ -1,11 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../../admin/auth/AdminAuthContext.jsx';
+import {
+  createInitialFieldErrors,
+  hasAnyFieldErrors,
+  normalizeZodFieldErrors,
+} from '../../admin/utils/formFieldErrors.js';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const initialFieldErrors = createInitialFieldErrors(['email', 'password']);
 
 export default function AdminLoginPage() {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
+  const [fieldErrors, setFieldErrors] = useState(initialFieldErrors);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const { isAuthenticated, signIn } = useAdminAuth();
@@ -22,12 +29,18 @@ export default function AdminLoginPage() {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
+
+    if (name in initialFieldErrors) {
+      setFieldErrors((prev) => ({ ...prev, [name]: [] }));
+    }
+
     setCredentials((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setErrorMessage('');
+    setFieldErrors(initialFieldErrors);
     setIsSubmitting(true);
 
     try {
@@ -39,9 +52,18 @@ export default function AdminLoginPage() {
         body: JSON.stringify(credentials),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
+        if (response.status === 400) {
+          const nextFieldErrors = normalizeZodFieldErrors(data, initialFieldErrors);
+          setFieldErrors(nextFieldErrors);
+
+          if (hasAnyFieldErrors(nextFieldErrors)) {
+            return;
+          }
+        }
+
         throw new Error(data?.message || 'Unable to sign in.');
       }
 
@@ -79,6 +101,13 @@ export default function AdminLoginPage() {
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-200"
               placeholder="admin@helponcall.com"
             />
+            {fieldErrors.email.length > 0 ? (
+              <ul className="mt-1 list-disc pl-5 text-xs text-red-700" role="alert">
+                {fieldErrors.email.map((message, index) => (
+                  <li key={`${message}-${index}`}>{message}</li>
+                ))}
+              </ul>
+            ) : null}
           </div>
 
           <div>
@@ -96,6 +125,13 @@ export default function AdminLoginPage() {
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-200"
               placeholder="Enter your password"
             />
+            {fieldErrors.password.length > 0 ? (
+              <ul className="mt-1 list-disc pl-5 text-xs text-red-700" role="alert">
+                {fieldErrors.password.map((message, index) => (
+                  <li key={`${message}-${index}`}>{message}</li>
+                ))}
+              </ul>
+            ) : null}
           </div>
 
           {errorMessage ? (

@@ -6,6 +6,8 @@ import ContactPage from './pages/ContactPage';
 import Services from './pages/Services';
 import AdminLoginPage from './pages/admin/AdminLoginPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminUsersPage from './pages/admin/AdminUsersPage';
+import AdminUserNewPage from './pages/admin/AdminUserNewPage';
 import RequireAdminAuth from './admin/routes/RequireAdminAuth';
 
 function App() {
@@ -18,6 +20,22 @@ function App() {
         element={(
           <RequireAdminAuth>
             <AdminDashboardPage />
+          </RequireAdminAuth>
+        )}
+      />
+      <Route
+        path="/admin/users"
+        element={(
+          <RequireAdminAuth allowedRoles={['super_admin']}>
+            <AdminUsersPage />
+          </RequireAdminAuth>
+        )}
+      />
+      <Route
+        path="/admin/users/new"
+        element={(
+          <RequireAdminAuth allowedRoles={['super_admin']}>
+            <AdminUserNewPage />
           </RequireAdminAuth>
         )}
       />
