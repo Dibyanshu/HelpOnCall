@@ -1,20 +1,33 @@
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import Home from './pages/Home';
 import AboutUsPage from './pages/AboutUsPage';
 import ContactPage from './pages/ContactPage';
 import Services from './pages/Services';
+import AdminLoginPage from './pages/admin/AdminLoginPage';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import RequireAdminAuth from './admin/routes/RequireAdminAuth';
 
 function App() {
   return (
-    <Layout>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<AboutUsPage />} />
-          <Route path="/services" element={<Services />} />
-          <Route path="/contact" element={<ContactPage />} />
-        </Routes>
-    </Layout>
+    <Routes>
+      <Route path="/admin/login" element={<AdminLoginPage />} />
+      <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+      <Route
+        path="/admin/dashboard"
+        element={(
+          <RequireAdminAuth>
+            <AdminDashboardPage />
+          </RequireAdminAuth>
+        )}
+      />
+
+      <Route path="/" element={<Layout><Home /></Layout>} />
+      <Route path="/about" element={<Layout><AboutUsPage /></Layout>} />
+      <Route path="/services" element={<Layout><Services /></Layout>} />
+      <Route path="/contact" element={<Layout><ContactPage /></Layout>} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 
