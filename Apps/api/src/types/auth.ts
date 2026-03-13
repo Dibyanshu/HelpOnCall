@@ -2,6 +2,7 @@ export const rolePermissions = {
   content_publisher: ["content:publish"],
   resume_reviewer: ["resume:review"],
   job_poster: ["job:post"],
+  admin: ["admin:user:read"],
   super_admin: ["*"]
 } as const;
 

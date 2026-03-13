@@ -6,15 +6,107 @@ import { users } from "../db/schema.js";
 import type { Role } from "../types/auth.js";
 import { hashPassword } from "../utils/crypto.js";
 
+const USER_ROLE_VALUES = [
+  "content_publisher",
+  "resume_reviewer",
+  "job_poster",
+  "admin",
+  "super_admin"
+] as const;
+
 const createUserSchema = z.object({
   email: z.string().email(),
   name: z.string().min(2),
   password: z.string().min(8),
-  role: z.enum(["content_publisher", "resume_reviewer", "job_poster", "super_admin"]),
+  role: z.enum(USER_ROLE_VALUES),
   isActive: z.boolean().optional().default(true)
 });
 
+const updateUserStatusSchema = z.object({
+  userId: z.number().int().positive(),
+  isActive: z.boolean()
+});
+
+function roleLabel(role: (typeof USER_ROLE_VALUES)[number]): string {
+  return role
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 const adminRoutes: FastifyPluginAsync = async (fastify) => {
+  fastify.get(
+    "/admin/roles",
+    {
+      preHandler: [fastify.authenticate, fastify.authorize(["super_admin" as Role])]
+    },
+    async () => {
+      return {
+        data: USER_ROLE_VALUES.map((value) => ({
+          value,
+          label: roleLabel(value)
+        }))
+      };
+    }
+  );
+
+  fastify.post(
+    "/admin/users/status",
+    {
+      preHandler: [
+        fastify.authenticate,
+        fastify.authorize(["super_admin" as Role], "admin:user:update-status")
+      ]
+    },
+    async (request, reply) => {
+      const bodyParse = updateUserStatusSchema.safeParse(request.body);
+
+      if (!bodyParse.success) {
+        return reply.code(400).send({
+          message: "Invalid request body",
+          errors: bodyParse.error.flatten()
+        });
+      }
+
+      const { userId, isActive } = bodyParse.data;
+
+      const existing = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+      if (existing.length === 0) {
+        return reply.code(404).send({ message: "User not found" });
+      }
+
+      const now = new Date();
+
+      const updated = await db
+        .update(users)
+        .set({
+          isActive,
+          updatedAt: now
+        })
+        .where(eq(users.id, userId))
+        .returning({
+          id: users.id,
+          email: users.email,
+          name: users.name,
+          role: users.role,
+          createdBy: users.createdBy,
+          isActive: users.isActive,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt
+        });
+
+      return reply.send({
+        message: "User status updated successfully",
+        user: updated[0]
+      });
+    }
+  );
+
   fastify.post(
     "/admin/users",
     {
@@ -34,6 +126,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const { email, name, password, role, isActive } = bodyParse.data;
+      const createdBy = request.authUser?.role === "super_admin" ? "super_admin" : "";
 
       const exists = await db.select().from(users).where(eq(users.email, email)).limit(1);
       if (exists.length > 0) {
@@ -50,6 +143,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           name,
           passwordHash,
           role,
+          createdBy,
           isActive,
           createdAt: now,
           updatedAt: now
@@ -59,6 +153,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           email: users.email,
           name: users.name,
           role: users.role,
+          createdBy: users.createdBy,
           isActive: users.isActive,
           createdAt: users.createdAt
         });
@@ -75,7 +170,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     {
       preHandler: [
         fastify.authenticate,
-        fastify.authorize(["super_admin" as Role], "admin:user:read")
+        fastify.authorize(["super_admin" as Role, "admin" as Role], "admin:user:read")
       ]
     },
     async () => {
@@ -85,6 +180,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           email: users.email,
           name: users.name,
           role: users.role,
+          createdBy: users.createdBy,
           isActive: users.isActive,
           createdAt: users.createdAt,
           updatedAt: users.updatedAt

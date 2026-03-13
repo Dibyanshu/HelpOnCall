@@ -3,6 +3,7 @@ const quickLinks = [
   { label: 'Nursing', href: '#nursing' },
   { label: 'Hospitality', href: '#hospitality' },
   { label: 'Book Now', href: '#booking' },
+  { label: 'Staff Login', href: '/admin/login' },
 ];
 
 const seoNeighborhoods = [
