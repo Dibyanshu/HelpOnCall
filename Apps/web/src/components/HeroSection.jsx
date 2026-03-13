@@ -5,7 +5,7 @@ export default function HeroSection() {
       className="relative overflow-hidden bg-teal-900"
       aria-labelledby="hero-heading"
     >
-      <div className="mx-auto grid max-w-7xl lg:grid-cols-2">
+      <div className="mx-auto grid lg:grid-cols-2">
         {/* Text content */}
         <div className="flex flex-col justify-center px-6 py-16 sm:px-10 lg:py-24 lg:pr-0">
           <h1
@@ -28,13 +28,17 @@ export default function HeroSection() {
         </div>
 
         {/* Hero image */}
-        <div className="relative hidden lg:block">
-          <div className="absolute inset-0 bg-gradient-to-r from-teal-900 to-transparent z-10" />
+        <div className="relative hidden overflow-hidden lg:block">
+          <div className="absolute inset-0 z-10" />
           <img
             src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80"
-            alt="Healthcare professionals providing compassionate care"
-            className="h-full w-full object-cover"
+            alt="Compassionate home healthcare support for a senior in Canada"
+            className="hero-kenburns h-full w-full object-cover"
             loading="eager"
+          />
+          <div
+            className="hero-breathing-light pointer-events-none absolute inset-0 z-20"
+            aria-hidden="true"
           />
         </div>
       </div>
