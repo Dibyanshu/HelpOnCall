@@ -11,6 +11,7 @@ Node.js + Fastify + Drizzle ORM + SQLite API with a code-first user management m
   - `content_publisher`
   - `resume_reviewer`
   - `job_poster`
+  - `admin`
   - `super_admin`
 
 ## Tech Stack
@@ -115,6 +116,7 @@ The role model is implemented in `src/types/auth.ts`.
 - `content_publisher` -> `content:publish`
 - `resume_reviewer` -> `resume:review`
 - `job_poster` -> `job:post`
+- `admin` -> `admin:user:read`
 - `super_admin` -> `*` (all permissions)
 
 ## API Endpoints
@@ -236,6 +238,37 @@ Response:
       "isActive": true,
       "createdAt": "2026-03-12T10:00:00.000Z",
       "updatedAt": "2026-03-12T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+### 5) List Roles (Super Admin)
+
+`GET /api/v1/admin/roles`
+
+Headers:
+
+```txt
+Authorization: Bearer <jwt>
+```
+
+Response:
+
+```json
+{
+  "data": [
+    {
+      "value": "content_publisher",
+      "label": "Content Publisher"
+    },
+    {
+      "value": "admin",
+      "label": "Admin"
+    },
+    {
+      "value": "super_admin",
+      "label": "Super Admin"
     }
   ]
 }

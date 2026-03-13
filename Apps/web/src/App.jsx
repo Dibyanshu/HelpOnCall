@@ -26,7 +26,7 @@ function App() {
       <Route
         path="/admin/users"
         element={(
-          <RequireAdminAuth allowedRoles={['super_admin']}>
+          <RequireAdminAuth allowedRoles={['super_admin', 'admin']}>
             <AdminUsersPage />
           </RequireAdminAuth>
         )}

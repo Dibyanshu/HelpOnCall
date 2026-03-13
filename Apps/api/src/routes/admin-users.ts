@@ -6,15 +6,45 @@ import { users } from "../db/schema.js";
 import type { Role } from "../types/auth.js";
 import { hashPassword } from "../utils/crypto.js";
 
+const USER_ROLE_VALUES = [
+  "content_publisher",
+  "resume_reviewer",
+  "job_poster",
+  "admin",
+  "super_admin"
+] as const;
+
 const createUserSchema = z.object({
   email: z.string().email(),
   name: z.string().min(2),
   password: z.string().min(8),
-  role: z.enum(["content_publisher", "resume_reviewer", "job_poster", "super_admin"]),
+  role: z.enum(USER_ROLE_VALUES),
   isActive: z.boolean().optional().default(true)
 });
 
+function roleLabel(role: (typeof USER_ROLE_VALUES)[number]): string {
+  return role
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 const adminRoutes: FastifyPluginAsync = async (fastify) => {
+  fastify.get(
+    "/admin/roles",
+    {
+      preHandler: [fastify.authenticate, fastify.authorize(["super_admin" as Role])]
+    },
+    async () => {
+      return {
+        data: USER_ROLE_VALUES.map((value) => ({
+          value,
+          label: roleLabel(value)
+        }))
+      };
+    }
+  );
+
   fastify.post(
     "/admin/users",
     {
@@ -75,7 +105,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     {
       preHandler: [
         fastify.authenticate,
-        fastify.authorize(["super_admin" as Role], "admin:user:read")
+        fastify.authorize(["super_admin" as Role, "admin" as Role], "admin:user:read")
       ]
     },
     async () => {
