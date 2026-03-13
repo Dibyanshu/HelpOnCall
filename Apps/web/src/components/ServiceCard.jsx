@@ -1,4 +1,4 @@
-import { Home, ChefHat, Bath, Sparkles, Shirt, Accessibility, Heart, Footprints } from 'lucide-react';
+import { Home, ChefHat, Utensils, Bath, Sparkles, Shirt, Accessibility, Users, Footprints } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const services = [
@@ -14,7 +14,7 @@ const services = [
   },
   {
     title: "Feeding",
-    icon: ChefHat,
+    icon: Utensils,
     image: 'https://images.unsplash.com/photo-1544148103-0773bf10d330?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
   },
   {
@@ -39,7 +39,7 @@ const services = [
   },
   {
     title: 'Companionship',
-    icon: Heart,
+    icon: Users,
     image: 'https://images.unsplash.com/photo-1551892370-0b43cb8c7e2a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
   },
   {
