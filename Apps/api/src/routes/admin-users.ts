@@ -22,6 +22,11 @@ const createUserSchema = z.object({
   isActive: z.boolean().optional().default(true)
 });
 
+const updateUserStatusSchema = z.object({
+  userId: z.number().int().positive(),
+  isActive: z.boolean()
+});
+
 function roleLabel(role: (typeof USER_ROLE_VALUES)[number]): string {
   return role
     .split("_")
@@ -46,6 +51,63 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   );
 
   fastify.post(
+    "/admin/users/status",
+    {
+      preHandler: [
+        fastify.authenticate,
+        fastify.authorize(["super_admin" as Role], "admin:user:update-status")
+      ]
+    },
+    async (request, reply) => {
+      const bodyParse = updateUserStatusSchema.safeParse(request.body);
+
+      if (!bodyParse.success) {
+        return reply.code(400).send({
+          message: "Invalid request body",
+          errors: bodyParse.error.flatten()
+        });
+      }
+
+      const { userId, isActive } = bodyParse.data;
+
+      const existing = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+      if (existing.length === 0) {
+        return reply.code(404).send({ message: "User not found" });
+      }
+
+      const now = new Date();
+
+      const updated = await db
+        .update(users)
+        .set({
+          isActive,
+          updatedAt: now
+        })
+        .where(eq(users.id, userId))
+        .returning({
+          id: users.id,
+          email: users.email,
+          name: users.name,
+          role: users.role,
+          createdBy: users.createdBy,
+          isActive: users.isActive,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt
+        });
+
+      return reply.send({
+        message: "User status updated successfully",
+        user: updated[0]
+      });
+    }
+  );
+
+  fastify.post(
     "/admin/users",
     {
       preHandler: [
@@ -64,6 +126,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const { email, name, password, role, isActive } = bodyParse.data;
+      const createdBy = request.authUser?.role === "super_admin" ? "super_admin" : "";
 
       const exists = await db.select().from(users).where(eq(users.email, email)).limit(1);
       if (exists.length > 0) {
@@ -80,6 +143,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           name,
           passwordHash,
           role,
+          createdBy,
           isActive,
           createdAt: now,
           updatedAt: now
@@ -89,6 +153,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           email: users.email,
           name: users.name,
           role: users.role,
+          createdBy: users.createdBy,
           isActive: users.isActive,
           createdAt: users.createdAt
         });
@@ -115,6 +180,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           email: users.email,
           name: users.name,
           role: users.role,
+          createdBy: users.createdBy,
           isActive: users.isActive,
           createdAt: users.createdAt,
           updatedAt: users.updatedAt

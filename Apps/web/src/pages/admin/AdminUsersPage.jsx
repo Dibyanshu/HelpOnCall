@@ -17,12 +17,15 @@ function formatDateTime(value) {
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [updatingUserId, setUpdatingUserId] = useState(null);
+  const [statusMessage, setStatusMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   const { token, user, signOut } = useAdminAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const successMessage = location.state?.message || '';
+  const canManageStatus = user?.role === 'super_admin';
 
   const loadUsers = useCallback(async () => {
     setIsLoading(true);
@@ -60,6 +63,50 @@ export default function AdminUsersPage() {
     void loadUsers();
   }, [loadUsers]);
 
+  const handleUpdateStatus = useCallback(async (targetUser) => {
+    if (!canManageStatus || updatingUserId !== null) {
+      return;
+    }
+
+    setStatusMessage('');
+    setErrorMessage('');
+    setUpdatingUserId(targetUser.id);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/admin/users/status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId: targetUser.id,
+          isActive: !targetUser.isActive,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (response.status === 401) {
+        signOut();
+        navigate('/admin/login', { replace: true, state: { from: { pathname: '/admin/users' } } });
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(data?.message || 'Failed to update user status.');
+      }
+
+      const updatedUser = data?.user;
+      setUsers((prev) => prev.map((item) => (item.id === updatedUser.id ? { ...item, ...updatedUser } : item)));
+      setStatusMessage(data?.message || 'User status updated successfully.');
+    } catch (error) {
+      setErrorMessage(error.message || 'Failed to update user status.');
+    } finally {
+      setUpdatingUserId(null);
+    }
+  }, [canManageStatus, navigate, signOut, token, updatingUserId]);
+
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -73,12 +120,14 @@ export default function AdminUsersPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Link
-                to="/admin/users/new"
-                className="rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-800"
-              >
-                New User
-              </Link>
+              {canManageStatus ? (
+                <Link
+                  to="/admin/users/new"
+                  className="rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-800"
+                >
+                  New User
+                </Link>
+              ) : null}
               <button
                 type="button"
                 onClick={loadUsers}
@@ -100,6 +149,12 @@ export default function AdminUsersPage() {
           {successMessage ? (
             <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800" role="status">
               {successMessage}
+            </div>
+          ) : null}
+
+          {statusMessage ? (
+            <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800" role="status">
+              {statusMessage}
             </div>
           ) : null}
 
@@ -128,8 +183,12 @@ export default function AdminUsersPage() {
                     <th scope="col" className="px-3 py-2 text-left font-semibold text-slate-700">Name</th>
                     <th scope="col" className="px-3 py-2 text-left font-semibold text-slate-700">Email</th>
                     <th scope="col" className="px-3 py-2 text-left font-semibold text-slate-700">Role</th>
+                    <th scope="col" className="px-3 py-2 text-left font-semibold text-slate-700">Created By</th>
                     <th scope="col" className="px-3 py-2 text-left font-semibold text-slate-700">Status</th>
                     <th scope="col" className="px-3 py-2 text-left font-semibold text-slate-700">Created</th>
+                    {canManageStatus ? (
+                      <th scope="col" className="px-3 py-2 text-left font-semibold text-slate-700">Action</th>
+                    ) : null}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
@@ -139,6 +198,7 @@ export default function AdminUsersPage() {
                         <td className="whitespace-nowrap px-3 py-2 text-slate-800">{item.name}</td>
                         <td className="whitespace-nowrap px-3 py-2 text-slate-700">{item.email}</td>
                         <td className="whitespace-nowrap px-3 py-2 text-slate-700">{item.role}</td>
+                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">{item.createdBy || '-'}</td>
                         <td className="whitespace-nowrap px-3 py-2">
                           <span
                             className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${item.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}`}
@@ -147,11 +207,27 @@ export default function AdminUsersPage() {
                           </span>
                         </td>
                         <td className="whitespace-nowrap px-3 py-2 text-slate-700">{formatDateTime(item.createdAt)}</td>
+                        {canManageStatus ? (
+                          <td className="whitespace-nowrap px-3 py-2">
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateStatus(item)}
+                              disabled={updatingUserId !== null}
+                              className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {updatingUserId === item.id
+                                ? 'Updating...'
+                                : item.isActive
+                                  ? 'Deactivate'
+                                  : 'Activate'}
+                            </button>
+                          </td>
+                        ) : null}
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="px-3 py-6 text-center text-slate-500">
+                      <td colSpan={canManageStatus ? 7 : 6} className="px-3 py-6 text-center text-slate-500">
                         No users found.
                       </td>
                     </tr>

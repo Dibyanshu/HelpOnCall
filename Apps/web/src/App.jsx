@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import AboutUsPage from './pages/AboutUsPage';
 import ContactPage from './pages/ContactPage';
 import Services from './pages/Services';
+import UserRegistrationPage from './pages/UserRegistrationPage';
 import AdminLoginPage from './pages/admin/AdminLoginPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
@@ -43,6 +44,7 @@ function App() {
       <Route path="/" element={<Layout><Home /></Layout>} />
       <Route path="/about" element={<Layout><AboutUsPage /></Layout>} />
       <Route path="/services" element={<Layout><Services /></Layout>} />
+      <Route path="/register" element={<Layout><UserRegistrationPage /></Layout>} />
       <Route path="/contact" element={<Layout><ContactPage /></Layout>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

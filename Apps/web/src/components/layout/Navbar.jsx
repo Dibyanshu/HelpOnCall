@@ -5,6 +5,7 @@ const navLinks = [
   { label: 'Home', href: '/', isRoute: true },
   { label: 'Our Services', href: '/services', isRoute: true },
   { label: 'About Us', href: '/about', isRoute: true },
+  { label: 'Register', href: '/register', isRoute: true },
   { label: 'Contact Us', href: '/contact', isRoute: true },
 ];
 

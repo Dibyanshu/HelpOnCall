@@ -8,6 +8,7 @@ const USERS_TABLE_DDL = sql`
     name TEXT NOT NULL,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('content_publisher', 'resume_reviewer', 'job_poster', 'admin', 'super_admin')),
+    created_by TEXT NOT NULL DEFAULT '',
     is_active INTEGER NOT NULL DEFAULT 1,
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
@@ -35,6 +36,7 @@ async function migrateUsersRoleConstraintForAdmin(): Promise<void> {
         name TEXT NOT NULL,
         password_hash TEXT NOT NULL,
         role TEXT NOT NULL CHECK (role IN ('content_publisher', 'resume_reviewer', 'job_poster', 'admin', 'super_admin')),
+        created_by TEXT NOT NULL DEFAULT '',
         is_active INTEGER NOT NULL DEFAULT 1,
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL
@@ -42,8 +44,8 @@ async function migrateUsersRoleConstraintForAdmin(): Promise<void> {
     `);
 
     await db.run(sql`
-      INSERT INTO users_new (id, email, name, password_hash, role, is_active, created_at, updated_at)
-      SELECT id, email, name, password_hash, role, is_active, created_at, updated_at
+      INSERT INTO users_new (id, email, name, password_hash, role, created_by, is_active, created_at, updated_at)
+      SELECT id, email, name, password_hash, role, '', is_active, created_at, updated_at
       FROM users
     `);
 
@@ -56,7 +58,19 @@ async function migrateUsersRoleConstraintForAdmin(): Promise<void> {
   }
 }
 
+async function migrateUsersAddCreatedByColumn(): Promise<void> {
+  const columns = await db.all<{ name: string }>(sql`PRAGMA table_info(users)`);
+  const hasCreatedBy = columns.some((column) => column.name === "created_by");
+
+  if (hasCreatedBy) {
+    return;
+  }
+
+  await db.run(sql`ALTER TABLE users ADD COLUMN created_by TEXT NOT NULL DEFAULT ''`);
+}
+
 export async function ensureTables(): Promise<void> {
   await db.run(USERS_TABLE_DDL);
   await migrateUsersRoleConstraintForAdmin();
+  await migrateUsersAddCreatedByColumn();
 }
