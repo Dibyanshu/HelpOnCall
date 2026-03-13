@@ -1,8 +1,17 @@
+import aboutUsHero from '../assets/AboutUs_Hero.png';
+
 export default function AboutUsPage() {
   return (
     <div className="bg-slate-50">
-      <section className="bg-teal-900 px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-        <div className="mx-auto max-w-5xl">
+      <section className="relative overflow-hidden px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+        <img
+          src={aboutUsHero}
+          alt="Healthcare professional supporting a senior at home"
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="eager"
+        />
+        <div className="absolute inset-0 bg-teal-900/75" aria-hidden="true" />
+        <div className="relative mx-auto max-w-5xl">
           <p className="text-sm font-semibold uppercase tracking-wider text-teal-100">About Help On Call</p>
           <h1 className="mt-3 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
             Care That Feels Personal, Hospitality That Feels Like Home
