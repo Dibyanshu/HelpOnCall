@@ -65,7 +65,7 @@ export default function Navbar() {
               href="#booking"
               className="inline-flex items-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
             >
-              Book Now
+              Request A Quote
             </a>
           </li>
         </ul>
@@ -120,7 +120,7 @@ export default function Navbar() {
                 className="mt-2 block rounded-md bg-teal-700 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-teal-800"
                 onClick={() => setMobileOpen(false)}
               >
-                Book Now
+                Request A Quote
               </a>
             </li>
           </ul>
