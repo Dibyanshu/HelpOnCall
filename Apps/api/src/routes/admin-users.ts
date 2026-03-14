@@ -1,6 +1,7 @@
 import { and, desc, eq, ne } from "drizzle-orm";
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
+import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
 import { users } from "../db/schema.js";
 import type { Role } from "../types/auth.js";
@@ -102,13 +103,13 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.code(404).send({ message: "User not found" });
       }
 
-      const now = new Date();
+      const auditUpdateFields = buildAuditUpdateFields();
 
       const updated = await db
         .update(users)
         .set({
           isActive,
-          updatedAt: now
+          ...auditUpdateFields
         })
         .where(eq(users.id, userId))
         .returning({
@@ -199,13 +200,13 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         }
       }
 
-      const now = new Date();
+      const auditUpdateFields = buildAuditUpdateFields();
 
       const updated = await db
         .update(users)
         .set({
           ...bodyParse.data,
-          updatedAt: now
+          ...auditUpdateFields
         })
         .where(eq(users.id, userId))
         .returning({
@@ -252,7 +253,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.code(409).send({ message: "User with this email already exists" });
       }
 
-      const now = new Date();
+      const auditCreateFields = buildAuditCreateFields(createdBy);
       const passwordHash = await hashPassword(password);
 
       const inserted = await db
@@ -262,10 +263,8 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           name,
           passwordHash,
           role,
-          createdBy,
+          ...auditCreateFields,
           isActive,
-          createdAt: now,
-          updatedAt: now
         })
         .returning({
           id: users.id,
