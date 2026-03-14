@@ -3,7 +3,7 @@ import Layout from './components/layout/Layout';
 import Home from './pages/Home';
 import AboutUsPage from './pages/AboutUsPage';
 import ContactPage from './pages/ContactPage';
-import Services from './pages/Services';
+import Services from './pages/ServicesPage';
 import UserRegistrationPage from './pages/UserRegistrationPage';
 import AdminLoginPage from './pages/admin/AdminLoginPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';

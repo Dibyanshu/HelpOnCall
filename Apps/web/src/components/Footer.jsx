@@ -4,6 +4,7 @@ const quickLinks = [
   { label: 'Hospitality', href: '#hospitality' },
   { label: 'Book Now', href: '#booking' },
   { label: 'Staff Login', href: '/admin/login' },
+  { label: 'User Registration', href: '/register' },
 ];
 
 const seoNeighborhoods = [
