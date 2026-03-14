@@ -339,6 +339,52 @@ curl --location '{{baseUrl}}/api/v1/admin/users' \
 
 ---
 
+## 6.1) List Roles (Super Admin)
+
+### Request
+
+- Method: `GET`
+- URL: `{{baseUrl}}/api/v1/admin/roles`
+- Auth: Bearer Token -> `{{accessToken}}`
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/admin/roles' \
+--header 'Authorization: Bearer {{accessToken}}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "data": [
+    {
+      "value": "content_publisher",
+      "label": "Content Publisher"
+    },
+    {
+      "value": "resume_reviewer",
+      "label": "Resume Reviewer"
+    },
+    {
+      "value": "job_poster",
+      "label": "Job Poster"
+    },
+    {
+      "value": "admin",
+      "label": "Admin"
+    },
+    {
+      "value": "super_admin",
+      "label": "Super Admin"
+    }
+  ]
+}
+```
+
+---
+
 ## 7) Update User Status (Super Admin)
 
 ### Request
@@ -386,6 +432,64 @@ curl --location '{{baseUrl}}/api/v1/admin/users/status' \
   }
 }
 ```
+
+---
+
+## 8) Edit User (Admin or Super Admin)
+
+### Request
+
+- Method: `PATCH` or `PUT`
+- URL: `{{baseUrl}}/api/v1/admin/users/2`
+- Auth: Bearer Token -> `{{accessToken}}`
+- Header: `Content-Type: application/json`
+
+Body (raw JSON, any editable fields):
+
+```json
+{
+  "name": "Updated User Name",
+  "role": "job_poster",
+  "isActive": true
+}
+```
+
+### cURL
+
+```bash
+curl --location --request PATCH '{{baseUrl}}/api/v1/admin/users/2' \
+--header 'Authorization: Bearer {{accessToken}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "name": "Updated User Name",
+  "role": "job_poster",
+  "isActive": true
+}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "message": "User updated successfully",
+  "user": {
+    "id": 2,
+    "email": "publisher@helponcall.local",
+    "name": "Updated User Name",
+    "role": "job_poster",
+    "createdBy": "super_admin",
+    "isActive": true,
+    "createdAt": "2026-03-12T10:00:00.000Z",
+    "updatedAt": "2026-03-14T10:10:00.000Z"
+  }
+}
+```
+
+Notes:
+
+- Allowed roles to call this endpoint: `admin`, `super_admin`
+- At least one field is required in request body
+- Admin cannot edit `super_admin` users or assign `super_admin` role
 
 ---
 

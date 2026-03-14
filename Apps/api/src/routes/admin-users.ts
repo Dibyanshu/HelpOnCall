@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, ne } from "drizzle-orm";
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import { db } from "../db/index.js";
@@ -26,6 +26,28 @@ const updateUserStatusSchema = z.object({
   userId: z.number().int().positive(),
   isActive: z.boolean()
 });
+
+const userIdParamSchema = z.object({
+  userId: z.coerce.number().int().positive()
+});
+
+const editUserSchema = z
+  .object({
+    email: z.string().email().optional(),
+    name: z.string().min(2).optional(),
+    role: z.enum(USER_ROLE_VALUES).optional(),
+    isActive: z.boolean().optional()
+  })
+  .refine(
+    (value) =>
+      value.email !== undefined ||
+      value.name !== undefined ||
+      value.role !== undefined ||
+      value.isActive !== undefined,
+    {
+      message: "At least one editable field is required"
+    }
+  );
 
 function roleLabel(role: (typeof USER_ROLE_VALUES)[number]): string {
   return role
@@ -106,6 +128,103 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       });
     }
   );
+
+  fastify.route({
+    method: ["PUT", "PATCH"],
+    url: "/admin/users/:userId",
+    preHandler: [
+      fastify.authenticate,
+      fastify.authorize(["super_admin" as Role, "admin" as Role], "admin:user:update")
+    ],
+    handler: async (request, reply) => {
+      const paramsParse = userIdParamSchema.safeParse(request.params);
+
+      if (!paramsParse.success) {
+        return reply.code(400).send({
+          message: "Invalid route params",
+          errors: paramsParse.error.flatten()
+        });
+      }
+
+      const bodyParse = editUserSchema.safeParse(request.body);
+
+      if (!bodyParse.success) {
+        return reply.code(400).send({
+          message: "Invalid request body",
+          errors: bodyParse.error.flatten()
+        });
+      }
+
+      const { userId } = paramsParse.data;
+      const authUser = request.authUser;
+
+      if (!authUser) {
+        return reply.code(401).send({ message: "Unauthorized" });
+      }
+
+      const existing = await db
+        .select({
+          id: users.id,
+          role: users.role
+        })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+      const targetUser = existing[0];
+
+      if (!targetUser) {
+        return reply.code(404).send({ message: "User not found" });
+      }
+
+      if (authUser.role === "admin") {
+        if (targetUser.role === "super_admin") {
+          return reply.code(403).send({ message: "Admin cannot edit super admin users" });
+        }
+
+        if (bodyParse.data.role === "super_admin") {
+          return reply.code(403).send({ message: "Admin cannot assign super admin role" });
+        }
+      }
+
+      if (bodyParse.data.email) {
+        const duplicate = await db
+          .select({ id: users.id })
+          .from(users)
+          .where(and(eq(users.email, bodyParse.data.email), ne(users.id, userId)))
+          .limit(1);
+
+        if (duplicate.length > 0) {
+          return reply.code(409).send({ message: "User with this email already exists" });
+        }
+      }
+
+      const now = new Date();
+
+      const updated = await db
+        .update(users)
+        .set({
+          ...bodyParse.data,
+          updatedAt: now
+        })
+        .where(eq(users.id, userId))
+        .returning({
+          id: users.id,
+          email: users.email,
+          name: users.name,
+          role: users.role,
+          createdBy: users.createdBy,
+          isActive: users.isActive,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt
+        });
+
+      return reply.send({
+        message: "User updated successfully",
+        user: updated[0]
+      });
+    }
+  });
 
   fastify.post(
     "/admin/users",
