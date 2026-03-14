@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../../admin/auth/AdminAuthContext.jsx';
+import AdminUserEditPage from './AdminUserEditPage.jsx';
+import { useAdminUserEditForm } from './useAdminUserEditForm.js';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -26,6 +28,29 @@ export default function AdminUsersPage() {
   const navigate = useNavigate();
   const successMessage = location.state?.message || '';
   const canManageStatus = user?.role === 'super_admin';
+
+  const {
+    isEditOpen,
+    editFormData,
+    editFieldErrors,
+    editErrorMessage,
+    isSubmittingEdit,
+    canEditUsers,
+    canEditRoles,
+    openEditPanel,
+    closeEditPanel,
+    handleEditFieldChange,
+    handleEditSubmit,
+  } = useAdminUserEditForm({
+    token,
+    user,
+    navigate,
+    signOut,
+    users,
+    setUsers,
+    setStatusMessage,
+    setErrorMessage,
+  });
 
   const loadUsers = useCallback(async () => {
     setIsLoading(true);
@@ -186,7 +211,7 @@ export default function AdminUsersPage() {
                     <th scope="col" className="px-3 py-2 text-left font-semibold text-slate-700">Created By</th>
                     <th scope="col" className="px-3 py-2 text-left font-semibold text-slate-700">Status</th>
                     <th scope="col" className="px-3 py-2 text-left font-semibold text-slate-700">Created</th>
-                    {canManageStatus ? (
+                    {canEditUsers ? (
                       <th scope="col" className="px-3 py-2 text-left font-semibold text-slate-700">Action</th>
                     ) : null}
                   </tr>
@@ -207,27 +232,40 @@ export default function AdminUsersPage() {
                           </span>
                         </td>
                         <td className="whitespace-nowrap px-3 py-2 text-slate-700">{formatDateTime(item.createdAt)}</td>
-                        {canManageStatus ? (
+                        {canEditUsers ? (
                           <td className="whitespace-nowrap px-3 py-2">
-                            <button
-                              type="button"
-                              onClick={() => handleUpdateStatus(item)}
-                              disabled={updatingUserId !== null}
-                              className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                              {updatingUserId === item.id
-                                ? 'Updating...'
-                                : item.isActive
-                                  ? 'Deactivate'
-                                  : 'Activate'}
-                            </button>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => openEditPanel(item)}
+                                disabled={user?.role === 'admin' && item.role === 'super_admin'}
+                                className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                Edit
+                              </button>
+
+                              {canManageStatus ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateStatus(item)}
+                                  disabled={updatingUserId !== null}
+                                  className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                  {updatingUserId === item.id
+                                    ? 'Updating...'
+                                    : item.isActive
+                                      ? 'Deactivate'
+                                      : 'Activate'}
+                                </button>
+                              ) : null}
+                            </div>
                           </td>
                         ) : null}
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={canManageStatus ? 7 : 6} className="px-3 py-6 text-center text-slate-500">
+                      <td colSpan={canEditUsers ? 7 : 6} className="px-3 py-6 text-center text-slate-500">
                         No users found.
                       </td>
                     </tr>
@@ -238,6 +276,18 @@ export default function AdminUsersPage() {
           ) : null}
         </div>
       </div>
+
+      <AdminUserEditPage
+        isOpen={isEditOpen}
+        formData={editFormData}
+        fieldErrors={editFieldErrors}
+        errorMessage={editErrorMessage}
+        isSubmitting={isSubmittingEdit}
+        canEditRoles={canEditRoles}
+        onChange={handleEditFieldChange}
+        onSubmit={handleEditSubmit}
+        onClose={closeEditPanel}
+      />
     </div>
   );
 }
