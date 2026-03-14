@@ -493,6 +493,311 @@ Notes:
 
 ---
 
+## 9) Services CRUD
+
+<a id="services-list"></a>
+### 9.1) List Services (Public)
+
+### Request
+
+- Method: `GET`
+- URL: `{{baseUrl}}/api/v1/services`
+- Auth: None
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/services'
+```
+
+### Success Response (200)
+
+```json
+[
+  {
+    "title": "Household Chores",
+    "features": [
+      {
+        "label": "Moderate Housekeeping",
+        "desc": "Light home making like Organizing closets & cabinets etc., Preparing & folding laundry, In-house dusting & cleaning, Taking out garbage, Bed making",
+        "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        "icon": "Home"
+      }
+    ]
+  }
+]
+```
+
+---
+
+<a id="services-create-category"></a>
+### 9.2) Create Service Category (Admin/Super Admin)
+
+### Request
+
+- Method: `POST`
+- URL: `{{baseUrl}}/api/v1/admin/service-categories`
+- Auth: Bearer Token -> `{{accessToken}}`
+- Header: `Content-Type: application/json`
+
+Body (raw JSON):
+
+```json
+{
+  "title": "Companion Care",
+  "displayOrder": 3
+}
+```
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/admin/service-categories' \
+--header 'Authorization: Bearer {{accessToken}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "title": "Companion Care",
+  "displayOrder": 3
+}'
+```
+
+### Success Response (201)
+
+```json
+{
+  "message": "Service category created successfully",
+  "category": {
+    "id": 10,
+    "title": "Companion Care",
+    "displayOrder": 3,
+    "createdBy": "admin",
+    "createdAt": "2026-03-15T10:00:00.000Z",
+    "updatedAt": "2026-03-15T10:00:00.000Z"
+  }
+}
+```
+
+---
+
+<a id="services-update-category"></a>
+### 9.3) Update Service Category (Admin/Super Admin)
+
+### Request
+
+- Method: `PATCH`
+- URL: `{{baseUrl}}/api/v1/admin/service-categories/10`
+- Auth: Bearer Token -> `{{accessToken}}`
+- Header: `Content-Type: application/json`
+
+Body (raw JSON, any updatable fields):
+
+```json
+{
+  "title": "Companion Support",
+  "displayOrder": 2
+}
+```
+
+### cURL
+
+```bash
+curl --location --request PATCH '{{baseUrl}}/api/v1/admin/service-categories/10' \
+--header 'Authorization: Bearer {{accessToken}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "title": "Companion Support",
+  "displayOrder": 2
+}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "message": "Service category updated successfully",
+  "category": {
+    "id": 10,
+    "title": "Companion Support",
+    "displayOrder": 2,
+    "createdBy": "admin",
+    "createdAt": "2026-03-15T10:00:00.000Z",
+    "updatedAt": "2026-03-15T10:10:00.000Z"
+  }
+}
+```
+
+---
+
+<a id="services-delete-category"></a>
+### 9.4) Delete Service Category (Admin/Super Admin)
+
+### Request
+
+- Method: `DELETE`
+- URL: `{{baseUrl}}/api/v1/admin/service-categories/10`
+- Auth: Bearer Token -> `{{accessToken}}`
+
+### cURL
+
+```bash
+curl --location --request DELETE '{{baseUrl}}/api/v1/admin/service-categories/10' \
+--header 'Authorization: Bearer {{accessToken}}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "message": "Service category deleted successfully"
+}
+```
+
+---
+
+<a id="services-create-service"></a>
+### 9.5) Create Service (Admin/Super Admin)
+
+### Request
+
+- Method: `POST`
+- URL: `{{baseUrl}}/api/v1/admin/services`
+- Auth: Bearer Token -> `{{accessToken}}`
+- Header: `Content-Type: application/json`
+
+Body (raw JSON):
+
+```json
+{
+  "categoryId": 1,
+  "label": "Post-op support",
+  "desc": "Assistance after surgery.",
+  "image": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  "icon": "HeartPulse",
+  "displayOrder": 4
+}
+```
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/admin/services' \
+--header 'Authorization: Bearer {{accessToken}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "categoryId": 1,
+  "label": "Post-op support",
+  "desc": "Assistance after surgery.",
+  "image": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  "icon": "HeartPulse",
+  "displayOrder": 4
+}'
+```
+
+### Success Response (201)
+
+```json
+{
+  "message": "Service created successfully",
+  "service": {
+    "id": 20,
+    "categoryId": 1,
+    "label": "Post-op support",
+    "desc": "Assistance after surgery.",
+    "image": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "icon": "HeartPulse",
+    "displayOrder": 4,
+    "createdBy": "admin",
+    "createdAt": "2026-03-15T10:00:00.000Z",
+    "updatedAt": "2026-03-15T10:00:00.000Z"
+  }
+}
+```
+
+---
+
+<a id="services-update-service"></a>
+### 9.6) Update Service (Admin/Super Admin)
+
+### Request
+
+- Method: `PATCH`
+- URL: `{{baseUrl}}/api/v1/admin/services/20`
+- Auth: Bearer Token -> `{{accessToken}}`
+- Header: `Content-Type: application/json`
+
+Body (raw JSON, any updatable fields):
+
+```json
+{
+  "label": "Post-operative support",
+  "displayOrder": 5
+}
+```
+
+### cURL
+
+```bash
+curl --location --request PATCH '{{baseUrl}}/api/v1/admin/services/20' \
+--header 'Authorization: Bearer {{accessToken}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "label": "Post-operative support",
+  "displayOrder": 5
+}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "message": "Service updated successfully",
+  "service": {
+    "id": 20,
+    "categoryId": 1,
+    "label": "Post-operative support",
+    "desc": "Assistance after surgery.",
+    "image": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "icon": "HeartPulse",
+    "displayOrder": 5,
+    "createdBy": "admin",
+    "createdAt": "2026-03-15T10:00:00.000Z",
+    "updatedAt": "2026-03-15T10:10:00.000Z"
+  }
+}
+```
+
+---
+
+<a id="services-delete-service"></a>
+### 9.7) Delete Service (Admin/Super Admin)
+
+### Request
+
+- Method: `DELETE`
+- URL: `{{baseUrl}}/api/v1/admin/services/20`
+- Auth: Bearer Token -> `{{accessToken}}`
+
+### cURL
+
+```bash
+curl --location --request DELETE '{{baseUrl}}/api/v1/admin/services/20' \
+--header 'Authorization: Bearer {{accessToken}}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "message": "Service deleted successfully"
+}
+```
+
+Notes:
+
+- Create, update, and delete service/category endpoints require role `admin` or `super_admin`.
+
+---
+
 ## Suggested Postman Run Order
 
 1. `Health Check`

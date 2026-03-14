@@ -102,6 +102,13 @@ Quick endpoint index:
 - [GET /api/v1/admin/users](ROUTES.md#6-list-users-super-admin)
 - [POST /api/v1/admin/users/status](ROUTES.md#7-update-user-status-super-admin)
 - [PATCH /api/v1/admin/users/:userId](ROUTES.md#8-edit-user-admin-or-super-admin) or [PUT /api/v1/admin/users/:userId](ROUTES.md#8-edit-user-admin-or-super-admin)
+- [GET /api/v1/services](ROUTES.md#services-list)
+- [POST /api/v1/admin/service-categories](ROUTES.md#services-create-category)
+- [PATCH /api/v1/admin/service-categories/:categoryId](ROUTES.md#services-update-category)
+- [DELETE /api/v1/admin/service-categories/:categoryId](ROUTES.md#services-delete-category)
+- [POST /api/v1/admin/services](ROUTES.md#services-create-service)
+- [PATCH /api/v1/admin/services/:serviceId](ROUTES.md#services-update-service)
+- [DELETE /api/v1/admin/services/:serviceId](ROUTES.md#services-delete-service)
 
 ## Seed Data
 

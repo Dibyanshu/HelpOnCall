@@ -5,6 +5,7 @@ import mailPlugin from "./plugins/mail.js";
 import adminUserRoutes from "./routes/admin-users.js";
 import authRoutes from "./routes/auth.js";
 import healthRoutes from "./routes/health.js";
+import servicesRoutes from "./routes/services.js";
 
 export function buildApp() {
   const app = Fastify({
@@ -21,6 +22,7 @@ export function buildApp() {
   app.register(healthRoutes, { prefix: "/api/v1" });
   app.register(authRoutes, { prefix: "/api/v1" });
   app.register(adminUserRoutes, { prefix: "/api/v1" });
+  app.register(servicesRoutes, { prefix: "/api/v1" });
 
   return app;
 }
