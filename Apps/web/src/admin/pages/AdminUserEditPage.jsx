@@ -1,4 +1,4 @@
-import AdminSlideInPanel from '../../admin/components/AdminSlideInPanel.jsx';
+import AdminSlideInPanel from '../components/AdminSlideInPanel.jsx';
 
 const ROLE_OPTIONS = [
   { value: 'content_publisher', label: 'Content Publisher' },

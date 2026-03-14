@@ -3,7 +3,7 @@ import {
   createInitialFieldErrors,
   hasAnyFieldErrors,
   normalizeZodFieldErrors,
-} from '../../admin/utils/formFieldErrors.js';
+} from '../utils/formFieldErrors.js';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 

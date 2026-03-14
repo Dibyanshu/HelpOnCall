@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../../admin/auth/AdminAuthContext.jsx';
 import AdminUserEditPage from './AdminUserEditPage.jsx';
-import { useAdminUserEditForm } from './useAdminUserEditForm.js';
+import { useAdminUserEditForm } from '../hooks/useAdminUserEditForm.js';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
