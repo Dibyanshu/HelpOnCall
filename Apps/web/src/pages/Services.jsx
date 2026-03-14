@@ -119,7 +119,7 @@ export default function ServiceCard() {
             <div key={service.title} className="mb-16 last:mb-0">
               {/* Service Title as Heading with Bottom Border */}
               <div className="mb-8">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 border-b-2 border-[#004D40] pb-4">
+                <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">
                   {service.title}
                 </h2>
               </div>
