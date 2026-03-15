@@ -9,6 +9,7 @@ import AdminLoginPage from './admin/pages/AdminLoginPage';
 import AdminDashboardPage from './admin/pages/AdminDashboardPage';
 import AdminUsersPage from './admin/pages/AdminUsersPage';
 import AdminUserNewPage from './admin/pages/AdminUserNewPage';
+import ServiceDashboardLayout from './admin/pages/services/ServiceDashboardLayout';
 import RequireAdminAuth from './admin/routes/RequireAdminAuth';
 
 function App() {
@@ -37,6 +38,14 @@ function App() {
         element={(
           <RequireAdminAuth allowedRoles={['super_admin']}>
             <AdminUserNewPage />
+          </RequireAdminAuth>
+        )}
+      />
+      <Route
+        path="/admin/services"
+        element={(
+          <RequireAdminAuth allowedRoles={['super_admin', 'admin']}>
+            <ServiceDashboardLayout />
           </RequireAdminAuth>
         )}
       />

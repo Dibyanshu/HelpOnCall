@@ -60,6 +60,60 @@ const updateServiceSchema = z
   );
 
 const servicesRoutes: FastifyPluginAsync = async (fastify) => {
+  fastify.get(
+    "/admin/service-categories",
+    {
+      preHandler: [
+        fastify.authenticate,
+        fastify.authorize(["super_admin" as Role, "admin" as Role])
+      ]
+    },
+    async () => {
+      const list = await db
+        .select({
+          id: serviceCategories.id,
+          title: serviceCategories.title,
+          displayOrder: serviceCategories.displayOrder,
+          createdBy: serviceCategories.createdBy,
+          createdAt: serviceCategories.createdAt,
+          updatedAt: serviceCategories.updatedAt
+        })
+        .from(serviceCategories)
+        .orderBy(asc(serviceCategories.displayOrder), asc(serviceCategories.id));
+
+      return { data: list };
+    }
+  );
+
+  fastify.get(
+    "/admin/services",
+    {
+      preHandler: [
+        fastify.authenticate,
+        fastify.authorize(["super_admin" as Role, "admin" as Role])
+      ]
+    },
+    async () => {
+      const list = await db
+        .select({
+          id: services.id,
+          categoryId: services.categoryId,
+          label: services.label,
+          desc: services.description,
+          image: services.imageUrl,
+          icon: services.iconName,
+          displayOrder: services.displayOrder,
+          createdBy: services.createdBy,
+          createdAt: services.createdAt,
+          updatedAt: services.updatedAt
+        })
+        .from(services)
+        .orderBy(asc(services.displayOrder), asc(services.id));
+
+      return { data: list };
+    }
+  );
+
   fastify.get("/services", async () => {
     const [categories, servicesList] = await Promise.all([
       db

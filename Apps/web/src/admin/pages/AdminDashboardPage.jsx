@@ -26,7 +26,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="text-lg font-semibold text-slate-900">Users</h2>
             <p className="mt-2 text-sm text-slate-600">
@@ -37,6 +37,18 @@ export default function AdminDashboardPage() {
               className="mt-4 inline-flex rounded-md bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-900"
             >
               Open Users
+            </Link>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="text-lg font-semibold text-slate-900">Services</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Manage service categories and nested services from the admin service dashboard.
+            </p>
+            <Link
+              to="/admin/services"
+              className="mt-4 inline-flex rounded-md bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-900"
+            >
+              Manage Services
             </Link>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
