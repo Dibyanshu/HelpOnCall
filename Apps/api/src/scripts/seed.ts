@@ -1,9 +1,10 @@
 import { ensureTables } from "../db/bootstrap.js";
-import { seedSuperAdmin } from "../db/seed.js";
+import { seedInitialServices, seedSuperAdmin } from "../db/seed.js";
 
 async function runSeed() {
   await ensureTables();
   await seedSuperAdmin();
+  await seedInitialServices();
 }
 
 runSeed().catch((error) => {

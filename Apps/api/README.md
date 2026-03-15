@@ -68,6 +68,26 @@ npm install
 
 2. Create environment file from example:
 
+```bash
+cp .env.example .env
+```
+
+3. Start API:
+
+```bash
+npm run dev
+```
+
+API default URL:
+
+```txt
+http://localhost:3000
+```
+
+## API Endpoints
+
+Base prefix: `/api/v1`
+
 Detailed endpoint definitions (request/response samples and Postman-ready examples) are maintained in [ROUTES.md](ROUTES.md).
 
 Quick endpoint index:
@@ -82,6 +102,35 @@ Quick endpoint index:
 - [GET /api/v1/admin/users](ROUTES.md#6-list-users-super-admin)
 - [POST /api/v1/admin/users/status](ROUTES.md#7-update-user-status-super-admin)
 - [PATCH /api/v1/admin/users/:userId](ROUTES.md#8-edit-user-admin-or-super-admin) or [PUT /api/v1/admin/users/:userId](ROUTES.md#8-edit-user-admin-or-super-admin)
+- [GET /api/v1/services](ROUTES.md#services-list)
+- [POST /api/v1/admin/service-categories](ROUTES.md#services-create-category)
+- [PATCH /api/v1/admin/service-categories/:categoryId](ROUTES.md#services-update-category)
+- [DELETE /api/v1/admin/service-categories/:categoryId](ROUTES.md#services-delete-category)
+- [POST /api/v1/admin/services](ROUTES.md#services-create-service)
+- [PATCH /api/v1/admin/services/:serviceId](ROUTES.md#services-update-service)
+- [DELETE /api/v1/admin/services/:serviceId](ROUTES.md#services-delete-service)
+
+## Seed Data
+
+Run seed data manually:
+
+```bash
+npm run seed
+```
+
+The seed includes:
+
+- Super admin user from `.env` (`SUPER_ADMIN_EMAIL`, `SUPER_ADMIN_PASSWORD`)
+- Initial `service_categories` data:
+  - Household Chores
+  - Personal Care
+  - Mobility & Companionship
+- Initial `services` entries under each category (from `temp/servicesList.txt`)
+
+Notes:
+
+- Service and category seeds are idempotent and safe to run multiple times.
+- Startup also runs `seedInitialServices()` after table bootstrap.
 
 
 ## Security Notes

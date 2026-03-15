@@ -1,13 +1,14 @@
 import { buildApp } from "./app.js";
 import { env } from "./config/env.js";
 import { ensureTables } from "./db/bootstrap.js";
-import { seedSuperAdmin } from "./db/seed.js";
+import { seedInitialServices, seedSuperAdmin } from "./db/seed.js";
 
 async function start() {
   const app = buildApp();
 
   await ensureTables();
   await seedSuperAdmin();
+  await seedInitialServices();
 
   try {
     await app.listen({

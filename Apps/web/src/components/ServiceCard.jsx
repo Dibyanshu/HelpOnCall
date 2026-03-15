@@ -1,53 +1,18 @@
 import { Home, ChefHat, Utensils, Bath, Sparkles, Shirt, Accessibility, Users, Footprints } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useServices } from '../hooks/useServices.js';
 
-const services = [
-  {
-    title: 'Moderate Housekeeping',
-    icon: Home,
-    image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-  },
-  {
-    title: "Meal preparation",
-    icon: ChefHat,
-    image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-  },
-  {
-    title: "Feeding",
-    icon: Utensils,
-    image: 'https://images.unsplash.com/photo-1544148103-0773bf10d330?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-  },
-  {
-    title: 'Bathing',
-    icon: Bath,
-    image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-  },
-  {
-    title: 'Personal Hygiene',
-    icon: Sparkles,
-    image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-  },
-  {
-    title: 'Dressing',
-    icon: Shirt,
-    image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-  },
-  {
-    title: 'Mobility Assistance',
-    icon: Accessibility,
-    image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-  },
-  {
-    title: 'Companionship',
-    icon: Users,
-    image: 'https://images.unsplash.com/photo-1551892370-0b43cb8c7e2a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-  },
-  {
-    title: 'Walking Support',
-    icon: Footprints,
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-  },
-];
+const ICONS_BY_NAME = {
+  Home,
+  ChefHat,
+  Utensils,
+  Bath,
+  Sparkles,
+  Shirt,
+  Accessibility,
+  Users,
+  Footprints,
+};
 
 const container = {
   hidden: {},
@@ -69,6 +34,18 @@ const imageVariants = {
 };
 
 export default function ServiceCard() {
+  const { services: groupedServices } = useServices();
+
+  const services = groupedServices
+    .flatMap((category) => category.features ?? [])
+    .map((feature) => ({
+      title: feature.label,
+      icon: ICONS_BY_NAME[feature.icon] ?? Home,
+      image: feature.image,
+    }))
+    .filter((service) => service.title)
+    .slice(0, 9);
+
   return (
     <section
       id="services"

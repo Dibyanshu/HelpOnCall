@@ -1,14 +1,15 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import Layout from './components/layout/Layout';
-import Home from './pages/Home';
+import Home from './pages/HomePage';
 import AboutUsPage from './pages/AboutUsPage';
 import ContactPage from './pages/ContactPage';
 import Services from './pages/ServicesPage';
 import UserRegistrationPage from './pages/UserRegistrationPage';
-import AdminLoginPage from './pages/admin/AdminLoginPage';
-import AdminDashboardPage from './pages/admin/AdminDashboardPage';
-import AdminUsersPage from './pages/admin/AdminUsersPage';
-import AdminUserNewPage from './pages/admin/AdminUserNewPage';
+import AdminLoginPage from './admin/pages/AdminLoginPage';
+import AdminDashboardPage from './admin/pages/AdminDashboardPage';
+import AdminUsersPage from './admin/pages/AdminUsersPage';
+import AdminUserNewPage from './admin/pages/AdminUserNewPage';
+import ServiceDashboardLayout from './admin/pages/services/ServiceDashboardLayout';
 import RequireAdminAuth from './admin/routes/RequireAdminAuth';
 
 function App() {
@@ -37,6 +38,14 @@ function App() {
         element={(
           <RequireAdminAuth allowedRoles={['super_admin']}>
             <AdminUserNewPage />
+          </RequireAdminAuth>
+        )}
+      />
+      <Route
+        path="/admin/services"
+        element={(
+          <RequireAdminAuth allowedRoles={['super_admin', 'admin']}>
+            <ServiceDashboardLayout />
           </RequireAdminAuth>
         )}
       />

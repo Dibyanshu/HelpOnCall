@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
+import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
 import { users } from "../db/schema.js";
 import { hashPassword, verifyPassword } from "../utils/crypto.js";
@@ -69,7 +70,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.code(409).send({ message: "User with this email already exists" });
     }
 
-    const now = new Date();
+    const auditCreateFields = buildAuditCreateFields("self_registration");
     const passwordHash = await hashPassword(password);
 
     const inserted = await db
@@ -79,10 +80,8 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         name,
         passwordHash,
         role,
-        createdBy: "self_registration",
+        ...auditCreateFields,
         isActive: false,
-        createdAt: now,
-        updatedAt: now
       })
       .returning({
         id: users.id,
@@ -196,12 +195,13 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const newPasswordHash = await hashPassword(bodyParse.data.newPassword);
+      const auditUpdateFields = buildAuditUpdateFields();
 
       await db
         .update(users)
         .set({
           passwordHash: newPasswordHash,
-          updatedAt: new Date()
+          ...auditUpdateFields
         })
         .where(eq(users.id, user.id));
 
