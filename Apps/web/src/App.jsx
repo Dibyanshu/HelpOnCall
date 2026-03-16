@@ -11,52 +11,56 @@ import AdminUsersPage from './admin/pages/AdminUsersPage';
 import AdminUserNewPage from './admin/pages/AdminUserNewPage';
 import ServiceDashboardLayout from './admin/pages/services/ServiceDashboardLayout';
 import RequireAdminAuth from './admin/routes/RequireAdminAuth';
+import DemoSlideInPanel from './components/DemoSlideInPanel';
 
 function App() {
   return (
-    <Routes>
-      <Route path="/admin/login" element={<AdminLoginPage />} />
-      <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-      <Route
-        path="/admin/dashboard"
-        element={(
-          <RequireAdminAuth>
-            <AdminDashboardPage />
-          </RequireAdminAuth>
-        )}
-      />
-      <Route
-        path="/admin/users"
-        element={(
-          <RequireAdminAuth allowedRoles={['super_admin', 'admin']}>
-            <AdminUsersPage />
-          </RequireAdminAuth>
-        )}
-      />
-      <Route
-        path="/admin/users/new"
-        element={(
-          <RequireAdminAuth allowedRoles={['super_admin']}>
-            <AdminUserNewPage />
-          </RequireAdminAuth>
-        )}
-      />
-      <Route
-        path="/admin/services"
-        element={(
-          <RequireAdminAuth allowedRoles={['super_admin', 'admin']}>
-            <ServiceDashboardLayout />
-          </RequireAdminAuth>
-        )}
-      />
+    <>
+      <Routes>
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+        <Route
+          path="/admin/dashboard"
+          element={(
+            <RequireAdminAuth>
+              <AdminDashboardPage />
+            </RequireAdminAuth>
+          )}
+        />
+        <Route
+          path="/admin/users"
+          element={(
+            <RequireAdminAuth allowedRoles={['super_admin', 'admin']}>
+              <AdminUsersPage />
+            </RequireAdminAuth>
+          )}
+        />
+        <Route
+          path="/admin/users/new"
+          element={(
+            <RequireAdminAuth allowedRoles={['super_admin']}>
+              <AdminUserNewPage />
+            </RequireAdminAuth>
+          )}
+        />
+        <Route
+          path="/admin/services"
+          element={(
+            <RequireAdminAuth allowedRoles={['super_admin', 'admin']}>
+              <ServiceDashboardLayout />
+            </RequireAdminAuth>
+          )}
+        />
 
-      <Route path="/" element={<Layout><Home /></Layout>} />
-      <Route path="/about" element={<Layout><AboutUsPage /></Layout>} />
-      <Route path="/services" element={<Layout><Services /></Layout>} />
-      <Route path="/register" element={<Layout><UserRegistrationPage /></Layout>} />
-      <Route path="/contact" element={<Layout><ContactPage /></Layout>} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="/" element={<Layout><Home /></Layout>} />
+        <Route path="/about" element={<Layout><AboutUsPage /></Layout>} />
+        <Route path="/services" element={<Layout><Services /></Layout>} />
+        <Route path="/register" element={<Layout><UserRegistrationPage /></Layout>} />
+        <Route path="/contact" element={<Layout><ContactPage /></Layout>} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <DemoSlideInPanel />
+    </>
   );
 }
 
