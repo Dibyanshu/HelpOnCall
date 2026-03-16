@@ -11,7 +11,7 @@ import AdminUsersPage from './admin/pages/AdminUsersPage';
 import AdminUserNewPage from './admin/pages/AdminUserNewPage';
 import ServiceDashboardLayout from './admin/pages/services/ServiceDashboardLayout';
 import RequireAdminAuth from './admin/routes/RequireAdminAuth';
-import DemoSlideInPanel from './components/DemoSlideInPanel';
+import RFQSlideInPanel from './components/RFQSlideInPanel';
 
 function App() {
   return (
@@ -59,7 +59,7 @@ function App() {
         <Route path="/contact" element={<Layout><ContactPage /></Layout>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <DemoSlideInPanel />
+      <RFQSlideInPanel />
     </>
   );
 }
