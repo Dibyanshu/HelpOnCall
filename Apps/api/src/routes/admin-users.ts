@@ -78,7 +78,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     {
       preHandler: [
         fastify.authenticate,
-        fastify.authorize(["super_admin" as Role], "admin:user:update-status")
+        fastify.authorize(["super_admin" as Role, "admin" as Role])
       ]
     },
     async (request, reply) => {
@@ -135,7 +135,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     url: "/admin/users/:userId",
     preHandler: [
       fastify.authenticate,
-      fastify.authorize(["super_admin" as Role, "admin" as Role], "admin:user:update")
+      fastify.authorize(["super_admin" as Role, "admin" as Role])
     ],
     handler: async (request, reply) => {
       const paramsParse = userIdParamSchema.safeParse(request.params);
@@ -232,7 +232,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     {
       preHandler: [
         fastify.authenticate,
-        fastify.authorize(["super_admin" as Role], "admin:user:create")
+        fastify.authorize(["super_admin" as Role, "admin" as Role])
       ]
     },
     async (request, reply) => {
@@ -288,11 +288,11 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     {
       preHandler: [
         fastify.authenticate,
-        fastify.authorize(["super_admin" as Role, "admin" as Role], "admin:user:read")
+        fastify.authorize(["super_admin" as Role, "admin" as Role])
       ]
     },
-    async () => {
-      const list = await db
+    async (request) => {
+      let list = await db
         .select({
           id: users.id,
           email: users.email,
@@ -305,6 +305,12 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         })
         .from(users)
         .orderBy(desc(users.createdAt));
+
+      // Filter out super_admin users if the requester is not a super_admin
+      if (request.authUser?.role !== "super_admin") {
+        list = list.filter((user) => user.role !== "super_admin");
+      }
+
 
       return { data: list };
     }

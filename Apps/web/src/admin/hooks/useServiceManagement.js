@@ -11,10 +11,12 @@ export function useServiceManagement({ token, onUnauthorized }) {
   const [successMessage, setSuccessMessage] = useState('');
 
   const request = useCallback(async (path, options = {}) => {
+    const hasBody = options.body !== undefined && options.body !== null;
+
     const response = await fetch(`${API_BASE_URL}${path}`, {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
+        ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
         Authorization: `Bearer ${token}`,
         ...(options.headers || {}),
       },
