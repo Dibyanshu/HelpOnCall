@@ -27,7 +27,7 @@ export default function AdminUsersPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const successMessage = location.state?.message || '';
-  const canManageStatus = user?.role === 'super_admin';
+  const canManageStatus = user?.role === 'super_admin' || user?.role === 'admin';
 
   const {
     isEditOpen,
