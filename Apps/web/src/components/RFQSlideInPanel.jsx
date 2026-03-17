@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import BookingForm from '../components/BookingForm';
 
 const DEMO_QUERY_KEY = 'demoPanel';
 const DEMO_QUERY_VALUE = 'open';
@@ -26,14 +27,6 @@ export default function DemoSlideInPanel() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={openPanel}
-        className="fixed bottom-6 right-6 z-[90] inline-flex items-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
-      >
-        Open Demo
-      </button>
-
       <div
         className={`fixed inset-0 z-[95] bg-black/40 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
         onClick={closePanel}
@@ -48,7 +41,7 @@ export default function DemoSlideInPanel() {
       >
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-            <h2 className="text-lg font-semibold text-gray-900">Demo Panel</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Request For Quote</h2>
             <button
               type="button"
               onClick={closePanel}
@@ -62,26 +55,14 @@ export default function DemoSlideInPanel() {
           </div>
 
           <div className="space-y-6 overflow-y-auto px-6 py-6">
-            <p className="text-sm text-gray-600">
-              This panel flies in from the right and is controlled by the route query parameter.
-              Open state: <span className="font-medium text-teal-700">?demoPanel=open</span>
-            </p>
-
-            <div className="rounded-lg border border-teal-100 bg-teal-50 p-4">
-              <h3 className="text-sm font-semibold text-teal-900">Route-aware behavior</h3>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-teal-800">
-                <li>Opening the panel updates the current URL.</li>
-                <li>Closing the panel removes only the panel query parameter.</li>
-                <li>You can share the URL and open this panel directly.</li>
-              </ul>
-            </div>
+            <BookingForm />
 
             <button
               type="button"
               onClick={closePanel}
               className="inline-flex items-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-gray-700"
             >
-              Close Panel
+              Cancel
             </button>
           </div>
         </div>

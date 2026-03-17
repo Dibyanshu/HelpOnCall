@@ -1,9 +1,8 @@
 import HeroSection from '../components/HeroSection';
 import AboutUsCard from '../components/AboutUsCard';
 import ServiceCard from '../components/ServiceCard';
-import BookingForm from '../components/BookingForm';
-import TrustSignals from '../components/TrustSignals';
-import CertificationStrip from '../components/CertificationStrip';
+import Testimonials from '../components/Testimonials';
+import TrustIndicators from '../components/TrustIndicators';
 
 export default function Home() {
   return (
@@ -13,9 +12,8 @@ export default function Home() {
         <AboutUsCard />
       </div>
       <ServiceCard />
-      <BookingForm />
-      <TrustSignals />
-      <CertificationStrip />
+      <Testimonials />
+      <TrustIndicators />
     </>
   );
 }

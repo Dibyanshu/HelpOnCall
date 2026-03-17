@@ -85,10 +85,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-10 border-t border-gray-800 pt-6 text-center text-xs text-gray-500">
-          <p>&copy; {new Date().getFullYear()} Toronto Care &amp; Stay. All rights reserved.</p>
-          <p className="mt-1">
-            Alt Toronto, North York, Scarborough, Etobicoke
-          </p>
+          <p>&copy; {new Date().getFullYear()} Toronto Care &amp; Stay. All rights reserved. Alt Toronto, North York, Scarborough, Etobicoke</p>
         </div>
       </div>
     </footer>

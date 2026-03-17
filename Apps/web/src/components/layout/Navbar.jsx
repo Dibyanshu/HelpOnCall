@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useMemo } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 
 const navLinks = [
   { label: 'Home', href: '/', isRoute: true },
@@ -8,8 +8,18 @@ const navLinks = [
   { label: 'Contact Us', href: '/contact', isRoute: true },
 ];
 
+const DEMO_QUERY_KEY = 'demoPanel';
+const DEMO_QUERY_VALUE = 'open';
+
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const openPanel = () => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set(DEMO_QUERY_KEY, DEMO_QUERY_VALUE);
+    setSearchParams(nextParams);
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
@@ -60,12 +70,13 @@ export default function Navbar() {
             </li>
           ))}
           <li>
-            <a
-              href="#booking"
+            <button
+              type="button"
+              onClick={openPanel}
               className="inline-flex items-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
             >
-              Request A Quote
-            </a>
+              Request For Quote
+            </button>
           </li>
         </ul>
 
@@ -121,6 +132,18 @@ export default function Navbar() {
               >
                 Request A Quote
               </a>
+            </li>
+            <li>
+              <button
+                type="button"
+                onClick={() => {
+                  openPanel();
+                  setMobileOpen(false);
+                }}
+                className="mt-2 block rounded-md bg-teal-700 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-teal-800"
+              >
+                Open Demo
+              </button>
             </li>
           </ul>
         </div>

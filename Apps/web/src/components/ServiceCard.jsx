@@ -79,7 +79,7 @@ export default function ServiceCard() {
                   variants={cardVariants}
                 >
                   {/* Icon Background */}
-                  <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-lg bg-gray-50 group-hover:bg-[#004D40] transition-colors duration-300 mb-3 sm:mb-4">
+                  <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-lg bg-gray-50 border border-[#004D40] group-hover:bg-[#004D40] group-hover:border-transparent transition-colors duration-300 mb-3 sm:mb-4">
                     <service.icon className="h-8 w-8 sm:h-10 sm:w-10 text-[#004D40] group-hover:text-white transition-colors duration-300" />
                   </div>
 
