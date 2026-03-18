@@ -8,23 +8,23 @@ const navLinks = [
   { label: 'Employment', href: '/employment', isRoute: true },
 ];
 
-const DEMO_QUERY_KEY = 'demoPanel';
-const DEMO_QUERY_VALUE = 'open';
-
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const isActive = (href) => {
+    if (href === '/') {
+      return location.pathname === '/';
+    }
+
+    return location.pathname === href || location.pathname.startsWith(`${href}/`);
+  };
 
   const openPanel = () => {
     const nextParams = new URLSearchParams(searchParams);
-    nextParams.set(DEMO_QUERY_KEY, DEMO_QUERY_VALUE);
+    nextParams.set('rfqPanel', 'open');
     setSearchParams(nextParams);
-  };
-
-  const isActive = (href) => {
-    if (href === '/' && location.pathname !== '/') return false;
-    return location.pathname.startsWith(href);
   };
 
   return (
@@ -57,7 +57,7 @@ export default function Navbar() {
 
         <ul className="hidden items-center gap-6 md:flex" role="list">
           {navLinks.map((link) => {
-            const active = isActive(link.href);
+            const active = isActive(link.href); 
             return (
               <li key={link.href} className="relative py-2">
                 {link.isRoute ? (
