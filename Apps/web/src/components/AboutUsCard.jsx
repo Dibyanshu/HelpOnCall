@@ -5,7 +5,7 @@ export default function AboutUsCard({
   buttonLabel = 'Learn More About Our Team',
 }) {
   return (
-    <section aria-label="About us highlight" className="w-full">
+    <section aria-label="About us highlight" className="w-full animate-in fade-in slide-in-from-top-4 duration-300">
       <div className="rounded-2xl border border-teal-200/80 bg-white/95 p-6 shadow-2xl backdrop-blur sm:p-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="max-w-2xl space-y-3">
