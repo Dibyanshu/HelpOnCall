@@ -196,7 +196,7 @@ export default function ServiceDashboardLayout() {
             <button
               type="button"
               onClick={startCreateCategory}
-              className="inline-flex items-center gap-1 rounded-md bg-teal-700 px-3 py-2 text-xs font-semibold text-white hover:bg-teal-800"
+              className="btn-primary"
             >
               <PlusCircle className="h-4 w-4" />
               Add Category

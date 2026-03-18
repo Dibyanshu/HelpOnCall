@@ -26,7 +26,7 @@ export default function MapSelector({ onLocationPinned, initialAddress = '' }) {
             <div className={`absolute -top-10 left-1/2 -translate-x-1/2 rounded-lg bg-white px-3 py-1.5 text-[10px] font-bold shadow-xl transition-all duration-300 ${isPinned ? 'opacity-100' : 'opacity-0 scale-95'}`}>
               Pinned!
             </div>
-            <MapPin className={`h-8 w-8 transition-all duration-500 ${isPinned ? 'text-teal-600 scale-110' : 'text-gray-400 group-hover:text-teal-500'}`} />
+            <MapPin className={`h-8 w-8 transition-all duration-500 ${isPinned ? 'text-teal-700 scale-110' : 'text-gray-400 group-hover:text-teal-500'}`} />
             <div className={`absolute bottom-0 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-black/10 transition-all duration-500 ${isPinned ? 'scale-[3] blur-sm' : 'scale-100 blur-none'}`} />
           </div>
         </div>
@@ -37,7 +37,7 @@ export default function MapSelector({ onLocationPinned, initialAddress = '' }) {
           <p className="px-6 text-center text-xs font-bold text-gray-900 drop-shadow-sm">
             Want to adjust the pin location?
           </p>
-          <div className="mt-3 flex items-center gap-2 rounded-full bg-teal-600 px-4 py-1.5 text-[10px] font-bold text-white shadow-lg shadow-teal-500/30">
+          <div className="mt-3 flex items-center gap-2 rounded-full bg-teal-700 px-4 py-1.5 text-[10px] font-bold text-white shadow-lg shadow-teal-700/30">
             <Maximize2 className="h-3 w-3" />
             Open Map
           </div>
@@ -63,7 +63,7 @@ export default function MapSelector({ onLocationPinned, initialAddress = '' }) {
               {/* Full Interactive Mock Map Container */}
               <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(#d1d5db_1.5px,transparent_1.5px)] [background-size:24px_24px]">
                 <div className="relative cursor-move p-4 group" draggable="true">
-                  <MapPin className="h-12 w-12 text-teal-600 drop-shadow-2xl animate-bounce" />
+                  <MapPin className="h-12 w-12 text-teal-700 drop-shadow-2xl animate-bounce" />
                   <div className="absolute -top-12 left-1/2 -translate-x-1/2 rounded-full bg-white px-4 py-1.5 text-xs font-bold text-teal-700 shadow-2xl whitespace-nowrap">
                     Drag Me to your location
                   </div>
@@ -73,7 +73,7 @@ export default function MapSelector({ onLocationPinned, initialAddress = '' }) {
               <div className="absolute bottom-6 left-6 right-6">
                 <div className="rounded-2xl bg-white/90 p-4 shadow-xl backdrop-blur-md border border-white/20">
                   <div className="flex items-start gap-3">
-                    <MapPin className="mt-1 h-4 w-4 text-teal-600" />
+                    <MapPin className="mt-1 h-4 w-4 text-teal-700" />
                     <div className="space-y-1">
                       <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Target Address</p>
                       <p className="text-sm font-medium text-gray-900 leading-tight">
@@ -88,13 +88,12 @@ export default function MapSelector({ onLocationPinned, initialAddress = '' }) {
             <div className="p-6">
               <button
                 onClick={handlePinConfirm}
-                className="relative group w-full overflow-hidden rounded-xl bg-teal-700 px-6 py-4 text-sm font-bold text-white shadow-xl shadow-teal-500/20 transition-all hover:bg-teal-800 active:scale-[0.98]"
+                className="btn-primary w-full shadow-xl shadow-teal-700/20"
               >
                 <div className="flex items-center justify-center gap-2">
                   <Check className="h-4 w-4" />
                   Pin this location
                 </div>
-                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-1000 ease-in-out" />
               </button>
             </div>
           </div>

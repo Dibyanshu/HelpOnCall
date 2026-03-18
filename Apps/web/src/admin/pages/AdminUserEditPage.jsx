@@ -118,7 +118,7 @@ export default function AdminUserEditPage({
                 name="isActive"
                 checked={formData.isActive}
                 onChange={onChange}
-                className="h-4 w-4 rounded border-slate-300 text-teal-700 focus:ring-teal-600"
+                className="h-4 w-4 rounded border-slate-300 accent-teal-700 text-teal-700 focus:ring-teal-700"
               />
               User is active
             </label>
@@ -134,7 +134,7 @@ export default function AdminUserEditPage({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-70"
+              className="btn-primary"
             >
               {isSubmitting ? 'Saving...' : 'Save Changes'}
             </button>
@@ -142,7 +142,7 @@ export default function AdminUserEditPage({
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70"
+              className="btn-secondary disabled:cursor-not-allowed disabled:opacity-70"
             >
               Cancel
             </button>

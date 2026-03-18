@@ -230,7 +230,7 @@ export default function UserRegistrationPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-70"
+              className="btn-primary"
             >
               {isSubmitting ? 'Submitting...' : 'Register'}
             </button>

@@ -146,17 +146,18 @@ export default function AdminUsersPage() {
             </div>
             <div className="flex flex-wrap gap-2">
               {canManageStatus ? (
-                <Link
-                  to="/admin/users/new"
-                  className="rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-800"
-                >
-                  New User
-                </Link>
+                          <Link
+                    to="/admin/users/new"
+                    className="btn-primary"
+                  >
+                    New User
+                  </Link>
               ) : null}
               <button
                 type="button"
                 onClick={loadUsers}
-                className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+                disabled={isLoading}
+                className="btn-secondary"
               >
                 Refresh
               </button>

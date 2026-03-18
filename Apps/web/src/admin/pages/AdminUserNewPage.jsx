@@ -290,7 +290,7 @@ export default function AdminUserNewPage() {
                   name="isActive"
                   checked={formData.isActive}
                   onChange={handleChange}
-                  className="h-4 w-4 rounded border-slate-300 text-teal-700 focus:ring-teal-600"
+                  className="h-4 w-4 rounded border-slate-300 accent-teal-700 text-teal-700 focus:ring-teal-700"
                 />
                 User is active
               </label>
@@ -305,15 +305,15 @@ export default function AdminUserNewPage() {
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <button
-              type="submit"
-              disabled={isSubmitting}
-              className="rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {isSubmitting ? 'Creating...' : 'Create User'}
-            </button>
+               type="submit"
+               disabled={isSubmitting}
+               className="btn-primary"
+             >
+               {isSubmitting ? 'Creating...' : 'Create User'}
+             </button>
             <Link
               to="/admin/users"
-              className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+              className="btn-secondary"
             >
               Cancel
             </Link>

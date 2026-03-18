@@ -175,7 +175,7 @@ export default function ServiceForm({ initialData, categories, onSubmit }) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="inline-flex items-center gap-2 rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-70"
+        className="btn-primary"
       >
         <Save className="h-4 w-4" />
         {isSubmitting ? 'Saving...' : 'Save Service'}
