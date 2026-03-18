@@ -10,7 +10,7 @@ import { z } from "zod";
 import { env } from "../config/env.js";
 import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
-import { employment, services, users } from "../db/schema.js";
+import { employment, serviceCategories, services, users } from "../db/schema.js";
 import type { Role } from "../types/auth.js";
 
 const allowedResumeExtensions = new Set([".pdf", ".doc", ".docx"]);
@@ -72,6 +72,40 @@ async function removeFileIfExists(filePath?: string): Promise<void> {
 
 function escapeLikePattern(input: string): string {
   return input.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
+}
+
+function parseSpecializations(value: string): Array<string | { categoryId: number; serviceId: number }> {
+  try {
+    const parsed = JSON.parse(value);
+
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed
+      .map((item) => {
+        if (typeof item === "string") {
+          return item;
+        }
+
+        if (
+          item &&
+          typeof item === "object" &&
+          typeof item.categoryId === "number" &&
+          typeof item.serviceId === "number"
+        ) {
+          return {
+            categoryId: item.categoryId,
+            serviceId: item.serviceId
+          };
+        }
+
+        return null;
+      })
+      .filter((item): item is string | { categoryId: number; serviceId: number } => item !== null);
+  } catch {
+    return [];
+  }
 }
 
 async function updateEmploymentStatusByEmpId(
@@ -437,7 +471,75 @@ const employmentRoutes: FastifyPluginAsync = async (fastify) => {
 
       const list = whereClause ? await baseQuery.where(whereClause) : await baseQuery;
 
-      return reply.send({ data: list });
+      const parsedByEmpId = new Map<string, Array<string | { categoryId: number; serviceId: number }>>();
+      const categoryIds = new Set<number>();
+      const serviceIds = new Set<number>();
+
+      for (const row of list) {
+        const parsed = parseSpecializations(row.specializations);
+        parsedByEmpId.set(row.empId, parsed);
+
+        for (const item of parsed) {
+          if (typeof item === "string") {
+            continue;
+          }
+
+          categoryIds.add(item.categoryId);
+          serviceIds.add(item.serviceId);
+        }
+      }
+
+      const [categoryRows, serviceRows] = await Promise.all([
+        categoryIds.size > 0
+          ? db
+              .select({ id: serviceCategories.id, title: serviceCategories.title })
+              .from(serviceCategories)
+              .where(inArray(serviceCategories.id, Array.from(categoryIds)))
+          : Promise.resolve([]),
+        serviceIds.size > 0
+          ? db
+              .select({ id: services.id, label: services.label })
+              .from(services)
+              .where(inArray(services.id, Array.from(serviceIds)))
+          : Promise.resolve([])
+      ]);
+
+      const categoryTitleById = new Map(categoryRows.map((item) => [item.id, item.title]));
+      const serviceLabelById = new Map(serviceRows.map((item) => [item.id, item.label]));
+
+      const enriched = list.map((row) => {
+        const parsed = parsedByEmpId.get(row.empId) ?? [];
+
+        const resolved = parsed.map((item) => {
+          if (typeof item === "string") {
+            return item;
+          }
+
+          const categoryTitle = categoryTitleById.get(item.categoryId);
+          const serviceLabel = serviceLabelById.get(item.serviceId);
+
+          if (categoryTitle && serviceLabel) {
+            return `${categoryTitle}: ${serviceLabel}`;
+          }
+
+          if (serviceLabel) {
+            return serviceLabel;
+          }
+
+          if (categoryTitle) {
+            return categoryTitle;
+          }
+
+          return `${item.categoryId}:${item.serviceId}`;
+        });
+
+        return {
+          ...row,
+          specializations: JSON.stringify(resolved)
+        };
+      });
+
+      return reply.send({ data: enriched });
     }
   );
 

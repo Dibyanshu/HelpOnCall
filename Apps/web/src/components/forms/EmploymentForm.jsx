@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { Upload, CheckCircle2, ChevronDown, X } from 'lucide-react';
-import { submitEmploymentApplication } from './employmentSubmission';
+import { Upload, CheckCircle2, ChevronDown, X, Briefcase, Check } from 'lucide-react';
+import {
+  fetchEmploymentSpecializationGroups,
+  submitEmploymentApplication,
+} from './employmentSubmission';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -13,28 +16,25 @@ const initialFormData = {
   resume: null,
 };
 
-const SPECIALIZATION_GROUPS = [
-  {
-    label: 'Direct Care',
-    options: ['Personal Care', 'Companion Care', 'Respite Care']
-  },
-  {
-    label: 'Specialized Support',
-    options: ['Dementia & Alzheimer\'s Care', 'Palliative Care']
-  },
-  {
-    label: 'Clinical Support',
-    options: ['Post-Operative Support', 'Wound Care']
-  }
-];
-
 export default function EmploymentForm() {
   const [formData, setFormData] = useState(initialFormData);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [specializationGroups, setSpecializationGroups] = useState([]);
+  const [isLoadingSpecializations, setIsLoadingSpecializations] = useState(true);
   const dropdownRef = useRef(null);
+
+  const selectedSpecializationLabels = formData.specializations.map((selection) => {
+    const match = specializationGroups
+      .flatMap((group) => group.options)
+      .find((option) => (
+        option.categoryId === selection.categoryId && option.serviceId === selection.serviceId
+      ));
+
+    return match?.label || `${selection.categoryId}:${selection.serviceId}`;
+  });
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -46,17 +46,57 @@ export default function EmploymentForm() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadSpecializations() {
+      setIsLoadingSpecializations(true);
+
+      try {
+        const groups = await fetchEmploymentSpecializationGroups(API_BASE_URL);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setSpecializationGroups(groups);
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+
+        setSpecializationGroups([]);
+      } finally {
+        if (isMounted) {
+          setIsLoadingSpecializations(false);
+        }
+      }
+    }
+
+    void loadSpecializations();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSpecToggle = (spec) => {
+  const handleSpecToggle = (selection) => {
     setFormData((prev) => ({
       ...prev,
-      specializations: prev.specializations.includes(spec)
-        ? prev.specializations.filter((s) => s !== spec)
-        : [...prev.specializations, spec],
+      specializations: prev.specializations.some(
+        (item) => item.categoryId === selection.categoryId && item.serviceId === selection.serviceId,
+      )
+        ? prev.specializations.filter(
+            (item) => !(
+              item.categoryId === selection.categoryId && item.serviceId === selection.serviceId
+            ),
+          )
+        : [...prev.specializations, selection],
     }));
   };
 
@@ -196,17 +236,17 @@ export default function EmploymentForm() {
               className="flex min-h-[52px] w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-900 transition-all focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-teal-500/10 text-left cursor-pointer shadow-sm group hover:border-teal-400/50"
             >
               <div className="flex flex-wrap gap-1.5 overflow-hidden">
-                {formData.specializations.length === 0 ? (
+                {selectedSpecializationLabels.length === 0 ? (
                   <span className="text-slate-400">Select Specializations</span>
                 ) : (
-                  formData.specializations.map((spec) => (
-                    <span key={spec} className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2.5 py-0.5 text-[11px] font-bold text-teal-700 border border-teal-100/50 animate-in zoom-in duration-200">
-                      {spec}
+                  formData.specializations.map((selection, index) => (
+                    <span key={`${selection.categoryId}-${selection.serviceId}`} className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2.5 py-0.5 text-[11px] font-bold text-teal-700 border border-teal-100/50 animate-in zoom-in duration-200">
+                      {selectedSpecializationLabels[index]}
                       <X
                         className="h-3 w-3 hover:text-teal-900 cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleSpecToggle(spec);
+                          handleSpecToggle(selection);
                         }}
                       />
                     </span>
@@ -219,25 +259,44 @@ export default function EmploymentForm() {
             {isDropdownOpen && (
               <div className="absolute z-20 mt-2 w-full rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-md p-2 shadow-2xl animate-in fade-in zoom-in duration-300 ring-1 ring-slate-900/5 origin-top">
                 <div className="max-h-80 overflow-y-auto p-1">
-                  {SPECIALIZATION_GROUPS.map((group) => (
+                  {isLoadingSpecializations ? (
+                    <p className="px-3 py-3 text-sm text-slate-500">Loading specializations...</p>
+                  ) : null}
+
+                  {!isLoadingSpecializations && specializationGroups.length === 0 ? (
+                    <p className="px-3 py-3 text-sm text-slate-500">No specializations found.</p>
+                  ) : null}
+
+                  {specializationGroups.map((group) => (
                     <div key={group.label} className="mb-4 last:mb-0 px-1">
                       <h4 className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400/80">
                         {group.label}
                       </h4>
                       <div className="space-y-1">
                         {group.options.map((option) => {
-                          const isSelected = formData.specializations.includes(option);
+                          const selection = {
+                            categoryId: option.categoryId,
+                            serviceId: option.serviceId,
+                          };
+
+                          const isSelected = formData.specializations.some(
+                            (item) => (
+                              item.categoryId === selection.categoryId
+                              && item.serviceId === selection.serviceId
+                            ),
+                          );
+
                           return (
                             <button
-                              key={option}
+                              key={`${option.categoryId}-${option.serviceId}`}
                               type="button"
-                              onClick={() => handleSpecToggle(option)}
+                              onClick={() => handleSpecToggle(selection)}
                               className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-all duration-200 group/item ${isSelected 
                                 ? 'bg-teal-50 text-teal-700 font-bold shadow-sm shadow-teal-500/5' 
                                 : 'hover:bg-slate-50 text-slate-600 hover:text-slate-900'
                               }`}
                             >
-                              <span className="flex-1 text-left">{option}</span>
+                              <span className="flex-1 text-left">{option.label}</span>
                               {isSelected && <Check className="h-4 w-4 text-teal-600 animate-in zoom-in duration-200" />}
                             </button>
                           );

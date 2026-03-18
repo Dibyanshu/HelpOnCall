@@ -143,6 +143,8 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
     ]);
 
     const servicesByCategoryId = new Map<number, Array<{
+      categoryId: number;
+      serviceId: number;
       label: string;
       desc: string | null;
       image: string | null;
@@ -152,6 +154,8 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
     for (const item of servicesList) {
       const current = servicesByCategoryId.get(item.categoryId) ?? [];
       current.push({
+        categoryId: item.categoryId,
+        serviceId: item.id,
         label: item.label,
         desc: item.desc,
         image: item.image,
@@ -161,6 +165,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
     }
 
     return categories.map((category) => ({
+      categoryId: category.id,
       title: category.title,
       features: servicesByCategoryId.get(category.id) ?? []
     }));
