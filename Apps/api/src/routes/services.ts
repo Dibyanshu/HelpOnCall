@@ -5,6 +5,10 @@ import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
 import { serviceCategories, services } from "../db/schema.js";
 import type { Role } from "../types/auth.js";
+import {
+  reindexDisplayOrderAfterDelete,
+  reindexDisplayOrderForWrite
+} from "../utils/display-order.js";
 
 const categoryIdParamsSchema = z.object({
   categoryId: z.coerce.number().int().positive()
@@ -186,11 +190,16 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.code(401).send({ message: "Unauthorized" });
       }
 
+      const normalizedDisplayOrder = await reindexDisplayOrderForWrite(
+        "service-category",
+        bodyParse.data.displayOrder
+      );
+
       const inserted = await db
         .insert(serviceCategories)
         .values({
           title: bodyParse.data.title,
-          displayOrder: bodyParse.data.displayOrder,
+          displayOrder: normalizedDisplayOrder,
           ...buildAuditCreateFields(authUser.role)
         })
         .returning({
@@ -246,10 +255,22 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.code(404).send({ message: "Service category not found" });
       }
 
+      const normalizedDisplayOrder =
+        bodyParse.data.displayOrder !== undefined
+          ? await reindexDisplayOrderForWrite(
+              "service-category",
+              bodyParse.data.displayOrder,
+              paramsParse.data.categoryId
+            )
+          : undefined;
+
       const updated = await db
         .update(serviceCategories)
         .set({
           ...bodyParse.data,
+          ...(normalizedDisplayOrder !== undefined
+            ? { displayOrder: normalizedDisplayOrder }
+            : {}),
           ...buildAuditUpdateFields()
         })
         .where(eq(serviceCategories.id, paramsParse.data.categoryId))
@@ -301,6 +322,9 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
         .delete(serviceCategories)
         .where(eq(serviceCategories.id, paramsParse.data.categoryId));
 
+      await reindexDisplayOrderAfterDelete("service-category");
+      await reindexDisplayOrderAfterDelete("service");
+
       return reply.send({ message: "Service category deleted successfully" });
     }
   );
@@ -339,6 +363,11 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.code(404).send({ message: "Service category not found" });
       }
 
+      const normalizedDisplayOrder = await reindexDisplayOrderForWrite(
+        "service",
+        bodyParse.data.displayOrder
+      );
+
       const inserted = await db
         .insert(services)
         .values({
@@ -347,7 +376,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
           description: bodyParse.data.desc ?? null,
           imageUrl: bodyParse.data.image ?? null,
           iconName: bodyParse.data.icon ?? null,
-          displayOrder: bodyParse.data.displayOrder,
+          displayOrder: normalizedDisplayOrder,
           ...buildAuditCreateFields(authUser.role)
         })
         .returning({
@@ -419,6 +448,15 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
         }
       }
 
+      const normalizedDisplayOrder =
+        bodyParse.data.displayOrder !== undefined
+          ? await reindexDisplayOrderForWrite(
+              "service",
+              bodyParse.data.displayOrder,
+              paramsParse.data.serviceId
+            )
+          : undefined;
+
       const updated = await db
         .update(services)
         .set({
@@ -427,7 +465,9 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
           description: bodyParse.data.desc,
           imageUrl: bodyParse.data.image,
           iconName: bodyParse.data.icon,
-          displayOrder: bodyParse.data.displayOrder,
+          ...(normalizedDisplayOrder !== undefined
+            ? { displayOrder: normalizedDisplayOrder }
+            : {}),
           ...buildAuditUpdateFields()
         })
         .where(eq(services.id, paramsParse.data.serviceId))
@@ -480,6 +520,8 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       await db.delete(services).where(eq(services.id, paramsParse.data.serviceId));
+
+      await reindexDisplayOrderAfterDelete("service");
 
       return reply.send({ message: "Service deleted successfully" });
     }

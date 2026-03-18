@@ -8,24 +8,8 @@ const navLinks = [
   { label: 'Employment', href: '/employment', isRoute: true },
 ];
 
-const RFQ_QUERY_KEY = 'rfqPanel';
-const RFQ_QUERY_VALUE = 'open';
-
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const location = useLocation();
-
-  const openPanel = () => {
-    const nextParams = new URLSearchParams(searchParams);
-    nextParams.set(RFQ_QUERY_KEY, RFQ_QUERY_VALUE);
-    setSearchParams(nextParams);
-  };
-
-  const isActive = (href) => {
-    if (href === '/' && location.pathname !== '/') return false;
-    return location.pathname.startsWith(href);
-  };
 
   return (
     <header className="sticky top-0 z-50 bg-white/70 backdrop-blur-md border-b border-gray-100/50">
