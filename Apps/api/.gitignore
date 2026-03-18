@@ -31,6 +31,9 @@ db/*.sqlite
 db/*.sqlite-shm
 db/*.sqlite-wal
 
+# Uploaded resumes
+uploads/resumes/
+
 # Test coverage
 coverage/
 .nyc_output/

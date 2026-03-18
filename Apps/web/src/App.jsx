@@ -11,6 +11,7 @@ import AdminDashboardPage from './admin/pages/AdminDashboardPage';
 import AdminUsersPage from './admin/pages/AdminUsersPage';
 import AdminUserNewPage from './admin/pages/AdminUserNewPage';
 import ServiceDashboardLayout from './admin/pages/services/ServiceDashboardLayout';
+import EmploymentAdminPage from './admin/pages/employment/EmploymentAdminPage';
 import RequireAdminAuth from './admin/routes/RequireAdminAuth';
 import RFQSlideInPanel from './components/RFQSlideInPanel';
 
@@ -49,6 +50,14 @@ function App() {
           element={(
             <RequireAdminAuth allowedRoles={['super_admin', 'admin']}>
               <ServiceDashboardLayout />
+            </RequireAdminAuth>
+          )}
+        />
+        <Route
+          path="/admin/employment"
+          element={(
+            <RequireAdminAuth allowedRoles={['super_admin', 'admin']}>
+              <EmploymentAdminPage />
             </RequireAdminAuth>
           )}
         />

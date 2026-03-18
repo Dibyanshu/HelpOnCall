@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { Upload, CheckCircle2, ChevronDown } from 'lucide-react';
+import { Upload, CheckCircle2, ChevronDown, X } from 'lucide-react';
+import { submitEmploymentApplication } from './employmentSubmission';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 const initialFormData = {
   fullName: '',
@@ -24,6 +27,7 @@ export default function EmploymentForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -54,17 +58,34 @@ export default function EmploymentForm() {
     const file = e.target.files[0];
     if (file) {
       setFormData((prev) => ({ ...prev, resume: file }));
+      setSubmitError('');
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError('');
+
+    if (!formData.resume) {
+      setSubmitError('Please upload your resume before submitting.');
+      return;
+    }
+
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log('Employment application submitted:', formData);
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+
+    try {
+      await submitEmploymentApplication({
+        apiBaseUrl: API_BASE_URL,
+        formData,
+      });
+
+      setIsSubmitted(true);
+      setFormData(initialFormData);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Unable to submit your application right now.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSubmitted) {
@@ -285,6 +306,12 @@ export default function EmploymentForm() {
           <div className="absolute -inset-1 -z-10 rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-500 opacity-0 blur transition-opacity duration-300 group-hover:opacity-10" />
         </div>
       </div>
+
+      {submitError ? (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {submitError}
+        </div>
+      ) : null}
 
       <button
         type="submit"

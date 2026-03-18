@@ -46,6 +46,25 @@ const SERVICES_CATEGORY_ID_INDEX_DDL = sql`
   CREATE INDEX IF NOT EXISTS idx_services_category_id ON services(category_id)
 `;
 
+const EMPLOYMENT_TABLE_DDL = sql`
+  CREATE TABLE IF NOT EXISTS employment (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    emp_id TEXT NOT NULL UNIQUE DEFAULT (
+      lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))), 2) || '-' || substr('89ab', abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))), 2) || '-' || lower(hex(randomblob(6)))
+    ),
+    full_name TEXT NOT NULL,
+    email_address TEXT NOT NULL,
+    phone_number TEXT NOT NULL,
+    specializations TEXT NOT NULL DEFAULT '[]',
+    cover_letter TEXT,
+    resume_file_name TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'approve', 'reject')),
+    created_by TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL DEFAULT 0,
+    updated_at INTEGER NOT NULL DEFAULT 0
+  )
+`;
+
 async function migrateUsersRoleConstraintForAdmin(): Promise<void> {
   const tableMeta = await db.get<{ sql: string | null }>(
     sql`SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'users'`
@@ -138,13 +157,95 @@ async function migrateServicesAddStandardColumns(): Promise<void> {
   }
 }
 
+async function migrateEmploymentToAddIdAndAuditColumns(): Promise<void> {
+  const tableMeta = await db.get<{ sql: string | null }>(
+    sql`SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'employment'`
+  );
+
+  const currentSql = (tableMeta?.sql ?? "").toLowerCase();
+
+  if (!currentSql) {
+    return;
+  }
+
+  const hasId = currentSql.includes("id integer primary key autoincrement");
+  const hasCreatedBy = currentSql.includes("created_by");
+  const hasCreatedAt = currentSql.includes("created_at");
+  const hasUpdatedAt = currentSql.includes("updated_at");
+
+  if (hasId && hasCreatedBy && hasCreatedAt && hasUpdatedAt) {
+    return;
+  }
+
+  await db.run(sql`BEGIN`);
+
+  try {
+    await db.run(sql`
+      CREATE TABLE employment_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        emp_id TEXT NOT NULL UNIQUE DEFAULT (
+          lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))), 2) || '-' || substr('89ab', abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))), 2) || '-' || lower(hex(randomblob(6)))
+        ),
+        full_name TEXT NOT NULL,
+        email_address TEXT NOT NULL,
+        phone_number TEXT NOT NULL,
+        specializations TEXT NOT NULL DEFAULT '[]',
+        cover_letter TEXT,
+        resume_file_name TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'approve', 'reject')),
+        created_by TEXT NOT NULL DEFAULT '',
+        created_at INTEGER NOT NULL DEFAULT 0,
+        updated_at INTEGER NOT NULL DEFAULT 0
+      )
+    `);
+
+    await db.run(sql`
+      INSERT INTO employment_new (
+        emp_id,
+        full_name,
+        email_address,
+        phone_number,
+        specializations,
+        cover_letter,
+        resume_file_name,
+        status,
+        created_by,
+        created_at,
+        updated_at
+      )
+      SELECT
+        emp_id,
+        full_name,
+        email_address,
+        phone_number,
+        specializations,
+        cover_letter,
+        resume_file_name,
+        status,
+        '',
+        0,
+        0
+      FROM employment
+    `);
+
+    await db.run(sql`DROP TABLE employment`);
+    await db.run(sql`ALTER TABLE employment_new RENAME TO employment`);
+    await db.run(sql`COMMIT`);
+  } catch (error) {
+    await db.run(sql`ROLLBACK`);
+    throw error;
+  }
+}
+
 export async function ensureTables(): Promise<void> {
   await db.run(USERS_TABLE_DDL);
   await db.run(SERVICE_CATEGORIES_TABLE_DDL);
   await db.run(SERVICES_TABLE_DDL);
+  await db.run(EMPLOYMENT_TABLE_DDL);
   await db.run(SERVICES_CATEGORY_ID_INDEX_DDL);
   await migrateUsersRoleConstraintForAdmin();
   await migrateUsersAddCreatedByColumn();
   await migrateServiceCategoriesAddStandardColumns();
   await migrateServicesAddStandardColumns();
+  await migrateEmploymentToAddIdAndAuditColumns();
 }

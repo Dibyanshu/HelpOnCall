@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
@@ -38,6 +39,26 @@ export const services = sqliteTable("services", {
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(new Date(0))
 });
 
+export const employment = sqliteTable("employment", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  empId: text("emp_id")
+    .notNull()
+    .unique()
+    .default(
+      sql`(lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))), 2) || '-' || substr('89ab', abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))), 2) || '-' || lower(hex(randomblob(6))))`
+    ),
+  fullName: text("full_name").notNull(),
+  emailAddress: text("email_address").notNull(),
+  phoneNumber: text("phone_number").notNull(),
+  specializations: text("specializations").notNull().default("[]"),
+  coverLetter: text("cover_letter"),
+  resumeFileName: text("resume_file_name").notNull(),
+  status: text("status", { enum: ["new", "approve", "reject"] }).notNull().default("new"),
+  createdBy: text("created_by").notNull().default(""),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(new Date(0)),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(new Date(0))
+});
+
 export type UserRole = typeof users.$inferSelect.role;
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -45,3 +66,5 @@ export type ServiceCategory = typeof serviceCategories.$inferSelect;
 export type NewServiceCategory = typeof serviceCategories.$inferInsert;
 export type Service = typeof services.$inferSelect;
 export type NewService = typeof services.$inferInsert;
+export type Employment = typeof employment.$inferSelect;
+export type NewEmployment = typeof employment.$inferInsert;
