@@ -8,8 +8,8 @@ const navLinks = [
   { label: 'Employment', href: '/employment', isRoute: true },
 ];
 
-const DEMO_QUERY_KEY = 'demoPanel';
-const DEMO_QUERY_VALUE = 'open';
+const RFQ_QUERY_KEY = 'rfqPanel';
+const RFQ_QUERY_VALUE = 'open';
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -18,7 +18,7 @@ export default function Navbar() {
 
   const openPanel = () => {
     const nextParams = new URLSearchParams(searchParams);
-    nextParams.set(DEMO_QUERY_KEY, DEMO_QUERY_VALUE);
+    nextParams.set(RFQ_QUERY_KEY, RFQ_QUERY_VALUE);
     setSearchParams(nextParams);
   };
 
