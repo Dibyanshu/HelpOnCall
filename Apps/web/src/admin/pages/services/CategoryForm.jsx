@@ -6,6 +6,11 @@ const DEFAULT_FORM = {
   display_order: 0,
 };
 
+// Converts the 1-based display order entered by the user to the 0-based value expected by the backend
+function toBackendOrder(order) {
+  return order - 1;
+}
+
 export default function CategoryForm({ initialData, onClose, onSubmit }) {
   const startingValues = useMemo(
     () => ({
@@ -42,7 +47,7 @@ export default function CategoryForm({ initialData, onClose, onSubmit }) {
     try {
       await onSubmit({
         title: formData.title.trim(),
-        displayOrder: Number.isFinite(formData.display_order) ? formData.display_order : 0,
+        displayOrder: Number.isFinite(formData.display_order) ? toBackendOrder(formData.display_order) : 0,
       });
     } catch (error) {
       setErrorMessage(error.message || 'Failed to save category.');

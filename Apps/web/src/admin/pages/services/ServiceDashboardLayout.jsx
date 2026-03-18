@@ -26,6 +26,11 @@ function buildFormModeTitle(mode) {
   return 'Service Manager';
 }
 
+// This method increases the service category indexing value by 1 just for better end-user visibility
+function toDisplayNumber(order) {
+  return order + 1;
+}
+
 export default function ServiceDashboardLayout() {
   const [mode, setMode] = useState('create-category');
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
@@ -196,7 +201,7 @@ export default function ServiceDashboardLayout() {
             <button
               type="button"
               onClick={startCreateCategory}
-              className="btn-primary"
+              className={`${mode === 'create-category' || mode === 'edit-category' ? 'btn-primary' : 'btn-secondary'} gap-2`}
             >
               <PlusCircle className="h-4 w-4" />
               Add Category
@@ -204,7 +209,7 @@ export default function ServiceDashboardLayout() {
             <button
               type="button"
               onClick={startCreateService}
-              className="inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+              className={`${mode === 'create-service' || mode === 'edit-service' ? 'btn-primary' : 'btn-secondary'} gap-2`}
             >
               <PlusCircle className="h-4 w-4" />
               Add Service
@@ -224,34 +229,34 @@ export default function ServiceDashboardLayout() {
 
             {!isLoading
               ? serviceTree.map((category) => (
-                  <div key={category.id} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
-                    <button
-                      type="button"
-                      onClick={() => startEditCategory(category.id)}
-                      className="flex w-full items-center justify-between gap-2 text-left"
-                    >
-                      <span className="text-sm font-semibold text-slate-900">{category.title}</span>
-                      <span className="text-[11px] text-slate-500">#{category.displayOrder ?? 0}</span>
-                    </button>
+                <div key={category.id} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
+                  <button
+                    type="button"
+                    onClick={() => startEditCategory(category.id)}
+                    className="flex w-full items-center justify-between gap-2 text-left"
+                  >
+                    <span className="text-sm font-semibold text-slate-900">{category.title}</span>
+                    <span className="text-[11px] text-slate-500">#{toDisplayNumber(category.displayOrder) ?? 0}</span>
+                  </button>
 
-                    <div className="mt-2 space-y-1 border-l border-slate-200 pl-3">
-                      {category.services.length > 0 ? (
-                        category.services.map((service) => (
-                          <button
-                            key={service.id}
-                            type="button"
-                            onClick={() => startEditService(service.id)}
-                            className="block w-full rounded-md px-2 py-1 text-left text-xs text-slate-700 transition-colors hover:bg-slate-100"
-                          >
-                            {service.label}
-                          </button>
-                        ))
-                      ) : (
-                        <p className="text-xs text-slate-500">No services in this category.</p>
-                      )}
-                    </div>
+                  <div className="mt-2 space-y-1 border-l border-slate-200 pl-3">
+                    {category.services.length > 0 ? (
+                      category.services.map((service) => (
+                        <button
+                          key={service.id}
+                          type="button"
+                          onClick={() => startEditService(service.id)}
+                          className="block w-full rounded-md px-2 py-1 text-left text-xs text-slate-700 transition-colors hover:bg-slate-100"
+                        >
+                          {service.label}
+                        </button>
+                      ))
+                    ) : (
+                      <p className="text-xs text-slate-500">No services in this category.</p>
+                    )}
                   </div>
-                ))
+                </div>
+              ))
               : null}
           </div>
         </aside>
@@ -265,7 +270,7 @@ export default function ServiceDashboardLayout() {
                   type="button"
                   onClick={handleDeleteCategory}
                   disabled={isSaving}
-                  className="inline-flex items-center gap-1 rounded-md border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-md border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Trash2 className="h-4 w-4" />
                   Delete Category
@@ -277,7 +282,7 @@ export default function ServiceDashboardLayout() {
                   type="button"
                   onClick={handleDeleteService}
                   disabled={isSaving}
-                  className="inline-flex items-center gap-1 rounded-md border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-md border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Trash2 className="h-4 w-4" />
                   Delete Service

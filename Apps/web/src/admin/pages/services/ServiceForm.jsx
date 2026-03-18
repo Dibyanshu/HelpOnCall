@@ -10,6 +10,11 @@ const DEFAULT_FORM = {
   display_order: 0,
 };
 
+// Converts the 1-based display order entered by the user to the 0-based value expected by the backend
+function toBackendOrder(order) {
+  return order - 1;
+}
+
 export default function ServiceForm({ initialData, categories, onSubmit }) {
   const startingValues = useMemo(
     () => ({
@@ -60,7 +65,7 @@ export default function ServiceForm({ initialData, categories, onSubmit }) {
         desc: formData.description.trim(),
         image: formData.image_url.trim(),
         icon: formData.icon_name.trim(),
-        displayOrder: Number.isFinite(formData.display_order) ? formData.display_order : 0,
+        displayOrder: Number.isFinite(formData.display_order) ? toBackendOrder(formData.display_order) : 0,
       });
     } catch (error) {
       setErrorMessage(error.message || 'Failed to save service.');
