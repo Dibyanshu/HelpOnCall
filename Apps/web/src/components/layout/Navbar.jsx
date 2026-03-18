@@ -10,6 +10,22 @@ const navLinks = [
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const isActive = (href) => {
+    if (href === '/') {
+      return location.pathname === '/';
+    }
+
+    return location.pathname === href || location.pathname.startsWith(`${href}/`);
+  };
+
+  const openPanel = () => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('rfqPanel', 'open');
+    setSearchParams(nextParams);
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white/70 backdrop-blur-md border-b border-gray-100/50">
@@ -41,7 +57,7 @@ export default function Navbar() {
 
         <ul className="hidden items-center gap-6 md:flex" role="list">
           {navLinks.map((link) => {
-            const active = isActive(link.href);
+            const active = isActive(link.href); 
             return (
               <li key={link.href} className="relative py-2">
                 {link.isRoute ? (
