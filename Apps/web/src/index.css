@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+@layer base {
+  a, 
+  button, 
+  input[type="submit"],
+  select,
+  label,
+  [role="button"] {
+    cursor: pointer;
+  }
+}
+
 @theme {
   --color-teal-700: #0f766e;
   --color-teal-800: #115e59;

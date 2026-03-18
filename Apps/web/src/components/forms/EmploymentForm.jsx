@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Upload, CheckCircle2, ChevronDown } from 'lucide-react';
+import { Upload, CheckCircle2, ChevronDown, Check, X, Briefcase } from 'lucide-react';
 
 const initialFormData = {
   fullName: '',
@@ -10,13 +10,19 @@ const initialFormData = {
   resume: null,
 };
 
-const SPECIALIZATIONS = [
-  'Personal Care',
-  'Post-Operative Support',
-  'Dementia & Alzheimer\'s Care',
-  'Companion Care',
-  'Respite Care',
-  'Palliative Care',
+const SPECIALIZATION_GROUPS = [
+  {
+    label: 'Direct Care',
+    options: ['Personal Care', 'Companion Care', 'Respite Care']
+  },
+  {
+    label: 'Specialized Support',
+    options: ['Dementia & Alzheimer\'s Care', 'Palliative Care']
+  },
+  {
+    label: 'Clinical Support',
+    options: ['Post-Operative Support', 'Wound Care']
+  }
 ];
 
 export default function EmploymentForm() {
@@ -157,7 +163,8 @@ export default function EmploymentForm() {
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="specializations" className="text-xs font-semibold uppercase tracking-wider text-slate-500 ml-1">
+          <label htmlFor="specializations" className="text-xs font-semibold uppercase tracking-wider text-slate-500 ml-1 flex items-center gap-2">
+            <Briefcase size={14} className="text-teal-600/70" />
             Specializations
           </label>
           <div className="relative" ref={dropdownRef}>
@@ -165,37 +172,58 @@ export default function EmploymentForm() {
               id="specializations"
               type="button"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-900 transition-all focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-teal-500/10"
+              className="flex min-h-[52px] w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-900 transition-all focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-teal-500/10 text-left cursor-pointer shadow-sm group hover:border-teal-400/50"
             >
-              <span className="truncate">
-                {formData.specializations.length > 0
-                  ? formData.specializations.join(', ')
-                  : 'Select Specializations'}
-              </span>
-              <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+              <div className="flex flex-wrap gap-1.5 overflow-hidden">
+                {formData.specializations.length === 0 ? (
+                  <span className="text-slate-400">Select Specializations</span>
+                ) : (
+                  formData.specializations.map((spec) => (
+                    <span key={spec} className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2.5 py-0.5 text-[11px] font-bold text-teal-700 border border-teal-100/50 animate-in zoom-in duration-200">
+                      {spec}
+                      <X
+                        className="h-3 w-3 hover:text-teal-900 cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSpecToggle(spec);
+                        }}
+                      />
+                    </span>
+                  ))
+                )}
+              </div>
+              <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform duration-300 shrink-0 ml-2 ${isDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
-
+  
             {isDropdownOpen && (
-              <div className="absolute z-20 mt-2 w-full rounded-2xl border border-slate-200 bg-white p-2 shadow-xl animate-in fade-in zoom-in duration-200">
-                <div className="max-h-60 overflow-y-auto space-y-1">
-                  {SPECIALIZATIONS.map((spec) => {
-                    const isSelected = formData.specializations.includes(spec);
-                    return (
-                      <label
-                        key={spec}
-                        className={`flex cursor-pointer items-center justify-between rounded-xl px-3 py-2 text-sm transition-colors ${isSelected ? 'bg-teal-50 text-teal-700' : 'hover:bg-slate-50 text-slate-600'
-                          }`}
-                      >
-                        <span>{spec}</span>
-                        <input
-                          type="checkbox"
-                          className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
-                          checked={isSelected}
-                          onChange={() => handleSpecToggle(spec)}
-                        />
-                      </label>
-                    );
-                  })}
+              <div className="absolute z-20 mt-2 w-full rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-md p-2 shadow-2xl animate-in fade-in zoom-in duration-300 ring-1 ring-slate-900/5 origin-top">
+                <div className="max-h-80 overflow-y-auto p-1">
+                  {SPECIALIZATION_GROUPS.map((group) => (
+                    <div key={group.label} className="mb-4 last:mb-0 px-1">
+                      <h4 className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400/80">
+                        {group.label}
+                      </h4>
+                      <div className="space-y-1">
+                        {group.options.map((option) => {
+                          const isSelected = formData.specializations.includes(option);
+                          return (
+                            <button
+                              key={option}
+                              type="button"
+                              onClick={() => handleSpecToggle(option)}
+                              className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-all duration-200 group/item ${isSelected 
+                                ? 'bg-teal-50 text-teal-700 font-bold shadow-sm shadow-teal-500/5' 
+                                : 'hover:bg-slate-50 text-slate-600 hover:text-slate-900'
+                              }`}
+                            >
+                              <span className="flex-1 text-left">{option}</span>
+                              {isSelected && <Check className="h-4 w-4 text-teal-600 animate-in zoom-in duration-200" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
