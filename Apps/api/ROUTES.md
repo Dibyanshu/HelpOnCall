@@ -243,6 +243,189 @@ curl --location '{{baseUrl}}/api/v1/auth/change-password' \
 
 ---
 
+## 4.1) Submit Employment Application
+
+### Request
+
+- Method: `POST`
+- URL: `{{baseUrl}}/api/v1/employment`
+- Auth: None
+- Header: `Content-Type: multipart/form-data`
+
+Form-data fields:
+
+- `fullName`: text
+- `emailAddress`: text
+- `phoneNumber`: text
+- `specializations`: JSON string (e.g. `[{"categoryId":1,"serviceId":2}]`)
+- `coverLetter`: text
+- `resume`: file (`.pdf`, `.doc`, `.docx`)
+
+Notes:
+
+- Resume is uploaded through multipart field `resume` and stored on the server with `GUID + extension`.
+- Allowed resume extensions: `.pdf`, `.doc`, `.docx`.
+- `specializations` also accepts an array of strings for backward compatibility.
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/employment' \
+--form 'fullName="Jane Doe"' \
+--form 'emailAddress="jane@example.com"' \
+--form 'phoneNumber="+1 (647) 123-4567"' \
+--form 'specializations="[{""categoryId"":1,""serviceId"":2}]"' \
+--form 'coverLetter="I have 6 years of caregiving experience."' \
+--form 'resume=@"/path/to/jane-doe-resume.pdf"'
+```
+
+### Success Response (201)
+
+```json
+{
+  "message": "Employment application submitted successfully",
+  "submission": {
+    "id": 1,
+    "empId": "8e4d6574-8f8f-4962-9f65-3a7c3dd67aa1",
+    "status": "new",
+    "resumeFileName": "f5a0dd9a-b1bf-44f2-a9d2-f6b3196280a8.pdf",
+    "createdAt": "2026-03-18T12:00:00.000Z"
+  }
+}
+```
+
+---
+
+## 4.2) Approve Employment Submission (Admin / Super Admin)
+
+### Request
+
+- Method: `POST`
+- URL: `{{baseUrl}}/api/v1/admin/employment/:empId/approve`
+- Auth: Bearer Token -> `{{accessToken}}`
+
+### cURL
+
+```bash
+curl --location --request POST '{{baseUrl}}/api/v1/admin/employment/8e4d6574-8f8f-4962-9f65-3a7c3dd67aa1/approve' \
+--header 'Authorization: Bearer {{accessToken}}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "message": "Employment submission approved successfully",
+  "submission": {
+    "id": 1,
+    "empId": "8e4d6574-8f8f-4962-9f65-3a7c3dd67aa1",
+    "status": "approve",
+    "updatedAt": "2026-03-18T12:15:00.000Z"
+  }
+}
+```
+
+---
+
+## 4.3) Reject Employment Submission (Admin / Super Admin)
+
+### Request
+
+- Method: `POST`
+- URL: `{{baseUrl}}/api/v1/admin/employment/:empId/reject`
+- Auth: Bearer Token -> `{{accessToken}}`
+
+### cURL
+
+```bash
+curl --location --request POST '{{baseUrl}}/api/v1/admin/employment/8e4d6574-8f8f-4962-9f65-3a7c3dd67aa1/reject' \
+--header 'Authorization: Bearer {{accessToken}}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "message": "Employment submission rejected successfully",
+  "submission": {
+    "id": 1,
+    "empId": "8e4d6574-8f8f-4962-9f65-3a7c3dd67aa1",
+    "status": "reject",
+    "updatedAt": "2026-03-18T12:16:00.000Z"
+  }
+}
+```
+
+---
+
+## 4.4) List/Search Employment Submissions (Admin / Super Admin)
+
+### Request
+
+- Method: `GET`
+- URL: `{{baseUrl}}/api/v1/admin/employment?search=jane&status=new`
+- Auth: Bearer Token -> `{{accessToken}}`
+
+Query params:
+
+- `search` (optional): matches `empId`, full name, email, phone.
+- `status` (optional): `new`, `approve`, `reject`.
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/admin/employment?search=jane&status=new' \
+--header 'Authorization: Bearer {{accessToken}}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "empId": "8e4d6574-8f8f-4962-9f65-3a7c3dd67aa1",
+      "fullName": "Jane Doe",
+      "emailAddress": "jane@example.com",
+      "phoneNumber": "+1 (647) 123-4567",
+      "specializations": "[{\"categoryId\":1,\"serviceId\":2}]",
+      "coverLetter": "I have 6 years of caregiving experience.",
+      "resumeFileName": "f5a0dd9a-b1bf-44f2-a9d2-f6b3196280a8.pdf",
+      "status": "new",
+      "createdBy": "public_employment_form",
+      "createdAt": "2026-03-18T12:00:00.000Z",
+      "updatedAt": "2026-03-18T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+## 4.5) Download Employment Resume (Admin / Super Admin)
+
+### Request
+
+- Method: `GET`
+- URL: `{{baseUrl}}/api/v1/admin/employment/:empId/resume`
+- Auth: Bearer Token -> `{{accessToken}}`
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/admin/employment/8e4d6574-8f8f-4962-9f65-3a7c3dd67aa1/resume' \
+--header 'Authorization: Bearer {{accessToken}}' \
+--output employment-resume.pdf
+```
+
+### Success Response (200)
+
+- Binary file stream (`application/pdf`, `application/msword`, or docx MIME type)
+- `Content-Disposition: attachment; filename="employment-<empId>.<ext>"`
+
+---
+
 ## 5) Create User (Super Admin)
 
 ### Request
