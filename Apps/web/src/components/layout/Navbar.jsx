@@ -1,11 +1,11 @@
-import { useState, useMemo } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useSearchParams, useLocation } from 'react-router-dom';
 
 const navLinks = [
   { label: 'Home', href: '/', isRoute: true },
   { label: 'Our Services', href: '/services', isRoute: true },
   { label: 'About Us', href: '/about', isRoute: true },
-  { label: 'Contact Us', href: '/contact', isRoute: true },
+  { label: 'Employment', href: '/employment', isRoute: true },
 ];
 
 const DEMO_QUERY_KEY = 'demoPanel';
@@ -14,6 +14,7 @@ const DEMO_QUERY_VALUE = 'open';
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
 
   const openPanel = () => {
     const nextParams = new URLSearchParams(searchParams);
@@ -21,8 +22,13 @@ export default function Navbar() {
     setSearchParams(nextParams);
   };
 
+  const isActive = (href) => {
+    if (href === '/' && location.pathname !== '/') return false;
+    return location.pathname.startsWith(href);
+  };
+
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm">
+    <header className="sticky top-0 z-50 bg-white/70 backdrop-blur-md border-b border-gray-100/50">
       <nav
         className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
         aria-label="Main navigation"
@@ -50,30 +56,41 @@ export default function Navbar() {
         </Link>
 
         <ul className="hidden items-center gap-6 md:flex" role="list">
-          {navLinks.map((link) => (
-            <li key={link.href}>
-              {link.isRoute ? (
-                <Link
-                  to={link.href}
-                  className="text-sm font-medium text-gray-700 transition-colors hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
-                >
-                  {link.label}
-                </Link>
-              ) : (
-                <a
-                  href={link.href}
-                  className="text-sm font-medium text-gray-700 transition-colors hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
-                >
-                  {link.label}
-                </a>
-              )}
-            </li>
-          ))}
+          {navLinks.map((link) => {
+            const active = isActive(link.href);
+            return (
+              <li key={link.href} className="relative py-2">
+                {link.isRoute ? (
+                  <Link
+                    to={link.href}
+                    className={`text-sm font-medium transition-all duration-300 hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${
+                      active ? 'text-teal-700' : 'text-gray-700'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                ) : (
+                  <a
+                    href={link.href}
+                    className={`text-sm font-medium transition-all duration-300 hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${
+                      active ? 'text-teal-700' : 'text-gray-700'
+                    }`}
+                  >
+                    {link.label}
+                  </a>
+                )}
+                {/* Active Indicator Underline */}
+                {active && (
+                  <span className="absolute bottom-0 left-0 h-0.5 w-full bg-teal-700 animate-in fade-in slide-in-from-bottom-1 duration-300" />
+                )}
+              </li>
+            );
+          })}
           <li>
             <button
               type="button"
               onClick={openPanel}
-              className="inline-flex items-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+              className="inline-flex items-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 hover:shadow-lg hover:shadow-teal-700/20"
             >
               Request For Quote
             </button>
@@ -103,36 +120,34 @@ export default function Navbar() {
       {mobileOpen && (
         <div id="mobile-menu" className="border-t border-gray-100 bg-white px-4 pb-4 md:hidden">
           <ul className="space-y-2 pt-2" role="list">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                {link.isRoute ? (
-                  <Link
-                    to={link.href}
-                    className="block rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-teal-700"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    {link.label}
-                  </Link>
-                ) : (
-                  <a
-                    href={link.href}
-                    className="block rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-teal-700"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    {link.label}
-                  </a>
-                )}
-              </li>
-            ))}
-            <li>
-              <a
-                href="#booking"
-                className="mt-2 block rounded-md bg-teal-700 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-teal-800"
-                onClick={() => setMobileOpen(false)}
-              >
-                Request A Quote
-              </a>
-            </li>
+            {navLinks.map((link) => {
+              const active = isActive(link.href);
+              return (
+                <li key={link.href}>
+                  {link.isRoute ? (
+                    <Link
+                      to={link.href}
+                      className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                        active ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50 hover:text-teal-700'
+                      }`}
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <a
+                      href={link.href}
+                      className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                        active ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50 hover:text-teal-700'
+                      }`}
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {link.label}
+                    </a>
+                  )}
+                </li>
+              );
+            })}
             <li>
               <button
                 type="button"
@@ -140,9 +155,9 @@ export default function Navbar() {
                   openPanel();
                   setMobileOpen(false);
                 }}
-                className="mt-2 block rounded-md bg-teal-700 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-teal-800"
+                className="mt-2 block w-full rounded-md bg-teal-700 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-teal-800"
               >
-                Open Demo
+                Request A Quote
               </button>
             </li>
           </ul>

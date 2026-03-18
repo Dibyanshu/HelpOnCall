@@ -2,8 +2,9 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import Home from './pages/HomePage';
 import AboutUsPage from './pages/AboutUsPage';
-import ContactPage from './pages/ContactPage';
+import EmploymentPage from './pages/EmploymentPage';
 import Services from './pages/ServicesPage';
+import SitemapPage from './pages/SitemapPage';
 import UserRegistrationPage from './pages/UserRegistrationPage';
 import AdminLoginPage from './admin/pages/AdminLoginPage';
 import AdminDashboardPage from './admin/pages/AdminDashboardPage';
@@ -56,7 +57,8 @@ function App() {
         <Route path="/about" element={<Layout><AboutUsPage /></Layout>} />
         <Route path="/services" element={<Layout><Services /></Layout>} />
         <Route path="/register" element={<Layout><UserRegistrationPage /></Layout>} />
-        <Route path="/contact" element={<Layout><ContactPage /></Layout>} />
+        <Route path="/employment" element={<Layout><EmploymentPage /></Layout>} />
+        <Route path="/sitemap" element={<Layout><SitemapPage /></Layout>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <RFQSlideInPanel />

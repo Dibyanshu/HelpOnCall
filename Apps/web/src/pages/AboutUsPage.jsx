@@ -22,7 +22,7 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      <section id="team-values" className="mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-6 sm:pb-20 sm:pt-12 lg:px-8 lg:pb-24 lg:pt-14">
+      <section id="team-values" className="mx-auto max-w-6xl px-4 pb-10 pt-10 sm:px-6 sm:pb-10 sm:pt-12 lg:px-8 lg:pb-10 lg:pt-14">
         <div className="mb-8 sm:mb-10">
           <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Our Core Values</h2>
           <p className="mt-2 max-w-3xl text-sm leading-relaxed text-gray-600 sm:text-base">
@@ -48,6 +48,15 @@ export default function AboutUsPage() {
               We provide coordinated support across Toronto, North York, Scarborough, and Etobicoke with responsive scheduling.
             </p>
           </article>
+        </div>
+      </section>
+
+      <section id="team-values" className="mx-auto max-w-6xl px-4 pb-10 pt-10 sm:px-6 sm:pb-10 sm:pt-10 lg:px-8 lg:pb-10 lg:pt-10">
+        <div className="mb-8 sm:mb-10">
+          <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Our Mission & Values</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-gray-600 sm:text-base">
+            Help On Call has the mission to offer a range of professional services that enables individuals to overcome challenges, foster resilience, and achieve emotional well-being to carry out their activities of daily living. We strive to create a safe and inclusive space where you can explore your thoughts and emotions, and achieve them with much needed support from us.
+          </p>
         </div>
       </section>
     </div>
