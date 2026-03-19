@@ -10,6 +10,12 @@
   [role="button"] {
     cursor: pointer;
   }
+
+  input:not([type="submit"]):not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    background-color: white;
+  }
 }
 
 @theme {
