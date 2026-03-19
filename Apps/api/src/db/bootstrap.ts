@@ -65,6 +65,35 @@ const EMPLOYMENT_TABLE_DDL = sql`
   )
 `;
 
+const TOTP_CHALLENGES_TABLE_DDL = sql`
+  CREATE TABLE IF NOT EXISTS totp_challenges (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    challenge_id TEXT NOT NULL UNIQUE DEFAULT (
+      lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))), 2) || '-' || substr('89ab', abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))), 2) || '-' || lower(hex(randomblob(6)))
+    ),
+    purpose TEXT NOT NULL,
+    subject TEXT,
+    secret_base32 TEXT NOT NULL,
+    algorithm TEXT NOT NULL DEFAULT 'SHA1',
+    digits INTEGER NOT NULL DEFAULT 6,
+    period_seconds INTEGER NOT NULL DEFAULT 30,
+    verified_at INTEGER,
+    expires_at INTEGER NOT NULL,
+    consumed_at INTEGER,
+    created_by TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL DEFAULT 0,
+    updated_at INTEGER NOT NULL DEFAULT 0
+  )
+`;
+
+const TOTP_CHALLENGES_PURPOSE_INDEX_DDL = sql`
+  CREATE INDEX IF NOT EXISTS idx_totp_challenges_purpose ON totp_challenges(purpose)
+`;
+
+const TOTP_CHALLENGES_EXPIRES_AT_INDEX_DDL = sql`
+  CREATE INDEX IF NOT EXISTS idx_totp_challenges_expires_at ON totp_challenges(expires_at)
+`;
+
 async function migrateUsersRoleConstraintForAdmin(): Promise<void> {
   const tableMeta = await db.get<{ sql: string | null }>(
     sql`SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'users'`
@@ -242,7 +271,10 @@ export async function ensureTables(): Promise<void> {
   await db.run(SERVICE_CATEGORIES_TABLE_DDL);
   await db.run(SERVICES_TABLE_DDL);
   await db.run(EMPLOYMENT_TABLE_DDL);
+  await db.run(TOTP_CHALLENGES_TABLE_DDL);
   await db.run(SERVICES_CATEGORY_ID_INDEX_DDL);
+  await db.run(TOTP_CHALLENGES_PURPOSE_INDEX_DDL);
+  await db.run(TOTP_CHALLENGES_EXPIRES_AT_INDEX_DDL);
   await migrateUsersRoleConstraintForAdmin();
   await migrateUsersAddCreatedByColumn();
   await migrateServiceCategoriesAddStandardColumns();

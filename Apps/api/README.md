@@ -97,6 +97,8 @@ Quick endpoint index:
 - [POST /api/v1/auth/admin/login](ROUTES.md#2-admin-login)
 - [POST /api/v1/auth/register](ROUTES.md#3-public-user-registration)
 - [POST /api/v1/auth/change-password](ROUTES.md#4-change-password)
+- [POST /api/v1/totp/challenges](ROUTES.md#41-create-totp-challenge)
+- [POST /api/v1/totp/challenges/verify](ROUTES.md#42-verify-totp-challenge)
 - [GET /api/v1/admin/roles](ROUTES.md#61-list-roles-super-admin)
 - [POST /api/v1/admin/users](ROUTES.md#5-create-user-super-admin)
 - [GET /api/v1/admin/users](ROUTES.md#6-list-users-super-admin)

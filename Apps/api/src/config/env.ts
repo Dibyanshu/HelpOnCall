@@ -39,7 +39,16 @@ const envSchema = z.object({
   SMTP_CONNECTION_TIMEOUT_MS: z.coerce.number().int().positive().default(10000),
   SMTP_GREETING_TIMEOUT_MS: z.coerce.number().int().positive().default(10000),
   EMPLOYMENT_RESUME_UPLOAD_DIR: z.string().default("./uploads/resumes"),
-  EMPLOYMENT_RESUME_MAX_FILE_SIZE_MB: z.coerce.number().int().positive().default(10)
+  EMPLOYMENT_RESUME_MAX_FILE_SIZE_MB: z.coerce.number().int().positive().default(10),
+  TOTP_ISSUER: z.string().min(1).default("HelpOnCall"),
+  TOTP_PERIOD_SECONDS: z.coerce.number().int().positive().default(30),
+  TOTP_DIGITS: z.coerce
+    .number()
+    .int()
+    .refine((value) => value === 6 || value === 8, "TOTP_DIGITS must be 6 or 8")
+    .default(6),
+  TOTP_CHALLENGE_TTL_SECONDS: z.coerce.number().int().positive().default(600),
+  TOTP_VALIDATION_WINDOW: z.coerce.number().int().min(0).max(3).default(1)
 }).superRefine((data, ctx) => {
   if (!data.MAIL_ENABLED) {
     return;

@@ -78,9 +78,37 @@ async function getJson(path) {
   return data;
 }
 
+async function postJson(path, body) {
+  const response = await fetch(path, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(readErrorMessage(data));
+  }
+
+  return data;
+}
+
 export async function fetchEmploymentSpecializationGroups(apiBaseUrl) {
   const data = await getJson(`${apiBaseUrl}/api/v1/services`);
   return normalizeServiceGroups(data);
+}
+
+export async function createTotpChallenge(apiBaseUrl, payload) {
+  const data = await postJson(`${apiBaseUrl}/api/v1/totp/challenges`, payload);
+  return data.challenge || null;
+}
+
+export async function verifyTotpChallenge(apiBaseUrl, payload) {
+  const data = await postJson(`${apiBaseUrl}/api/v1/totp/challenges/verify`, payload);
+  return data.challenge || null;
 }
 
 export async function postEmploymentApplication(apiBaseUrl, formData) {
@@ -105,6 +133,7 @@ export function buildEmploymentPayload(formData) {
   payload.append('phoneNumber', formData.phone.trim());
   payload.append('coverLetter', formData.coverLetter.trim());
   payload.append('specializations', JSON.stringify(formData.specializations));
+  payload.append('totpChallengeId', formData.totpChallengeId);
   payload.append('resume', formData.resume);
 
   return payload;

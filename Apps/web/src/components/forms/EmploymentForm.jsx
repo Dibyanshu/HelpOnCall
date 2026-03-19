@@ -1,11 +1,26 @@
 import { useState, useRef, useEffect } from 'react';
-import { Upload, CheckCircle2, ChevronDown, X, Briefcase, Check, User, Mail, Phone } from 'lucide-react';
+import QRCode from 'qrcode';
+import {
+  Upload,
+  CheckCircle2,
+  ChevronDown,
+  X,
+  Briefcase,
+  Check,
+  User,
+  Mail,
+  Phone,
+  ShieldCheck,
+} from 'lucide-react';
 import {
   fetchEmploymentSpecializationGroups,
+  createTotpChallenge,
   submitEmploymentApplication,
+  verifyTotpChallenge,
 } from './employmentSubmission';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const EMPLOYMENT_TOTP_PURPOSE = 'employment_submission';
 
 const initialFormData = {
   fullName: '',
@@ -13,6 +28,7 @@ const initialFormData = {
   phone: '',
   specializations: [],
   coverLetter: '',
+  totpChallengeId: '',
   resume: null,
 };
 
@@ -22,6 +38,13 @@ export default function EmploymentForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [totpCode, setTotpCode] = useState('');
+  const [totpError, setTotpError] = useState('');
+  const [isPreparingTotp, setIsPreparingTotp] = useState(false);
+  const [isVerifyingTotp, setIsVerifyingTotp] = useState(false);
+  const [isTotpVerified, setIsTotpVerified] = useState(false);
+  const [totpSetup, setTotpSetup] = useState(null);
+  const [totpQrCodeDataUrl, setTotpQrCodeDataUrl] = useState('');
   const [specializationGroups, setSpecializationGroups] = useState([]);
   const [isLoadingSpecializations, setIsLoadingSpecializations] = useState(true);
   const dropdownRef = useRef(null);
@@ -45,6 +68,39 @@ export default function EmploymentForm() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function buildQrCode() {
+      if (!totpSetup?.otpAuthUrl) {
+        setTotpQrCodeDataUrl('');
+        return;
+      }
+
+      try {
+        const dataUrl = await QRCode.toDataURL(totpSetup.otpAuthUrl, {
+          margin: 1,
+          width: 192,
+          errorCorrectionLevel: 'M',
+        });
+
+        if (isMounted) {
+          setTotpQrCodeDataUrl(dataUrl);
+        }
+      } catch {
+        if (isMounted) {
+          setTotpQrCodeDataUrl('');
+        }
+      }
+    }
+
+    void buildQrCode();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [totpSetup?.otpAuthUrl]);
 
   useEffect(() => {
     let isMounted = true;
@@ -112,6 +168,11 @@ export default function EmploymentForm() {
     e.preventDefault();
     setSubmitError('');
 
+    if (!formData.totpChallengeId || !isTotpVerified) {
+      setSubmitError('Please complete TOTP verification before submitting your application.');
+      return;
+    }
+
     if (!formData.resume) {
       setSubmitError('Please upload your resume before submitting.');
       return;
@@ -127,10 +188,78 @@ export default function EmploymentForm() {
 
       setIsSubmitted(true);
       setFormData(initialFormData);
+      setTotpSetup(null);
+      setTotpCode('');
+      setTotpError('');
+      setIsTotpVerified(false);
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'Unable to submit your application right now.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const setupTotpChallenge = async () => {
+    setIsPreparingTotp(true);
+    setTotpError('');
+    setSubmitError('');
+
+    try {
+      const challenge = await createTotpChallenge(API_BASE_URL, {
+        purpose: EMPLOYMENT_TOTP_PURPOSE,
+        subject: formData.email.trim() || formData.fullName.trim() || 'employment-applicant',
+      });
+
+      if (!challenge || !challenge.challengeId || !challenge.secretBase32) {
+        throw new Error('Unable to create TOTP challenge right now.');
+      }
+
+      setTotpSetup(challenge);
+      setTotpCode('');
+      setIsTotpVerified(false);
+      setFormData((prev) => ({
+        ...prev,
+        totpChallengeId: challenge.challengeId,
+      }));
+    } catch (error) {
+      setTotpError(error instanceof Error ? error.message : 'Unable to create TOTP challenge right now.');
+      setIsTotpVerified(false);
+      setFormData((prev) => ({
+        ...prev,
+        totpChallengeId: '',
+      }));
+    } finally {
+      setIsPreparingTotp(false);
+    }
+  };
+
+  const verifyTotpCodeNow = async () => {
+    if (!totpSetup?.challengeId) {
+      setTotpError('Set up your authenticator app first.');
+      return;
+    }
+
+    if (!totpCode.trim()) {
+      setTotpError('Enter the verification code from your authenticator app.');
+      return;
+    }
+
+    setIsVerifyingTotp(true);
+    setTotpError('');
+
+    try {
+      await verifyTotpChallenge(API_BASE_URL, {
+        challengeId: totpSetup.challengeId,
+        code: totpCode.trim(),
+      });
+
+      setIsTotpVerified(true);
+      setSubmitError('');
+    } catch (error) {
+      setIsTotpVerified(false);
+      setTotpError(error instanceof Error ? error.message : 'Invalid verification code.');
+    } finally {
+      setIsVerifyingTotp(false);
     }
   };
 
@@ -154,6 +283,10 @@ export default function EmploymentForm() {
             onClick={() => {
               setIsSubmitted(false);
               setFormData(initialFormData);
+              setTotpSetup(null);
+              setTotpCode('');
+              setTotpError('');
+              setIsTotpVerified(false);
             }}
             className="w-full rounded-2xl bg-slate-900 px-6 py-4 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:-translate-y-1 active:scale-95 shadow-lg shadow-slate-200"
           >
@@ -401,6 +534,90 @@ export default function EmploymentForm() {
         </div>
       </div>
 
+      <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+              <ShieldCheck className="h-3.5 w-3.5 text-teal-700/70" />
+              Authenticator Verification
+            </p>
+            <p className="mt-1 text-sm text-slate-600">
+              Add this one-time secret in Google Authenticator, Authy, or Microsoft Authenticator, then verify before submit.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={setupTotpChallenge}
+            disabled={isPreparingTotp || isSubmitting}
+            className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {isPreparingTotp ? 'Preparing...' : totpSetup ? 'Regenerate Secret' : 'Set Up Authenticator'}
+          </button>
+        </div>
+
+        {totpSetup ? (
+          <div className="space-y-3 rounded-xl border border-teal-100 bg-white p-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Manual Setup Secret</p>
+              <p className="mt-1 break-all rounded-lg bg-slate-100 px-2 py-1 font-mono text-xs text-slate-700">
+                {totpSetup.secretBase32}
+              </p>
+              <p className="mt-1 text-[11px] text-slate-500">
+                Expires at {new Date(totpSetup.expiresAt).toLocaleTimeString()}.
+              </p>
+              {totpQrCodeDataUrl ? (
+                <div className="mt-3 inline-flex flex-col items-center rounded-xl border border-slate-200 bg-white p-2">
+                  <img
+                    src={totpQrCodeDataUrl}
+                    alt="TOTP setup QR code"
+                    className="h-40 w-40 rounded-md"
+                  />
+                  <p className="mt-2 text-[11px] text-slate-500">Scan this QR in your authenticator app</p>
+                </div>
+              ) : null}
+              <a
+                href={totpSetup.otpAuthUrl}
+                className="mt-1 inline-block text-[11px] font-semibold text-teal-700 underline underline-offset-2"
+              >
+                Open authenticator app directly
+              </a>
+            </div>
+
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={totpCode}
+                onChange={(e) => {
+                  const code = e.target.value.replace(/\D/g, '').slice(0, 8);
+                  setTotpCode(code);
+                  setTotpError('');
+                }}
+                placeholder="Enter authenticator code"
+                className={`${fieldStyles} flex-1`}
+              />
+              <button
+                type="button"
+                onClick={verifyTotpCodeNow}
+                disabled={isVerifyingTotp || isSubmitting}
+                className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {isVerifyingTotp ? 'Verifying...' : isTotpVerified ? 'Verified' : 'Verify Code'}
+              </button>
+            </div>
+
+            {isTotpVerified ? (
+              <p className="text-xs font-semibold text-emerald-700">TOTP verification complete.</p>
+            ) : null}
+          </div>
+        ) : null}
+
+        {totpError ? (
+          <p className="text-xs text-rose-600">{totpError}</p>
+        ) : null}
+      </div>
+
       {submitError ? (
         <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
           {submitError}
@@ -409,10 +626,10 @@ export default function EmploymentForm() {
 
       <button
         type="submit"
-        disabled={isSubmitting}
+        disabled={isSubmitting || !isTotpVerified}
         className="btn-primary w-full"
       >
-        {isSubmitting ? 'Sending Application...' : 'Submit Application'}
+        {isSubmitting ? 'Sending Application...' : isTotpVerified ? 'Submit Application' : 'Verify TOTP to Submit'}
       </button>
     </form>
   );

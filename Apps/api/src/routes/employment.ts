@@ -4,16 +4,17 @@ import { access, mkdir, unlink } from "node:fs/promises";
 import { basename, extname } from "node:path";
 import { resolve } from "node:path";
 import { pipeline } from "node:stream/promises";
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import { env } from "../config/env.js";
 import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
-import { employment, serviceCategories, services, users } from "../db/schema.js";
+import { employment, serviceCategories, services, totpChallenges, users } from "../db/schema.js";
 import type { Role } from "../types/auth.js";
 
 const allowedResumeExtensions = new Set([".pdf", ".doc", ".docx"]);
+const EMPLOYMENT_TOTP_PURPOSE = "employment_submission";
 
 const specializationSelectionSchema = z.object({
   categoryId: z.number().int().positive(),
@@ -25,6 +26,7 @@ const createEmploymentSchema = z
     fullName: z.string().min(2),
     emailAddress: z.string().email().optional(),
     email: z.string().email().optional(),
+    totpChallengeId: z.string().uuid(),
     phoneNumber: z.string().min(7).optional(),
     phone: z.string().min(7).optional(),
     specializations: z.array(z.union([z.string().min(1), specializationSelectionSchema])).min(1),
@@ -299,6 +301,7 @@ const employmentRoutes: FastifyPluginAsync = async (fastify) => {
       fullName: multipartFields.fullName,
       emailAddress: multipartFields.emailAddress,
       email: multipartFields.email,
+      totpChallengeId: multipartFields.totpChallengeId,
       phoneNumber: multipartFields.phoneNumber,
       phone: multipartFields.phone,
       specializations: parsedSpecializations,
@@ -315,6 +318,56 @@ const employmentRoutes: FastifyPluginAsync = async (fastify) => {
 
     const emailAddress = bodyParse.data.emailAddress ?? bodyParse.data.email ?? "";
     const phoneNumber = bodyParse.data.phoneNumber ?? bodyParse.data.phone ?? "";
+
+    const totpChallengeResult = await db
+      .select({
+        id: totpChallenges.id,
+        challengeId: totpChallenges.challengeId,
+        purpose: totpChallenges.purpose,
+        verifiedAt: totpChallenges.verifiedAt,
+        expiresAt: totpChallenges.expiresAt,
+        consumedAt: totpChallenges.consumedAt
+      })
+      .from(totpChallenges)
+      .where(eq(totpChallenges.challengeId, bodyParse.data.totpChallengeId))
+      .limit(1);
+
+    const totpChallenge = totpChallengeResult[0];
+
+    if (!totpChallenge) {
+      await removeFileIfExists(savedResumePath);
+      return reply.code(400).send({
+        message: "TOTP verification challenge was not found"
+      });
+    }
+
+    if (totpChallenge.purpose !== EMPLOYMENT_TOTP_PURPOSE) {
+      await removeFileIfExists(savedResumePath);
+      return reply.code(400).send({
+        message: "TOTP challenge purpose mismatch"
+      });
+    }
+
+    if (totpChallenge.consumedAt) {
+      await removeFileIfExists(savedResumePath);
+      return reply.code(400).send({
+        message: "TOTP challenge is already used"
+      });
+    }
+
+    if (!totpChallenge.verifiedAt) {
+      await removeFileIfExists(savedResumePath);
+      return reply.code(400).send({
+        message: "TOTP verification is required before submission"
+      });
+    }
+
+    if (totpChallenge.expiresAt.getTime() < Date.now()) {
+      await removeFileIfExists(savedResumePath);
+      return reply.code(400).send({
+        message: "TOTP challenge has expired. Please generate a new one"
+      });
+    }
 
     const structuredSelections = bodyParse.data.specializations.filter(
       (item): item is z.infer<typeof specializationSelectionSchema> => typeof item !== "string"
@@ -346,30 +399,50 @@ const employmentRoutes: FastifyPluginAsync = async (fastify) => {
     }
 
     try {
-      const inserted = await db
-        .insert(employment)
-        .values({
-          fullName: bodyParse.data.fullName,
-          emailAddress,
-          phoneNumber,
-          specializations: JSON.stringify(bodyParse.data.specializations),
-          coverLetter: bodyParse.data.coverLetter,
-          resumeFileName: resumeStoredFileName,
-          status: "new",
-          ...buildAuditCreateFields("public_employment_form")
-        })
-        .returning({
-          id: employment.id,
-          empId: employment.empId,
-          fullName: employment.fullName,
-          emailAddress: employment.emailAddress,
-          phoneNumber: employment.phoneNumber,
-          status: employment.status,
-          resumeFileName: employment.resumeFileName,
-          createdAt: employment.createdAt
-        });
+      const createdSubmission = await db.transaction(async (tx) => {
+        const inserted = await tx
+          .insert(employment)
+          .values({
+            fullName: bodyParse.data.fullName,
+            emailAddress,
+            phoneNumber,
+            specializations: JSON.stringify(bodyParse.data.specializations),
+            coverLetter: bodyParse.data.coverLetter,
+            resumeFileName: resumeStoredFileName,
+            status: "new",
+            ...buildAuditCreateFields("public_employment_form")
+          })
+          .returning({
+            id: employment.id,
+            empId: employment.empId,
+            fullName: employment.fullName,
+            emailAddress: employment.emailAddress,
+            phoneNumber: employment.phoneNumber,
+            status: employment.status,
+            resumeFileName: employment.resumeFileName,
+            createdAt: employment.createdAt
+          });
 
-      const createdSubmission = inserted[0];
+        const consumed = await tx
+          .update(totpChallenges)
+          .set({
+            consumedAt: new Date(),
+            ...buildAuditUpdateFields()
+          })
+          .where(
+            and(
+              eq(totpChallenges.challengeId, bodyParse.data.totpChallengeId),
+              isNull(totpChallenges.consumedAt)
+            )
+          )
+          .returning({ challengeId: totpChallenges.challengeId });
+
+        if (consumed.length === 0) {
+          throw new Error("TOTP_CHALLENGE_ALREADY_USED");
+        }
+
+        return inserted[0];
+      });
 
       void findAdminRecipientEmails()
         .then(async (adminEmails) => {
@@ -407,6 +480,13 @@ const employmentRoutes: FastifyPluginAsync = async (fastify) => {
       });
     } catch (error) {
       await removeFileIfExists(savedResumePath);
+
+      if (error instanceof Error && error.message === "TOTP_CHALLENGE_ALREADY_USED") {
+        return reply.code(400).send({
+          message: "TOTP challenge is already used"
+        });
+      }
+
       throw error;
     }
   });

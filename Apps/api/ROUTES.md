@@ -243,7 +243,98 @@ curl --location '{{baseUrl}}/api/v1/auth/change-password' \
 
 ---
 
-## 4.1) Submit Employment Application
+## 4.1) Create TOTP Challenge
+
+### Request
+
+- Method: `POST`
+- URL: `{{baseUrl}}/api/v1/totp/challenges`
+- Auth: None
+- Header: `Content-Type: application/json`
+
+Body (raw JSON):
+
+```json
+{
+  "purpose": "employment_submission",
+  "subject": "jane@example.com"
+}
+```
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/totp/challenges' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "purpose": "employment_submission",
+  "subject": "jane@example.com"
+}'
+```
+
+### Success Response (201)
+
+```json
+{
+  "message": "TOTP challenge created",
+  "challenge": {
+    "challengeId": "3a9f8a14-cfca-4b34-9252-8019d8c0d0ff",
+    "secretBase32": "JBSWY3DPEHPK3PXP",
+    "issuer": "HelpOnCall",
+    "periodSeconds": 30,
+    "digits": 6,
+    "expiresAt": "2026-03-19T12:10:00.000Z",
+    "otpAuthUrl": "otpauth://totp/HelpOnCall%3Ajane%40example.com?..."
+  }
+}
+```
+
+---
+
+## 4.2) Verify TOTP Challenge
+
+### Request
+
+- Method: `POST`
+- URL: `{{baseUrl}}/api/v1/totp/challenges/verify`
+- Auth: None
+- Header: `Content-Type: application/json`
+
+Body (raw JSON):
+
+```json
+{
+  "challengeId": "3a9f8a14-cfca-4b34-9252-8019d8c0d0ff",
+  "code": "123456"
+}
+```
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/totp/challenges/verify' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "challengeId": "3a9f8a14-cfca-4b34-9252-8019d8c0d0ff",
+  "code": "123456"
+}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "message": "TOTP verification successful",
+  "challenge": {
+    "challengeId": "3a9f8a14-cfca-4b34-9252-8019d8c0d0ff",
+    "verifiedAt": "2026-03-19T12:03:00.000Z"
+  }
+}
+```
+
+---
+
+## 4.3) Submit Employment Application
 
 ### Request
 
@@ -259,6 +350,7 @@ Form-data fields:
 - `phoneNumber`: text
 - `specializations`: JSON string (e.g. `[{"categoryId":1,"serviceId":2}]`)
 - `coverLetter`: text
+- `totpChallengeId`: UUID from verified TOTP challenge
 - `resume`: file (`.pdf`, `.doc`, `.docx`)
 
 Notes:
@@ -276,6 +368,7 @@ curl --location '{{baseUrl}}/api/v1/employment' \
 --form 'phoneNumber="+1 (647) 123-4567"' \
 --form 'specializations="[{""categoryId"":1,""serviceId"":2}]"' \
 --form 'coverLetter="I have 6 years of caregiving experience."' \
+--form 'totpChallengeId="3a9f8a14-cfca-4b34-9252-8019d8c0d0ff"' \
 --form 'resume=@"/path/to/jane-doe-resume.pdf"'
 ```
 
@@ -296,7 +389,7 @@ curl --location '{{baseUrl}}/api/v1/employment' \
 
 ---
 
-## 4.2) Approve Employment Submission (Admin / Super Admin)
+## 4.4) Approve Employment Submission (Admin / Super Admin)
 
 ### Request
 
@@ -327,7 +420,7 @@ curl --location --request POST '{{baseUrl}}/api/v1/admin/employment/8e4d6574-8f8
 
 ---
 
-## 4.3) Reject Employment Submission (Admin / Super Admin)
+## 4.5) Reject Employment Submission (Admin / Super Admin)
 
 ### Request
 
