@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 @layer base {
-  a, 
-  button, 
+
+  a,
+  button,
   input[type="submit"],
   select,
   label,
@@ -45,6 +46,7 @@ body {
 }
 
 @keyframes hero-light {
+
   0%,
   100% {
     opacity: 0.25;
@@ -56,6 +58,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .hero-kenburns,
   .hero-breathing-light {
     animation: none;
@@ -66,6 +69,23 @@ body {
 @layer utilities {
   .animate-in {
     animation-fill-mode: both;
+  }
+
+  .btn-primary {
+    @apply relative overflow-hidden rounded-md px-4 py-2 text-sm font-semibold bg-teal-700 text-white shadow-xs shadow-teal-500/20 transition-all hover:bg-teal-800 hover:shadow-teal-500/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 active:scale-[0.98] cursor-pointer inline-flex items-center justify-center;
+  }
+
+  .btn-primary::after {
+    @apply absolute top-0 -left-full h-full w-full bg-linear-to-r from-transparent via-white/20 to-transparent transition-all duration-1000 ease-in-out;
+    content: '';
+  }
+
+  .btn-primary:hover::after {
+    @apply left-full;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 hover:border-slate-400 active:scale-[0.98] cursor-pointer;
   }
 }
 
@@ -98,37 +118,83 @@ body {
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes zoom-in {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes slide-in-top {
-  from { opacity: 0; transform: translateY(-1rem); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-1rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slide-in-bottom {
-  from { opacity: 0; transform: translateY(1rem); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slide-in-bottom-large {
-  from { opacity: 0; transform: translateY(2rem); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slide-in-left {
-  from { opacity: 0; transform: translateX(-2rem); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-2rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(2rem); }
-  to { opacity: 1; transform: translateX(0); }
-}
+  from {
+    opacity: 0;
+    transform: translateX(2rem);
+  }
 
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

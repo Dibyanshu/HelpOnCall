@@ -51,12 +51,12 @@ export default function RFQSlideInPanel() {
         className={`fixed right-0 top-0 z-[100] h-screen w-full md:w-[60%] lg:w-[40%] bg-white shadow-2xl transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-            <h2 className="text-lg font-semibold text-gray-900">Request For Quote</h2>
+          <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 bg-gray-900">
+            <h2 className="text-lg font-semibold text-gray-300">Request For Quote</h2>
             <button
               type="button"
               onClick={closePanel}
-              className="rounded-md p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+              className="rounded-md p-2 text-gray-300 transition-colors hover:bg-gray-100 hover:text-gray-900"
               aria-label="Close RFQ panel"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">

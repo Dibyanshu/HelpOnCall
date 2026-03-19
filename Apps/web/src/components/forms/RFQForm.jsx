@@ -253,10 +253,10 @@ export default function RFQForm({ onCancel }) {
               <Navigation className="h-3.5 w-3.5 text-teal-600/70" />
               Pin Exact Location (Optional)
             </label>
-            <MapSelector 
+            <MapSelector
               onLocationPinned={(confirmedAddress) => {
                 setFormData(prev => ({ ...prev, address: confirmedAddress }));
-              }} 
+              }}
             />
           </div>
         </div>
@@ -339,7 +339,7 @@ export default function RFQForm({ onCancel }) {
                   value={pref}
                   checked={formData.contactPreference === pref}
                   onChange={handleChange}
-                  className="h-4 w-4 border-gray-200 text-teal-600 focus:ring-teal-600 cursor-pointer transition-all"
+                  className="h-4 w-4 border-gray-200 accent-teal-700 focus:ring-teal-700 cursor-pointer transition-all"
                 />
                 <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 capitalize transition-colors">
                   {pref}
@@ -422,7 +422,7 @@ export default function RFQForm({ onCancel }) {
                     value={option.value}
                     checked={formData.careType === option.value}
                     onChange={handleChange}
-                    className="h-4.5 w-4.5 border-gray-200 text-teal-600 focus:ring-teal-600 cursor-pointer transition-all"
+                    className="h-4.5 w-4.5 border-gray-200 accent-teal-700 focus:ring-teal-700 cursor-pointer transition-all"
                   />
                   <span className="text-sm font-bold text-gray-700 group-hover:text-teal-800 transition-colors">
                     {option.label}
@@ -510,18 +510,15 @@ export default function RFQForm({ onCancel }) {
           <button
             type="button"
             onClick={onCancel}
-            className="w-full sm:w-1/2 flex items-center justify-center rounded-xl bg-white border border-gray-200 px-6 py-4 text-base font-bold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-[0.98] cursor-pointer"
+            className="btn-secondary w-full sm:w-1/2"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="relative group w-full sm:w-1/2 overflow-hidden rounded-xl bg-teal-700 px-6 py-4 text-base font-bold text-white shadow-xs shadow-teal-500/20 transition-all hover:bg-teal-800 hover:shadow-teal-500/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 active:scale-[0.98] cursor-pointer"
+            className="btn-primary w-full sm:w-1/2"
           >
-            <div className="flex items-center justify-center">
-              Submit
-            </div>
-            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-1000 ease-in-out" />
+            Submit
           </button>
         </div>
       </form>

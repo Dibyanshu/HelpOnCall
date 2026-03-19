@@ -19,7 +19,7 @@ export default function AboutUsCard({
 
           <a
             href='/about'
-            className="inline-flex w-full items-center justify-center rounded-lg bg-teal-700 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 md:w-auto"
+                className="btn-primary w-full md:w-auto"
           >
             {buttonLabel}
           </a>

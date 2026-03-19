@@ -6,7 +6,7 @@ const DEFAULT_FORM = {
   display_order: 0,
 };
 
-export default function CategoryForm({ initialData, onSubmit }) {
+export default function CategoryForm({ initialData, onClose, onSubmit }) {
   const startingValues = useMemo(
     () => ({
       title: initialData?.title ?? DEFAULT_FORM.title,
@@ -89,14 +89,23 @@ export default function CategoryForm({ initialData, onSubmit }) {
         </p>
       ) : null}
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="inline-flex items-center gap-2 rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-70"
-      >
-        <Save className="h-4 w-4" />
-        {isSubmitting ? 'Saving...' : 'Save Category'}
-      </button>
+      <div className="flex flex-wrap items-center gap-3 pt-2">
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="btn-primary"
+        >
+          <Save className="h-4 w-4" />
+          {isSubmitting ? 'Saving...' : 'Save Category'}
+        </button>
+        <button
+          type="button"
+          onClick={onClose}
+          className="btn-secondary"
+        >
+          Cancel
+        </button>
+      </div>
     </form>
   );
 }

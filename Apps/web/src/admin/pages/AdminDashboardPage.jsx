@@ -68,7 +68,7 @@ export default function AdminDashboardPage() {
             <p className="mt-2 text-sm text-slate-600">Return to the public Help On Call pages.</p>
             <Link
               to="/"
-              className="mt-4 inline-flex rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-800"
+              className="mt-4 btn-primary"
             >
               Go Home
             </Link>

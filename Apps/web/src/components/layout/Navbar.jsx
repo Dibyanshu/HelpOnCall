@@ -90,7 +90,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={openPanel}
-              className="inline-flex items-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 hover:shadow-lg hover:shadow-teal-700/20"
+              className="btn-primary"
             >
               Request For Quote
             </button>
@@ -155,7 +155,7 @@ export default function Navbar() {
                   openPanel();
                   setMobileOpen(false);
                 }}
-                className="mt-2 block w-full rounded-md bg-teal-700 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-teal-800"
+                className="mt-2 btn-primary w-full"
               >
                 Request A Quote
               </button>

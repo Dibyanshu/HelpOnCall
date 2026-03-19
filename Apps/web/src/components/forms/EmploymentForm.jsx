@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Upload, CheckCircle2, ChevronDown, X, Briefcase, Check } from 'lucide-react';
+import { Upload, CheckCircle2, ChevronDown, X, Briefcase, Check, User, Mail, Phone } from 'lucide-react';
 import {
   fetchEmploymentSpecializationGroups,
   submitEmploymentApplication,
@@ -92,10 +92,10 @@ export default function EmploymentForm() {
         (item) => item.categoryId === selection.categoryId && item.serviceId === selection.serviceId,
       )
         ? prev.specializations.filter(
-            (item) => !(
-              item.categoryId === selection.categoryId && item.serviceId === selection.serviceId
-            ),
-          )
+          (item) => !(
+            item.categoryId === selection.categoryId && item.serviceId === selection.serviceId
+          ),
+        )
         : [...prev.specializations, selection],
     }));
   };
@@ -134,13 +134,15 @@ export default function EmploymentForm() {
     }
   };
 
+  const fieldStyles = "block w-full rounded-xl border-0 py-3.5 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-100 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-700 transition-all duration-200 bg-white/5 backdrop-blur-sm";
+
   if (isSubmitted) {
     return (
       <div className="flex items-center justify-center p-4">
         <div className="w-full max-w-md animate-in fade-in zoom-in slide-in-from-bottom-8 duration-700 ease-out flex flex-col items-center bg-white rounded-[40px] p-12 shadow-2xl shadow-slate-200 text-center">
           <div className="relative mb-8">
             <div className="absolute inset-0 animate-ping rounded-full bg-teal-100 opacity-75" />
-            <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-teal-50 text-teal-600">
+            <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-teal-50 text-teal-700">
               <CheckCircle2 size={48} className="animate-bounce" />
             </div>
           </div>
@@ -165,17 +167,18 @@ export default function EmploymentForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className={`mx-auto w-full max-w-2xl space-y-8 rounded-[40px] bg-white p-8 shadow-2xl shadow-slate-200 ring-1 ring-slate-200 transition-all duration-500 lg:p-8 ${isSubmitting ? 'scale-95 opacity-50 pointer-events-none' : 'scale-100 opacity-100'
+      className={`mx-auto w-full max-w-2xl space-y-6 rounded-3xl bg-white p-8 shadow-2xl shadow-slate-200 ring-1 ring-slate-200 transition-all duration-500 lg:p-10 ${isSubmitting ? 'scale-95 opacity-50 pointer-events-none' : 'scale-100 opacity-100'
         }`}
       aria-label="Employment application form"
     >
-      <div className="space-y-2 mb-3">
+      <div className="space-y-1.5 mb-3">
         <h3 className="text-xl font-semibold text-slate-900">Career Application</h3>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <label htmlFor="fullName" className="text-xs font-semibold uppercase tracking-wider text-slate-500 ml-1">
+          <label htmlFor="fullName" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+            <User className="h-3.5 w-3.5 text-teal-700/70" />
             Full Name
           </label>
           <input
@@ -185,13 +188,14 @@ export default function EmploymentForm() {
             value={formData.fullName}
             onChange={handleChange}
             required
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-900 transition-all focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-teal-500/10"
+            className={fieldStyles}
             placeholder="John Doe"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-slate-500 ml-1">
+          <label htmlFor="email" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+            <Mail className="h-3.5 w-3.5 text-teal-700/70" />
             Email Address
           </label>
           <input
@@ -201,15 +205,16 @@ export default function EmploymentForm() {
             value={formData.email}
             onChange={handleChange}
             required
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-900 transition-all focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-teal-500/10"
+            className={fieldStyles}
             placeholder="john@example.com"
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <label htmlFor="phone" className="text-xs font-semibold uppercase tracking-wider text-slate-500 ml-1">
+          <label htmlFor="phone" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+            <Phone className="h-3.5 w-3.5 text-teal-700/70" />
             Phone Number
           </label>
           <input
@@ -218,14 +223,14 @@ export default function EmploymentForm() {
             type="tel"
             value={formData.phone}
             onChange={handleChange}
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-900 transition-all focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-teal-500/10"
+            className={fieldStyles}
             placeholder="+1 (555) 000-0000"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="specializations" className="text-xs font-semibold uppercase tracking-wider text-slate-500 ml-1 flex items-center gap-2">
-            <Briefcase size={14} className="text-teal-600/70" />
+          <label htmlFor="specializations" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+            <Briefcase className="h-3.5 w-3.5 text-teal-700/70" />
             Specializations
           </label>
           <div className="relative" ref={dropdownRef}>
@@ -233,7 +238,7 @@ export default function EmploymentForm() {
               id="specializations"
               type="button"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex min-h-[52px] w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-900 transition-all focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-teal-500/10 text-left cursor-pointer shadow-sm group hover:border-teal-400/50"
+              className={`${fieldStyles} flex min-h-[52px] items-center justify-between text-left cursor-pointer`}
             >
               <div className="flex flex-wrap gap-1.5 overflow-hidden">
                 {selectedSpecializationLabels.length === 0 ? (
@@ -255,7 +260,7 @@ export default function EmploymentForm() {
               </div>
               <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform duration-300 shrink-0 ml-2 ${isDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
-  
+
             {isDropdownOpen && (
               <div className="absolute z-20 mt-2 w-full rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-md p-2 shadow-2xl animate-in fade-in zoom-in duration-300 ring-1 ring-slate-900/5 origin-top">
                 <div className="max-h-80 overflow-y-auto p-1">
@@ -291,13 +296,13 @@ export default function EmploymentForm() {
                               key={`${option.categoryId}-${option.serviceId}`}
                               type="button"
                               onClick={() => handleSpecToggle(selection)}
-                              className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-all duration-200 group/item ${isSelected 
-                                ? 'bg-teal-50 text-teal-700 font-bold shadow-sm shadow-teal-500/5' 
+                              className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-all duration-200 group/item ${isSelected
+                                ? 'bg-teal-50 text-teal-700 font-bold shadow-sm shadow-teal-500/5'
                                 : 'hover:bg-slate-50 text-slate-600 hover:text-slate-900'
-                              }`}
+                                }`}
                             >
                               <span className="flex-1 text-left">{option.label}</span>
-                              {isSelected && <Check className="h-4 w-4 text-teal-600 animate-in zoom-in duration-200" />}
+                              {isSelected && <Check className="h-4 w-4 text-teal-700 animate-in zoom-in duration-200" />}
                             </button>
                           );
                         })}
@@ -312,7 +317,8 @@ export default function EmploymentForm() {
       </div>
 
       <div className="space-y-1.5">
-        <label htmlFor="coverLetter" className="text-xs font-semibold uppercase tracking-wider text-slate-500 ml-1">
+        <label htmlFor="coverLetter" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+          <Briefcase className="h-3.5 w-3.5 text-teal-700/70" />
           Cover Letter
         </label>
         <textarea
@@ -322,13 +328,14 @@ export default function EmploymentForm() {
           onChange={handleChange}
           rows={4}
           required
-          className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-900 transition-all focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-teal-500/10"
+          className={`${fieldStyles} resize-none`}
           placeholder="Why are you a good fit for Help On Call?"
         />
       </div>
 
       <div className="space-y-1.5">
-        <label htmlFor="resume" className="text-xs font-semibold uppercase tracking-wider text-slate-500 ml-1">
+        <label htmlFor="resume" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+          <Upload className="h-3.5 w-3.5 text-teal-700/70" />
           Upload Resume
         </label>
         <div className="relative group">
@@ -343,13 +350,13 @@ export default function EmploymentForm() {
           <div className={`
             flex items-center justify-center rounded-2xl border-2 border-dashed px-4 py-4 transition-all duration-300
             ${formData.resume
-              ? 'border-teal-500 bg-teal-50/30'
+              ? 'border-teal-700 bg-teal-50/30'
               : 'border-slate-200 bg-slate-50/50 hover:border-teal-400 hover:bg-white hover:shadow-xl hover:shadow-teal-500/5 hover:-translate-y-0.5'}
           `}>
             {formData.resume ? (
               <div className="flex w-full items-center justify-between gap-4 animate-in fade-in duration-300">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-100 text-teal-600 shadow-inner">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-100 text-teal-700 shadow-inner">
                     <CheckCircle2 size={18} />
                   </div>
                   <div className="min-w-0">
@@ -390,7 +397,7 @@ export default function EmploymentForm() {
             )}
           </div>
           {/* Subtle glow effect on group hover */}
-          <div className="absolute -inset-1 -z-10 rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-500 opacity-0 blur transition-opacity duration-300 group-hover:opacity-10" />
+          <div className="absolute -inset-1 -z-10 rounded-2xl bg-gradient-to-r from-teal-700 to-emerald-500 opacity-0 blur transition-opacity duration-300 group-hover:opacity-10" />
         </div>
       </div>
 
@@ -403,7 +410,7 @@ export default function EmploymentForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full flex items-center justify-center gap-2 rounded-2xl bg-teal-700 px-6 py-4 text-base font-semibold text-white shadow-xl shadow-teal-700/20 transition-all hover:bg-teal-800 hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="btn-primary w-full"
       >
         {isSubmitting ? 'Sending Application...' : 'Submit Application'}
       </button>
