@@ -46,7 +46,6 @@ body {
 }
 
 @keyframes hero-light {
-
   0%,
   100% {
     opacity: 0.25;
@@ -57,10 +56,15 @@ body {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
 
+@media (prefers-reduced-motion: reduce) {
   .hero-kenburns,
-  .hero-breathing-light {
+  .hero-breathing-light,
+  .animate-float {
     animation: none;
   }
 }
@@ -69,6 +73,15 @@ body {
 @layer utilities {
   .animate-in {
     animation-fill-mode: both;
+  }
+
+  .animate-float {
+    animation: float-y var(--float-duration, 6s) ease-in-out infinite;
+    animation-delay: var(--float-delay, 0s);
+  }
+
+  .pause-animation {
+    animation-play-state: paused;
   }
 
   .btn-primary {
