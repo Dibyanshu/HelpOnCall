@@ -5,6 +5,7 @@ import AboutUsPage from './pages/AboutUsPage';
 import EmploymentPage from './pages/EmploymentPage';
 import Services from './pages/ServicesPage';
 import SitemapPage from './pages/SitemapPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import UserRegistrationPage from './pages/UserRegistrationPage';
 import AdminLoginPage from './admin/pages/AdminLoginPage';
 import AdminDashboardPage from './admin/pages/AdminDashboardPage';
@@ -68,6 +69,7 @@ function App() {
         <Route path="/register" element={<Layout><UserRegistrationPage /></Layout>} />
         <Route path="/employment" element={<Layout><EmploymentPage /></Layout>} />
         <Route path="/sitemap" element={<Layout><SitemapPage /></Layout>} />
+        <Route path="/privacy-policy" element={<Layout><PrivacyPolicyPage /></Layout>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <RFQSlideInPanel />
