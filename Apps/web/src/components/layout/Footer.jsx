@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { Phone, Mail, MapPin, Copy, Check } from 'lucide-react';
 
 const quickLinks = [
-  { label: 'Home', href: '/' },
-  { label: 'Services', href: '/services' },
-  { label: 'About Us', href: '/about' },
-  { label: 'Employment', href: '/employment' },
-  { label: 'Staff Login', href: '/admin/login' },
+  { label: 'Home', to: '/', end: true },
+  { label: 'Services', to: '/services' },
+  { label: 'About Us', to: '/about' },
+  { label: 'Employment', to: '/employment' },
+  { label: 'Staff Login', to: '/admin/login' },
 ];
 
 const seoNeighborhoods = [
@@ -83,10 +83,18 @@ export default function Footer() {
             <nav aria-label="Footer quick links">
               <ul className="mt-4 space-y-3 text-sm" role="list">
                 {quickLinks.map((link) => (
-                  <li key={link.href}>
-                    <a href={link.href} className="hover:text-white transition-colors">
+                  <li key={link.to}>
+                    <NavLink
+                      to={link.to}
+                      end={link.end}
+                      className={({ isActive }) =>
+                        isActive
+                          ? 'font-semibold text-white'
+                          : 'hover:text-teal-400 transition-colors'
+                      }
+                    >
                       {link.label}
-                    </a>
+                    </NavLink>
                   </li>
                 ))}
               </ul>
@@ -155,10 +163,24 @@ export default function Footer() {
               </h3>
               <ul className="mt-4 space-y-2 text-sm">
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+                  <NavLink
+                    to="/privacy-policy"
+                    className={({ isActive }) =>
+                      isActive ? 'font-semibold text-white' : 'hover:text-teal-400 transition-colors'
+                    }
+                  >
+                    Privacy Policy
+                  </NavLink>
                 </li>
                 <li>
-                  <Link to="/sitemap" className="hover:text-white transition-colors">Sitemap</Link>
+                  <NavLink
+                    to="/sitemap"
+                    className={({ isActive }) =>
+                      isActive ? 'font-semibold text-white' : 'hover:text-teal-400 transition-colors'
+                    }
+                  >
+                    Sitemap
+                  </NavLink>
                 </li>
               </ul>
             </div>
@@ -188,7 +210,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-10 border-t border-gray-800 pt-6 text-center text-xs text-gray-500">
-          <p>&copy; {new Date().getFullYear()} Toronto Care &amp; Stay. All rights reserved. Alt Toronto, North York, Scarborough, Etobicoke</p>
+          <p>&copy; {new Date().getFullYear()} Help On Call. All rights reserved. Alt Toronto, North York, Scarborough, Etobicoke</p>
         </div>
       </div>
     </footer>
