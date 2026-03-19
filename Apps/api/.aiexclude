@@ -1,0 +1,34 @@
+# Dependencies - The biggest token eaters
+node_modules/
+jspm_packages/
+
+# Next.js & Build Outputs
+.next/
+out/
+build/
+dist/
+.vercel/
+
+# Environment and Secrets
+.env*
+*.pem
+*.key
+secrets.json
+
+# Logs and Debugging
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.DS_Store
+
+# Large Assets (Gemini cannot code images/videos)
+public/assets/
+public/videos/
+*.mp4
+*.zip
+*.pdf
+
+# Testing & Coverage
+coverage/
+.nyc_output/
