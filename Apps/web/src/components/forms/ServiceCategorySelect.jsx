@@ -1,16 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { Check, ChevronDown, Info, X } from 'lucide-react';
 
-const serviceGroups = [
-  {
-    label: 'Nursing Services',
-    options: ['Home Care', 'Post-Op Care', 'Palliative Care', 'Wound Care'],
-  },
-  {
-    label: 'Hospitality Services',
-    options: ['Corporate Housing', 'Elderly Concierge', 'Short-Term Stay', 'Long-Term Stay'],
-  },
-];
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 /**
  * ServiceCategorySelect
@@ -22,7 +13,25 @@ const serviceGroups = [
  */
 export default function ServiceCategorySelect({ value = [], onChange, fieldStyles = '' }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [serviceGroups, setServiceGroups] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    async function loadServices() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/services`);
+        if (!response.ok) throw new Error('Failed to fetch services');
+        const data = await response.json();
+        setServiceGroups(data);
+      } catch (error) {
+        console.error('Error loading services:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadServices();
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -49,7 +58,6 @@ export default function ServiceCategorySelect({ value = [], onChange, fieldStyle
       </label>
 
       <div className="relative">
-        {/* Trigger button */}
         <button
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
@@ -81,38 +89,52 @@ export default function ServiceCategorySelect({ value = [], onChange, fieldStyle
           />
         </button>
 
-        {/* Dropdown panel */}
         {isOpen && (
           <div className="absolute z-20 mt-2 w-full max-h-80 overflow-y-auto rounded-xl bg-white p-2 shadow-2xl ring-1 ring-black/5">
-            {serviceGroups.map((group) => (
-              <div key={group.label} className="mb-4 last:mb-0">
-                <h3 className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-gray-400/80">
-                  {group.label}
-                </h3>
-                <div className="space-y-1">
-                  {group.options.map((option) => {
-                    const isSelected = value.includes(option);
-                    return (
-                      <button
-                        key={option}
-                        type="button"
-                        onClick={() => toggleOption(option)}
-                        className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors cursor-pointer ${isSelected
+            {isLoading ? (
+              <p className="px-4 py-3 text-sm text-gray-400">Loading services...</p>
+            ) : serviceGroups.length === 0 ? (
+              <p className="px-4 py-3 text-sm text-gray-400">No services available</p>
+            ) : (
+              serviceGroups.map((group) => (
+                <div key={group.categoryId} className="mb-4 last:mb-0">
+                  <h3 className="flex items-center gap-2 px-3 py-1.5 border-b border-gray-50 mb-1">
+                    <span className="text-[9px] font-bold text-gray-300">#{group.displayOrder + 1}</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400/80">
+                      {group.title}
+                    </span>
+                  </h3>
+                  <div className="space-y-1">
+                    {group.features.map((option) => {
+                      const isSelected = value.includes(option.label);
+                      return (
+                        <button
+                          key={option.serviceId}
+                          type="button"
+                          onClick={() => toggleOption(option.label)}
+                          className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors cursor-pointer ${isSelected
                             ? 'bg-teal-50 text-teal-700 font-bold'
                             : 'text-gray-700 hover:bg-gray-50/80'
-                          }`}
-                      >
-                        {option}
-                        {isSelected && <Check className="h-4 w-4" />}
-                      </button>
-                    );
-                  })}
+                            }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-gray-300 font-bold">#{option.displayOrder + 1}</span>
+                            <span>{option.label}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {isSelected && <Check className="h-4 w-4" />}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         )}
       </div>
     </div>
   );
 }
+

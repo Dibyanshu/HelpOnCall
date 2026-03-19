@@ -82,8 +82,9 @@ export default function ServiceCard() {
                     {/* Feature Content */}
                     <div className="p-6">
                       {/* Feature Label */}
-                      <h3 className="text-lg font-semibold text-[#004D40] mb-3">
-                        {feature.label}
+                      <h3 className="flex items-center gap-2 text-lg font-semibold text-[#004D40] mb-3">
+                        <span className="font-bold text-gray-300">#{feature.displayOrder + 1}</span>
+                        <span>{feature.label}</span>
                       </h3>
 
                       {/* Feature Description */}

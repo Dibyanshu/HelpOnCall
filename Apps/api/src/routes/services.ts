@@ -149,6 +149,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
       desc: string | null;
       image: string | null;
       icon: string | null;
+      displayOrder: number;
     }>>();
 
     for (const item of servicesList) {
@@ -159,7 +160,8 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
         label: item.label,
         desc: item.desc,
         image: item.image,
-        icon: item.icon
+        icon: item.icon,
+        displayOrder: item.displayOrder ?? 0
       });
       servicesByCategoryId.set(item.categoryId, current);
     }
@@ -167,6 +169,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
     return categories.map((category) => ({
       categoryId: category.id,
       title: category.title,
+      displayOrder: category.displayOrder ?? 0,
       features: servicesByCategoryId.get(category.id) ?? []
     }));
   });
