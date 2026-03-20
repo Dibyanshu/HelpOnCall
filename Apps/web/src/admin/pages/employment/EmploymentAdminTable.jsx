@@ -16,8 +16,10 @@ function renderStatusBadge(status) {
       : 'bg-amber-100 text-amber-800';
 
   return (
-    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${classes}`}>
-      {status}
+    <span
+      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold shadow-sm ${classes}`}
+    >
+      {status === 'approve' ? 'Approved' : status === 'reject' ? 'Rejected' : 'New'}
     </span>
   );
 }
@@ -52,64 +54,83 @@ export default function EmploymentAdminTable({
   onDownloadResume,
 }) {
   if (isLoading) {
-    return <p className="text-sm text-slate-600">Loading employment submissions...</p>;
+    return (
+      <div className="py-12 flex flex-col items-center justify-center space-y-4">
+        <div className="h-10 w-10 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-sm text-slate-600 animate-pulse">Syncing Personnel Records...</p>
+      </div>
+    );
   }
 
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-slate-200 text-sm">
-        <thead className="bg-slate-50">
+        <thead className="bg-slate-50/50">
           <tr>
-            <th scope="col" className="px-3 py-2 text-left font-semibold text-slate-700">Emp ID</th>
-            <th scope="col" className="px-3 py-2 text-left font-semibold text-slate-700">Candidate</th>
-            <th scope="col" className="px-3 py-2 text-left font-semibold text-slate-700">Contact</th>
-            <th scope="col" className="px-3 py-2 text-left font-semibold text-slate-700">Specializations</th>
-            <th scope="col" className="px-3 py-2 text-left font-semibold text-slate-700">Status</th>
-            <th scope="col" className="px-3 py-2 text-left font-semibold text-slate-700">Submitted</th>
-            <th scope="col" className="px-3 py-2 text-left font-semibold text-slate-700">Actions</th>
+            <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Applicant ID</th>
+            <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Candidate Information</th>
+            <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Contacts</th>
+            <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Specializations</th>
+            <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Status</th>
+            <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Submitted At</th>
+            <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Action</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 bg-white">
           {submissions.length > 0 ? (
             submissions.map((item) => (
-              <tr key={item.empId}>
-                <td className="whitespace-nowrap px-3 py-2 font-mono text-xs text-slate-800">{item.empId}</td>
-                <td className="px-3 py-2 text-slate-800">
-                  <p className="font-semibold">{item.fullName}</p>
-                  <p className="text-xs text-slate-500 line-clamp-2">{item.coverLetter || '-'}</p>
+              <tr key={item.empId} className="hover:bg-slate-50 transition-colors">
+                <td className="whitespace-nowrap px-3 py-4 text-teal-700 font-mono text-xs font-bold">{item.empId}</td>
+                <td className="px-3 py-4">
+                  <p className="text-slate-800 font-medium">{item.fullName}</p>
+                  <p className="text-[10px] text-slate-500 italic max-w-xs truncate">{item.coverLetter || 'No cover letter.'}</p>
                 </td>
-                <td className="whitespace-nowrap px-3 py-2 text-slate-700">
-                  <p>{item.emailAddress}</p>
-                  <p>{item.phoneNumber}</p>
+                <td className="whitespace-nowrap px-3 py-4">
+                  <p className="text-slate-800 text-xs">{item.emailAddress}</p>
+                  <p className="text-[10px] text-slate-500">{item.phoneNumber}</p>
                 </td>
-                <td className="px-3 py-2 text-slate-700 max-w-[280px]">{renderSpecializations(item.specializations)}</td>
-                <td className="whitespace-nowrap px-3 py-2">{renderStatusBadge(item.status)}</td>
-                <td className="whitespace-nowrap px-3 py-2 text-slate-700">{formatDateTime(item.createdAt)}</td>
-                <td className="whitespace-nowrap px-3 py-2">
-                  <div className="flex flex-wrap items-center gap-2">
+                <td className="px-3 py-4 text-slate-700 max-w-[200px]">
+                  <div className="flex flex-wrap gap-1">
+                    {renderSpecializations(item.specializations).split(', ').map((spec, sIdx) => (
+                      <span key={sIdx} className="px-2 py-0.5 bg-slate-100 rounded text-[9px] font-bold text-slate-600 uppercase">
+                        {spec}
+                      </span>
+                    ))}
+                  </div>
+                </td>
+                <td className="whitespace-nowrap px-3 py-4">{renderStatusBadge(item.status)}</td>
+                <td className="whitespace-nowrap px-3 py-4 text-slate-500 text-xs italic">{formatDateTime(item.createdAt)}</td>
+                <td className="whitespace-nowrap px-3 py-4">
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => onDownloadResume(item.empId)}
                       disabled={isDownloadingEmpId !== ''}
-                      className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="btn-secondary px-3 py-1.5 text-xs rounded-md hover:bg-slate-100"
                     >
-                      {isDownloadingEmpId === item.empId ? 'Downloading...' : 'Resume'}
+                      {isDownloadingEmpId === item.empId ? '...' : 'Resume'}
                     </button>
                     <button
                       type="button"
                       onClick={() => onApprove(item.empId)}
                       disabled={isUpdatingEmpId !== '' || item.status === 'approve'}
-                      className="rounded-md border border-emerald-300 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      className={`px-3 py-1.5 text-xs rounded-md font-bold transition-all ${item.status === 'approve'
+                        ? 'opacity-30 cursor-not-allowed'
+                        : 'btn-activate'
+                        } disabled:opacity-50`}
                     >
-                      {isUpdatingEmpId === item.empId ? 'Saving...' : 'Approve'}
+                      {isUpdatingEmpId === item.empId ? '...' : 'Approve'}
                     </button>
                     <button
                       type="button"
                       onClick={() => onReject(item.empId)}
                       disabled={isUpdatingEmpId !== '' || item.status === 'reject'}
-                      className="rounded-md border border-rose-300 px-3 py-1.5 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      className={`px-3 py-1.5 text-xs rounded-md font-bold transition-all ${item.status === 'reject'
+                        ? 'opacity-30 cursor-not-allowed'
+                        : 'btn-deactivate'
+                        } disabled:opacity-50`}
                     >
-                      {isUpdatingEmpId === item.empId ? 'Saving...' : 'Reject'}
+                      {isUpdatingEmpId === item.empId ? '...' : 'Reject'}
                     </button>
                   </div>
                 </td>
@@ -117,7 +138,7 @@ export default function EmploymentAdminTable({
             ))
           ) : (
             <tr>
-              <td colSpan={7} className="px-3 py-6 text-center text-slate-500">
+              <td colSpan={7} className="px-3 py-10 text-center text-slate-500 italic">
                 No employment submissions found.
               </td>
             </tr>

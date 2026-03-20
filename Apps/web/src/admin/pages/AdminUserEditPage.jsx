@@ -1,3 +1,4 @@
+import { User, Mail, Shield, ChevronDown } from 'lucide-react';
 import AdminSlideInPanel from '../components/AdminSlideInPanel.jsx';
 
 const ROLE_OPTIONS = [
@@ -27,20 +28,23 @@ export default function AdminUserEditPage({
     ? ROLE_OPTIONS
     : ROLE_OPTIONS.filter((option) => option.value !== 'super_admin');
 
+  const fieldStyles = "block w-full rounded-xl border-0 py-3.5 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-100 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 transition-all duration-200 bg-white";
+
   return (
     <AdminSlideInPanel
       isOpen={isOpen}
       onClose={onClose}
       canClose={!isSubmitting}
-      title="Edit User"
+      title="Edit Personnel"
       eyebrow="Admin Portal"
       ariaLabel="Edit user form panel"
       panelClassName="max-w-md"
     >
-      <form onSubmit={onSubmit} className="space-y-4" aria-label="Edit user form">
-          <div>
-            <label htmlFor="edit-name" className="mb-1 block text-sm font-medium text-slate-700">
-              Full Name
+      <form onSubmit={onSubmit} className="space-y-6" aria-label="Edit user form">
+          <div className="space-y-1.5">
+            <label htmlFor="edit-name" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+              <User className="h-3.5 w-3.5 text-teal-600/70" />
+              Full Legal Name
             </label>
             <input
               id="edit-name"
@@ -49,11 +53,11 @@ export default function AdminUserEditPage({
               value={formData.name}
               onChange={onChange}
               minLength={2}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-200"
-              placeholder="Jane Doe"
+              className={fieldStyles}
+              placeholder="Ex: Jane Doe"
             />
             {fieldErrors.name.length > 0 ? (
-              <ul className="mt-1 list-disc pl-5 text-xs text-red-700" role="alert">
+              <ul className="mt-1 list-disc pl-5 text-xs text-red-700 font-medium" role="alert">
                 {fieldErrors.name.map((message, index) => (
                   <li key={`${message}-${index}`}>{message}</li>
                 ))}
@@ -61,21 +65,23 @@ export default function AdminUserEditPage({
             ) : null}
           </div>
 
-          <div>
-            <label htmlFor="edit-email" className="mb-1 block text-sm font-medium text-slate-700">
-              Email
+          <div className="space-y-1.5">
+            <label htmlFor="edit-email" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+              <Mail className="h-3.5 w-3.5 text-teal-600/70" />
+              Registered Email
             </label>
             <input
               id="edit-email"
               name="email"
               type="email"
+              disabled
               value={formData.email}
               onChange={onChange}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-200"
+              className={`${fieldStyles} bg-slate-50 cursor-not-allowed opacity-80`}
               placeholder="jane@helponcall.com"
             />
             {fieldErrors.email.length > 0 ? (
-              <ul className="mt-1 list-disc pl-5 text-xs text-red-700" role="alert">
+              <ul className="mt-1 list-disc pl-5 text-xs text-red-700 font-medium" role="alert">
                 {fieldErrors.email.map((message, index) => (
                   <li key={`${message}-${index}`}>{message}</li>
                 ))}
@@ -84,25 +90,29 @@ export default function AdminUserEditPage({
           </div>
 
           {canEditRoles ? (
-            <div>
-              <label htmlFor="edit-role" className="mb-1 block text-sm font-medium text-slate-700">
-                Role
+            <div className="space-y-1.5">
+              <label htmlFor="edit-role" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+                <Shield className="h-3.5 w-3.5 text-teal-600/70" />
+                Access Permissions
               </label>
-              <select
-                id="edit-role"
-                name="role"
-                value={formData.role}
-                onChange={onChange}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-200"
-              >
-                {editableRoleOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  id="edit-role"
+                  name="role"
+                  value={formData.role}
+                  onChange={onChange}
+                  className={`${fieldStyles} appearance-none cursor-pointer pr-10`}
+                >
+                  {editableRoleOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
               {fieldErrors.role.length > 0 ? (
-                <ul className="mt-1 list-disc pl-5 text-xs text-red-700" role="alert">
+                <ul className="mt-1 list-disc pl-5 text-xs text-red-700 font-medium" role="alert">
                   {fieldErrors.role.map((message, index) => (
                     <li key={`${message}-${index}`}>{message}</li>
                   ))}
@@ -111,40 +121,40 @@ export default function AdminUserEditPage({
             </div>
           ) : null}
 
-          <div>
-            <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+          <div className="pt-2">
+            <label className="inline-flex items-center gap-3 text-sm font-semibold text-slate-700 cursor-pointer group">
               <input
                 type="checkbox"
                 name="isActive"
                 checked={formData.isActive}
                 onChange={onChange}
-                className="h-4 w-4 rounded border-slate-300 accent-teal-700 text-teal-700 focus:ring-teal-700"
+                className="h-5 w-5 rounded-md border-slate-300 accent-teal-700 text-teal-700 focus:ring-teal-700 active:scale-95 transition-transform cursor-pointer"
               />
-              User is active
+              <span className="group-hover:text-teal-900 transition-colors">Grant platform access</span>
             </label>
           </div>
 
           {errorMessage ? (
-            <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+            <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 font-bold" role="alert">
               {errorMessage}
             </p>
           ) : null}
 
-          <div className="flex flex-wrap items-center gap-3 pt-2">
+          <div className="flex flex-col items-center gap-3 pt-6 border-t border-slate-100">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="btn-primary"
+              className="btn-primary w-full shadow-lg shadow-teal-700/10 active:scale-[0.98] transition-all"
             >
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
+              {isSubmitting ? 'Saving...' : 'Update Records'}
             </button>
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="btn-secondary disabled:cursor-not-allowed disabled:opacity-70"
+              className="btn-secondary w-full border border-slate-200 bg-white hover:bg-slate-50 transition-all"
             >
-              Cancel
+              Discard Changes
             </button>
           </div>
       </form>

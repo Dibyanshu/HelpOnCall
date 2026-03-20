@@ -72,7 +72,7 @@ body {
   }
 
   .btn-primary {
-    @apply relative overflow-hidden rounded-md px-4 py-2 text-sm font-semibold bg-teal-700 text-white shadow-xs shadow-teal-500/20 transition-all hover:bg-teal-800 hover:shadow-teal-500/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 active:scale-[0.98] cursor-pointer inline-flex items-center justify-center;
+    @apply relative overflow-hidden shadow-xs rounded-md px-4 py-2 text-sm font-semibold bg-teal-700 text-white shadow-teal-500/20 transition-all hover:bg-teal-800 hover:shadow-teal-500/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 active:scale-[0.98] cursor-pointer inline-flex items-center justify-center;
   }
 
   .btn-primary::after {
@@ -85,7 +85,15 @@ body {
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 hover:border-slate-400 active:scale-[0.98] cursor-pointer;
+    @apply inline-flex items-center shadow-xs justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 hover:border-slate-400 active:scale-[0.98] cursor-pointer;
+  }
+
+  .btn-deactivate {
+    @apply inline-flex items-center shadow-xs justify-center rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition-all hover:bg-slate-50 hover:border-slate-400 active:scale-[0.98] cursor-pointer;
+  }
+
+  .btn-activate {
+    @apply inline-flex items-center shadow-xs justify-center rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-all hover:bg-slate-50 hover:border-slate-400 active:scale-[0.98] cursor-pointer;
   }
 }
 

@@ -8,6 +8,7 @@ import SitemapPage from './pages/SitemapPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import UserRegistrationPage from './pages/UserRegistrationPage';
 import AdminLoginPage from './admin/pages/AdminLoginPage';
+import AdminDashboard from './admin/pages/AdminDashboard';
 import AdminDashboardPage from './admin/pages/AdminDashboardPage';
 import AdminUsersPage from './admin/pages/AdminUsersPage';
 import AdminUserNewPage from './admin/pages/AdminUserNewPage';
@@ -24,6 +25,14 @@ function App() {
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route
           path="/admin/dashboard"
+          element={(
+            <RequireAdminAuth>
+              <AdminDashboard />
+            </RequireAdminAuth>
+          )}
+        />
+        <Route
+          path="/admin/dashboard-old"
           element={(
             <RequireAdminAuth>
               <AdminDashboardPage />
