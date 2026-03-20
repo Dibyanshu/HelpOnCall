@@ -85,36 +85,39 @@ export default function AdminSlideInPanel({
   }
 
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={ariaLabel}>
-      <button
-        type="button"
-        aria-label="Close panel"
-        onClick={canClose ? onClose : undefined}
-        disabled={!canClose}
-        className={`absolute inset-0 bg-slate-900/35 transition-opacity duration-200 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
-      />
+    <>
       <div
-        className={`absolute right-0 top-0 h-full w-full overflow-y-auto border-l border-slate-200 bg-white p-6 shadow-2xl transition duration-200 ease-out sm:p-8 ${panelClassName} ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'}`}
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            {eyebrow ? (
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">{eyebrow}</p>
-            ) : null}
-            <h2 className="mt-2 text-xl font-bold text-slate-900">{title}</h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={!canClose}
-            className="btn-secondary"
-          >
-            Close
-          </button>
-        </div>
+        className={`fixed inset-0 z-[95] bg-black/40 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+        onClick={canClose ? onClose : undefined}
+        aria-hidden={!isOpen}
+      />
 
-        <div className="mt-6">{children}</div>
-      </div>
-    </div>
+      <aside
+        role="dialog"
+        aria-modal="true"
+        aria-label="Edit User Panel"
+        className={`fixed right-0 top-0 z-[100] h-screen w-full md:w-[60%] lg:w-[40%] bg-white shadow-2xl transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+      >
+        <div className="flex h-full flex-col">
+          <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 bg-gray-900">
+            <h2 className="text-lg font-semibold text-gray-300">{title}</h2>
+            <button
+              type="button"
+              onClick={canClose ? onClose : undefined}
+              className="rounded-md p-2 text-gray-300 transition-colors hover:bg-gray-100 hover:text-gray-900"
+              aria-label="Close Panel"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="space-y-6 overflow-y-auto px-6 py-6">
+            {children}
+          </div>
+        </div>
+      </aside>
+    </>
   );
 }
