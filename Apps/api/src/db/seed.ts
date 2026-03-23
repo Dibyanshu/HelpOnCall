@@ -3,7 +3,7 @@ import { env } from "../config/env.js";
 import { buildAuditCreateFields } from "./audit.js";
 import { hashPassword } from "../utils/crypto.js";
 import { db } from "./index.js";
-import { serviceCategories, services, users } from "./schema.js";
+import { customerTestimonials, serviceCategories, services, users } from "./schema.js";
 
 interface SeedServiceItem {
   label: string;
@@ -15,6 +15,16 @@ interface SeedServiceItem {
 interface SeedServiceCategory {
   title: string;
   services: SeedServiceItem[];
+}
+
+interface SeedTestimonial {
+  quote: string;
+  highlightedWord: string;
+  mainQuoteEnd: string;
+  customerName: string;
+  customerEmail: string;
+  profilePic: string;
+  rating: number;
 }
 
 const INITIAL_SERVICE_CATEGORIES: SeedServiceCategory[] = [
@@ -100,6 +110,69 @@ const INITIAL_SERVICE_CATEGORIES: SeedServiceCategory[] = [
         iconName: "Footprints"
       }
     ]
+  }
+];
+
+const INITIAL_TESTIMONIALS: SeedTestimonial[] = [
+  {
+    quote:
+      "The progress tracker is fantastic and motivating. It helps me see improvements over time with a great mix of common and",
+    highlightedWord: "challenging",
+    mainQuoteEnd: "vocabulary words that keep me engaged.",
+    customerName: "Fatima Khoury",
+    customerEmail: "dilatory_curtains_98",
+    profilePic: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
+    rating: 5
+  },
+  {
+    quote:
+      "The nursing team was incredibly professional and caring throughout our experience. They made our family feel truly supported with their",
+    highlightedWord: "exceptional",
+    mainQuoteEnd: "care and attention to our needs.",
+    customerName: "David Chen",
+    customerEmail: "david_chen_wellness",
+    profilePic: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80",
+    rating: 4.8
+  },
+  {
+    quote:
+      "Outstanding services with great attention to detail. The corporate solutions exceeded all expectations for comfort and",
+    highlightedWord: "quality",
+    mainQuoteEnd: "standards in every aspect of service.",
+    customerName: "Sarah Thompson",
+    customerEmail: "sarah_thompson_corp",
+    profilePic: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80",
+    rating: 4
+  },
+  {
+    quote:
+      "The customer support team went above and beyond to ensure complete satisfaction. Their dedication to providing",
+    highlightedWord: "excellent",
+    mainQuoteEnd: "service is truly commendable and professional.",
+    customerName: "Michael Rodriguez",
+    customerEmail: "michael_rodriguez_pro",
+    profilePic: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80",
+    rating: 5
+  },
+  {
+    quote:
+      "From start to finish, the entire process was seamless and highly professional. The team's expertise and",
+    highlightedWord: "commitment",
+    mainQuoteEnd: "to excellence made all the difference in results.",
+    customerName: "Emily Johnson",
+    customerEmail: "emily_johnson_expert",
+    profilePic: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80",
+    rating: 5
+  },
+  {
+    quote:
+      "I was impressed by the innovative approach and meticulous attention to detail. The final result exceeded my",
+    highlightedWord: "expectations",
+    mainQuoteEnd: "in every way possible with outstanding quality.",
+    customerName: "James Wilson",
+    customerEmail: "james_wilson_innovator",
+    profilePic: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80",
+    rating: 4.5
   }
 ];
 
@@ -190,4 +263,36 @@ export async function seedInitialServices(): Promise<void> {
   }
 
   console.log("Seeded initial service categories and services");
+}
+
+async function ensureTestimonialSeed(item: SeedTestimonial): Promise<void> {
+  const message = `${item.quote} ${item.highlightedWord} ${item.mainQuoteEnd}`;
+
+  const existing = await db
+    .select({ id: customerTestimonials.id })
+    .from(customerTestimonials)
+    .where(and(eq(customerTestimonials.customerEmail, item.customerEmail), eq(customerTestimonials.message, message)))
+    .limit(1);
+
+  if (existing.length > 0) {
+    return;
+  }
+
+  await db.insert(customerTestimonials).values({
+    customerName: item.customerName,
+    customerEmail: item.customerEmail,
+    message,
+    rating: item.rating,
+    profilePic: item.profilePic,
+    status: "active",
+    ...buildAuditCreateFields("system_seed")
+  });
+}
+
+export async function seedInitialTestimonials(): Promise<void> {
+  for (let testimonialIndex = 0; testimonialIndex < INITIAL_TESTIMONIALS.length; testimonialIndex += 1) {
+    await ensureTestimonialSeed(INITIAL_TESTIMONIALS[testimonialIndex]);
+  }
+
+  console.log("Seeded initial testimonials");
 }

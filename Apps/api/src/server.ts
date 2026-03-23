@@ -1,7 +1,7 @@
 import { buildApp } from "./app.js";
 import { env } from "./config/env.js";
 import { ensureTables } from "./db/bootstrap.js";
-import { seedInitialServices, seedSuperAdmin } from "./db/seed.js";
+import { seedInitialServices, seedSuperAdmin, seedInitialTestimonials } from "./db/seed.js";
 
 async function start() {
   const app = buildApp();
@@ -9,6 +9,7 @@ async function start() {
   await ensureTables();
   await seedSuperAdmin();
   await seedInitialServices();
+  await seedInitialTestimonials();
 
   try {
     await app.listen({

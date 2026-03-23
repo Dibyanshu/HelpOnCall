@@ -66,8 +66,10 @@ export const customerTestimonials = sqliteTable("customer_testimonials", {
   message: text("message").notNull(),
   rating: real("rating").notNull(),
   profilePic: text("profile_pic"),
-  createdAt: integer("created_on", { mode: "timestamp" }).notNull().default(new Date()),
-  status: text("status", { enum: ["active", "inactive"] }).notNull().default("active")
+  status: text("status", { enum: ["active", "inactive"] }).notNull().default("active"),
+  createdBy: text("created_by").notNull().default(""),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(new Date(0)),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(new Date(0))
 });
 
 export type UserRole = typeof users.$inferSelect.role;

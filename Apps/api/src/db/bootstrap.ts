@@ -73,8 +73,10 @@ const CUSTOMER_TESTIMONIALS_TABLE_DDL = sql`
     message TEXT NOT NULL,
     rating REAL NOT NULL,
     profile_pic TEXT,
-    created_on INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
-    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive'))
+    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+    created_by TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL DEFAULT 0,
+    updated_at INTEGER NOT NULL DEFAULT 0
   )
 `;
 
