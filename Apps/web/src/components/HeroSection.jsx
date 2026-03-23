@@ -1,3 +1,5 @@
+import heroCare from '../assets/hero_care.jpg';
+
 export default function HeroSection() {
   return (
     <section
@@ -23,7 +25,7 @@ export default function HeroSection() {
         <div className="relative hidden overflow-hidden lg:block">
           <div className="absolute inset-0 z-10" />
           <img
-            src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80"
+            src={heroCare}
             alt="Compassionate home healthcare support for a senior in Canada"
             className="hero-kenburns h-full w-full object-cover"
             loading="eager"
@@ -38,7 +40,7 @@ export default function HeroSection() {
       {/* Mobile image */}
       <div className="lg:hidden">
         <img
-          src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=600&q=80"
+          src={heroCare}
           alt=""
           aria-hidden="true"
           className="h-48 w-full object-cover sm:h-64"

@@ -1,5 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Quote, Star } from 'lucide-react';
+import t1 from '../assets/testimonials/t1.jpg';
+import t2 from '../assets/testimonials/t2.jpg';
+import t3 from '../assets/testimonials/t3.jpg';
+import t4 from '../assets/testimonials/t4.jpg';
+import t5 from '../assets/testimonials/t5.jpg';
+import t6 from '../assets/testimonials/t6.jpg';
 
 // Maximum 25 words per quote to maintain consistent card height (320px)
 const testimonials = [
@@ -10,7 +16,7 @@ const testimonials = [
     mainQuoteEnd: 'vocabulary words that keep me engaged.',
     name: 'Fatima Khoury',
     handle: 'dilatory_curtains_98',
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80',
+    image: t1,
     rating: 5,
   },
   {
@@ -20,7 +26,7 @@ const testimonials = [
     mainQuoteEnd: 'care and attention to our needs.',
     name: 'David Chen',
     handle: 'david_chen_wellness',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
+    image: t2,
     rating: 5,
   },
   {
@@ -30,7 +36,7 @@ const testimonials = [
     mainQuoteEnd: 'standards in every aspect of service.',
     name: 'Sarah Thompson',
     handle: 'sarah_thompson_corp',
-    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
+    image: t3,
     rating: 5,
   },
   {
@@ -40,7 +46,7 @@ const testimonials = [
     mainQuoteEnd: 'service is truly commendable and professional.',
     name: 'Michael Rodriguez',
     handle: 'michael_rodriguez_pro',
-    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80',
+    image: t4,
     rating: 5,
   },
   {
@@ -50,7 +56,7 @@ const testimonials = [
     mainQuoteEnd: 'to excellence made all the difference in results.',
     name: 'Emily Johnson',
     handle: 'emily_johnson_expert',
-    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
+    image: t5,
     rating: 5,
   },
   {
@@ -60,7 +66,7 @@ const testimonials = [
     mainQuoteEnd: 'in every way possible with outstanding quality.',
     name: 'James Wilson',
     handle: 'james_wilson_innovator',
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
+    image: t6,
     rating: 5,
   },
 ];
