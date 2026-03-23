@@ -65,7 +65,7 @@ export default function RFQSlideInPanel() {
             </button>
           </div>
 
-          <div className="space-y-6 overflow-y-auto px-6 py-6">
+          <div className="space-y-6 overflow-y-auto px-6 py-6 bg-gray-50">
             <RFQForm onCancel={closePanel} />
           </div>
         </div>

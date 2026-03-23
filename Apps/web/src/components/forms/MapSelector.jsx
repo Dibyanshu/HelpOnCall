@@ -14,9 +14,9 @@ export default function MapSelector({ onLocationPinned, initialAddress = '' }) {
   };
 
   return (
-    <div className="space-y-3">
-      <div 
-        className="relative aspect-square w-full overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 shadow-sm transition-all duration-300 group"
+    <div className="space-y-3 h-full">
+      <div
+        className="relative h-full w-full overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 shadow-sm transition-all duration-300 group"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -33,7 +33,7 @@ export default function MapSelector({ onLocationPinned, initialAddress = '' }) {
 
         {/* Hover Overlay */}
         <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/40 backdrop-blur-md transition-all duration-300 ${isHovered && !isModalOpen ? 'opacity-100 cursor-pointer' : 'opacity-0 pointer-events-none'}`}
-             onClick={() => setIsModalOpen(true)}>
+          onClick={() => setIsModalOpen(true)}>
           <p className="px-6 text-center text-xs font-bold text-gray-900 drop-shadow-sm">
             Want to adjust the pin location?
           </p>
@@ -48,7 +48,7 @@ export default function MapSelector({ onLocationPinned, initialAddress = '' }) {
       {isModalOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
-          
+
           <div className="relative w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl animate-in zoom-in duration-300">
             <div className="border-b border-gray-100 p-6 flex justify-between items-center bg-gray-50/50">
               <h3 className="text-sm font-bold uppercase tracking-wider text-gray-900">Adjust Precise Location</h3>
@@ -69,7 +69,7 @@ export default function MapSelector({ onLocationPinned, initialAddress = '' }) {
                   </div>
                 </div>
               </div>
-              
+
               <div className="absolute bottom-6 left-6 right-6">
                 <div className="rounded-2xl bg-white/90 p-4 shadow-xl backdrop-blur-md border border-white/20">
                   <div className="flex items-start gap-3">

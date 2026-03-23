@@ -42,6 +42,7 @@ export default function ServiceCard() {
       title: feature.label,
       icon: ICONS_BY_NAME[feature.icon] ?? Home,
       image: feature.image,
+      displayOrder: feature.displayOrder,
     }))
     .filter((service) => service.title)
     .slice(0, 9);

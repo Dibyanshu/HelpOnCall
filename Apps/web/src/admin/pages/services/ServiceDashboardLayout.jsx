@@ -5,6 +5,8 @@ import { useAdminAuth } from '../../auth/AdminAuthContext.jsx';
 import { useServiceManagement } from '../../hooks/useServiceManagement.js';
 import CategoryForm from './CategoryForm.jsx';
 import ServiceForm from './ServiceForm.jsx';
+import Layout from '../../../components/layout/Layout';
+import serviceHero from '../../../assets/Service_Hero.png';
 
 function buildFormModeTitle(mode) {
   if (mode === 'create-category') {
@@ -173,19 +175,37 @@ export default function ServiceDashboardLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
+    <Layout>
+      {/* Hero Section */}
+      <section className="relative overflow-hidden px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+        <img
+          src={serviceHero}
+          alt="Healthcare professional supporting a senior at home"
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="eager"
+        />
+        <div className="absolute inset-0 bg-teal-900/75" aria-hidden="true" />
+        <div className="relative mx-auto max-w-5xl">
+          <p className="text-sm font-semibold uppercase tracking-wider text-teal-100">Admin Portal</p>
+          <h1 className="mt-3 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
+            Service Manager Dashboard
+          </h1>
+          <p className="mt-4 max-w-3xl text-base leading-relaxed text-teal-100 sm:text-lg">
+            Manage your service categories and offerings. You are signed in as {user?.name || user?.email} ({user?.role}).
+          </p>
+        </div>
+      </section>
+
+      <div className="bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
         <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Admin Portal</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Internal Control</p>
               <h1 className="mt-2 flex items-center gap-2 text-xl font-bold text-slate-900">
                 <FolderTree className="h-5 w-5 text-teal-700" />
                 Services Tree
               </h1>
-              <p className="mt-1 text-xs text-slate-600">
-                Signed in as {user?.name || user?.email} ({user?.role})
-              </p>
             </div>
             <button
               type="button"
@@ -236,19 +256,20 @@ export default function ServiceDashboardLayout() {
                     className="flex w-full items-center justify-between gap-2 text-left"
                   >
                     <span className="text-sm font-semibold text-slate-900">{category.title}</span>
-                    <span className="text-[11px] text-slate-500">#{toDisplayNumber(category.displayOrder) ?? 0}</span>
+                    <span className="text-[11px] text-slate-500">#{toDisplayNumber(category.displayOrder ?? 0)}</span>
                   </button>
 
-                  <div className="mt-2 space-y-1 border-l border-slate-200 pl-3">
+                  <div className="mt-2 space-y-1 border-l border-slate-200">
                     {category.services.length > 0 ? (
                       category.services.map((service) => (
                         <button
                           key={service.id}
                           type="button"
                           onClick={() => startEditService(service.id)}
-                          className="block w-full rounded-md px-2 py-1 text-left text-xs text-slate-700 transition-colors hover:bg-slate-100"
+                          className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-xs text-slate-700 transition-colors hover:bg-slate-100"
                         >
-                          {service.label}
+                          <span className="font-bold text-slate-400">{toDisplayNumber(service.displayOrder ?? 0)}.</span>
+                          <span>{service.label}</span>
                         </button>
                       ))
                     ) : (
@@ -306,9 +327,16 @@ export default function ServiceDashboardLayout() {
           <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-6">
             {mode === 'create-category' || mode === 'edit-category' ? (
               <>
-                <div className="mb-4 flex items-center gap-2 text-sm font-medium text-slate-700">
-                  <Settings2 className="h-4 w-4 text-teal-700" />
-                  Category Details
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                    <Settings2 className="h-4 w-4 text-teal-700" />
+                    Category Details
+                  </div>
+                  {selectedCategory && (
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 ring-1 ring-inset ring-slate-200">
+                      #{toDisplayNumber(selectedCategory.displayOrder ?? 0)}
+                    </span>
+                  )}
                 </div>
                 <CategoryForm
                   key={`category-${selectedCategory?.id || 'new'}`}
@@ -320,9 +348,16 @@ export default function ServiceDashboardLayout() {
 
             {mode === 'create-service' || mode === 'edit-service' ? (
               <>
-                <div className="mb-4 flex items-center gap-2 text-sm font-medium text-slate-700">
-                  <Wrench className="h-4 w-4 text-teal-700" />
-                  Service Details
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                    <Wrench className="h-4 w-4 text-teal-700" />
+                    Service Details
+                  </div>
+                  {selectedService && (
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 ring-1 ring-inset ring-slate-200">
+                      #{toDisplayNumber(selectedService.displayOrder ?? 0)}
+                    </span>
+                  )}
                 </div>
                 <ServiceForm
                   key={`service-${selectedService?.id || 'new'}`}
@@ -336,5 +371,6 @@ export default function ServiceDashboardLayout() {
         </main>
       </div>
     </div>
-  );
+  </Layout>
+);
 }

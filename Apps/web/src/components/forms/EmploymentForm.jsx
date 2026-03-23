@@ -134,7 +134,7 @@ export default function EmploymentForm() {
     }
   };
 
-  const fieldStyles = "block w-full rounded-xl border-0 py-3.5 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-100 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-700 transition-all duration-200 bg-white/5 backdrop-blur-sm";
+  const fieldStyles = "block w-full rounded-xl border-0 py-3.5 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-100 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-700 transition-all duration-200";
 
   if (isSubmitted) {
     return (
