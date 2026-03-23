@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Search, Filter, RefreshCw, LayoutDashboard } from 'lucide-react';
 import { useAdminAuth } from '../../auth/AdminAuthContext.jsx';
 import EmploymentAdminTable from './EmploymentAdminTable.jsx';
-import { useEmploymentAdmin } from './useEmploymentAdmin.js';
+import { useEmploymentAdmin } from '../../../appServices/useEmploymentAdmin.js';
 import Layout from '../../../components/layout/Layout';
 import serviceHero from '../../../assets/Service_Hero.png';
 

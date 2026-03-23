@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { FolderTree, PlusCircle, RefreshCcw, Settings2, Trash2, Wrench } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../../auth/AdminAuthContext.jsx';
-import { useServiceManagement } from '../../hooks/useServiceManagement.js';
+import { useServiceManagement } from '../../../appServices/useServiceManagement.js';
 import CategoryForm from './CategoryForm.jsx';
 import ServiceForm from './ServiceForm.jsx';
 import Layout from '../../../components/layout/Layout';

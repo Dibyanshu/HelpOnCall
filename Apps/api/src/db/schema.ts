@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text, real } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -59,6 +59,17 @@ export const employment = sqliteTable("employment", {
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(new Date(0))
 });
 
+export const customerTestimonials = sqliteTable("customer_testimonials", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email").notNull(),
+  message: text("message").notNull(),
+  rating: real("rating").notNull(),
+  profilePic: text("profile_pic"),
+  createdAt: integer("created_on", { mode: "timestamp" }).notNull().default(new Date()),
+  status: text("status", { enum: ["active", "inactive"] }).notNull().default("active")
+});
+
 export type UserRole = typeof users.$inferSelect.role;
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -68,3 +79,5 @@ export type Service = typeof services.$inferSelect;
 export type NewService = typeof services.$inferInsert;
 export type Employment = typeof employment.$inferSelect;
 export type NewEmployment = typeof employment.$inferInsert;
+export type CustomerTestimonial = typeof customerTestimonials.$inferSelect;
+export type NewCustomerTestimonial = typeof customerTestimonials.$inferInsert;

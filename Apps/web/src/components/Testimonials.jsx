@@ -8,74 +8,26 @@ import t5 from '../assets/testimonials/t5.jpg';
 import t6 from '../assets/testimonials/t6.jpg';
 
 // Maximum 25 words per quote to maintain consistent card height (320px)
-const testimonials = [
-  {
-    quote:
-      'The progress tracker is fantastic and motivating. It helps me see improvements over time with a great mix of common and',
-    highlightedWord: 'challenging',
-    mainQuoteEnd: 'vocabulary words that keep me engaged.',
-    name: 'Fatima Khoury',
-    handle: 'dilatory_curtains_98',
-    image: t1,
-    rating: 5,
-  },
-  {
-    quote:
-      'The nursing team was incredibly professional and caring throughout our experience. They made our family feel truly supported with their',
-    highlightedWord: 'exceptional',
-    mainQuoteEnd: 'care and attention to our needs.',
-    name: 'David Chen',
-    handle: 'david_chen_wellness',
-    image: t2,
-    rating: 5,
-  },
-  {
-    quote:
-      'Outstanding services with great attention to detail. The corporate solutions exceeded all expectations for comfort and',
-    highlightedWord: 'quality',
-    mainQuoteEnd: 'standards in every aspect of service.',
-    name: 'Sarah Thompson',
-    handle: 'sarah_thompson_corp',
-    image: t3,
-    rating: 5,
-  },
-  {
-    quote:
-      'The customer support team went above and beyond to ensure complete satisfaction. Their dedication to providing',
-    highlightedWord: 'excellent',
-    mainQuoteEnd: 'service is truly commendable and professional.',
-    name: 'Michael Rodriguez',
-    handle: 'michael_rodriguez_pro',
-    image: t4,
-    rating: 5,
-  },
-  {
-    quote:
-      'From start to finish, the entire process was seamless and highly professional. The team\'s expertise and',
-    highlightedWord: 'commitment',
-    mainQuoteEnd: 'to excellence made all the difference in results.',
-    name: 'Emily Johnson',
-    handle: 'emily_johnson_expert',
-    image: t5,
-    rating: 5,
-  },
-  {
-    quote:
-      'I was impressed by the innovative approach and meticulous attention to detail. The final result exceeded my',
-    highlightedWord: 'expectations',
-    mainQuoteEnd: 'in every way possible with outstanding quality.',
-    name: 'James Wilson',
-    handle: 'james_wilson_innovator',
-    image: t6,
-    rating: 5,
-  },
-];
+import { useTestimonials } from '../appServices/useTestimonials.js';
 
 export default function Testimonials() {
+  const { testimonials, isLoading } = useTestimonials();
   const [isPaused, setIsPaused] = useState(false);
 
   // Duplicate testimonials for seamless infinite scroll
   const duplicatedTestimonials = [...testimonials, ...testimonials];
+
+  if (isLoading && testimonials.length === 0) {
+    return (
+      <div className="bg-gray-50 py-16 flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-600 border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  if (testimonials.length === 0) {
+    return null; // Don't show the section if no testimonials
+  }
 
   return (
     <>
@@ -114,14 +66,35 @@ export default function Testimonials() {
             >
               {duplicatedTestimonials.map((testimonial, index) => (
                 <div
-                  key={`${testimonial.name}-${index}`}
+                  key={`${testimonial.id || index}-${index}`}
                   className="flex-shrink-0 w-80 h-80 overflow-hidden rounded-xl bg-white p-8 shadow-md flex flex-col justify-between relative"
                 >
                   {/* Star Rating */}
-                  <div className="flex gap-1">
-                    {Array.from({ length: testimonial.rating }).map((_, i) => (
-                      <Star key={i} className="h-5 w-5 text-yellow-400 fill-yellow-400" aria-hidden="true" />
-                    ))}
+                  <div className="flex gap-0.5">
+                    {[...Array(5)].map((_, i) => {
+                      const rating = testimonial.rating ?? 0;
+                      const fillPercentage = Math.max(0, Math.min(100, (rating - i) * 100));
+
+                      return (
+                        <div key={i} className="relative h-4 w-4 flex-shrink-0">
+                          {/* Background star: Black outline, no fill */}
+                          <Star
+                            className="absolute inset-0 h-4 w-4 text-yellow-600 stroke-[1.5]"
+                            aria-hidden="true"
+                          />
+                          {/* Foreground star: Yellow fill, clipped by width */}
+                          <div
+                            className="absolute inset-0 overflow-hidden pointer-events-none"
+                            style={{ width: `${fillPercentage}%` }}
+                          >
+                            <Star
+                              className="h-4 w-4 text-yellow-400 fill-yellow-400 stroke-[1.5]"
+                              aria-hidden="true"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
 
                   {/* Quote Icon */}
@@ -132,8 +105,8 @@ export default function Testimonials() {
                   <div>
                     {/* Testimonial Text */}
                     <blockquote className="mb-8 pt-6">
-                      <p className="text-gray-700 leading-relaxed text-sm">
-                        {testimonial.quote} <span className="text-orange-500 font-medium">{testimonial.highlightedWord}</span> {testimonial.mainQuoteEnd}
+                      <p className="text-gray-700 leading-relaxed text-sm italic">
+                        "{testimonial.message}"
                       </p>
                     </blockquote>
                   </div>
@@ -141,14 +114,14 @@ export default function Testimonials() {
                   {/* Profile Section */}
                   <div className="flex items-center gap-4">
                     <img
-                      src={testimonial.image}
-                      alt={`Photo of ${testimonial.name}`}
+                      src={testimonial.profilePic}
+                      alt={`Photo of ${testimonial.customerName}`}
                       className="h-12 w-12 rounded-full object-cover flex-shrink-0"
                       loading="lazy"
                     />
                     <div>
-                      <p className="font-semibold text-gray-900 text-sm">{testimonial.name}</p>
-                      <p className="text-xs text-gray-500">{testimonial.handle}</p>
+                      <p className="font-semibold text-gray-900 text-sm">{testimonial.customerName}</p>
+                      <p className="text-xs text-gray-500">{testimonial.customerEmail}</p>
                     </div>
                   </div>
                 </div>
