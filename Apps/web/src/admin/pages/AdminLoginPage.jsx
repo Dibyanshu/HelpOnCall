@@ -6,6 +6,8 @@ import {
   hasAnyFieldErrors,
   normalizeZodFieldErrors,
 } from '../../admin/utils/formFieldErrors.js';
+import Layout from '../../components/layout/Layout';
+import serviceHero from '../../assets/Service_Hero.png';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 const initialFieldErrors = createInitialFieldErrors(['email', 'password']);
@@ -15,17 +17,19 @@ export default function AdminLoginPage() {
   const [fieldErrors, setFieldErrors] = useState(initialFieldErrors);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [dashboardDesign, setDashboardDesign] = useState('new');
   const { isAuthenticated, signIn } = useAdminAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const redirectTo = location.state?.from?.pathname || '/admin/dashboard';
+  const redirectTo = location.state?.from?.pathname || (dashboardDesign === 'new' ? '/admin/dashboard' : '/admin/dashboard-old');
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/admin/dashboard', { replace: true });
+      const destination = dashboardDesign === 'new' ? '/admin/dashboard' : '/admin/dashboard-old';
+      navigate(destination, { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, dashboardDesign]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -68,7 +72,8 @@ export default function AdminLoginPage() {
       }
 
       signIn(data.token, data.user);
-      navigate(redirectTo, { replace: true });
+      const destination = dashboardDesign === 'new' ? '/admin/dashboard' : '/admin/dashboard-old';
+      navigate(destination, { replace: true });
     } catch (error) {
       setErrorMessage(error.message || 'Unable to sign in.');
     } finally {
@@ -77,87 +82,137 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mx-auto w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Staff Portal</p>
-        <h1 className="mt-2 text-2xl font-bold text-gray-900">Admin Login</h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Sign in with your admin credentials to access the portal.
-        </p>
-
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4" aria-label="Admin login form">
-          <div>
-            <label htmlFor="admin-email" className="mb-1 block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              id="admin-email"
-              name="email"
-              type="email"
-              value={credentials.email}
-              onChange={handleChange}
-              required
-              autoComplete="username"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-200"
-              placeholder="admin@helponcall.com"
-            />
-            {fieldErrors.email.length > 0 ? (
-              <ul className="mt-1 list-disc pl-5 text-xs text-red-700" role="alert">
-                {fieldErrors.email.map((message, index) => (
-                  <li key={`${message}-${index}`}>{message}</li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-
-          <div>
-            <label htmlFor="admin-password" className="mb-1 block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              id="admin-password"
-              name="password"
-              type="password"
-              value={credentials.password}
-              onChange={handleChange}
-              required
-              autoComplete="current-password"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-200"
-              placeholder="Enter your password"
-            />
-            {fieldErrors.password.length > 0 ? (
-              <ul className="mt-1 list-disc pl-5 text-xs text-red-700" role="alert">
-                {fieldErrors.password.map((message, index) => (
-                  <li key={`${message}-${index}`}>{message}</li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-
-          {errorMessage ? (
-            <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
-              {errorMessage}
+    <Layout>
+      <div className="bg-slate-50 min-h-screen">
+        {/* Login Hero Section */}
+        <section className="relative overflow-hidden px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+          <img
+            src={serviceHero}
+            alt="Secure Admin Access"
+            className="absolute inset-0 h-full w-full object-cover grayscale opacity-80 mix-blend-multiply"
+            loading="eager"
+          />
+          <div className="absolute inset-0 bg-teal-900/75" aria-hidden="true" />
+          <div className="relative mx-auto max-w-5xl">
+            <p className="text-sm font-semibold uppercase tracking-wider text-teal-100 italic">Restricted Access</p>
+            <h1 className="mt-3 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
+              Staff Portal Login
+            </h1>
+            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-teal-100 sm:text-lg">
+              Welcome back to the Help On Call administrative interface. Please sign in with your secure credentials to manage services and personnel.
             </p>
-          ) : null}
+          </div>
+        </section>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="btn-primary w-full shadow-md shadow-teal-700/10"
+        <div className="mx-auto w-full max-w-md px-4 py-20 relative z-10">
+          <form 
+            onSubmit={handleSubmit} 
+            className="rounded-3xl border border-slate-200 bg-white p-8 shadow-2xl space-y-5"
+            aria-label="Admin login form"
           >
-            {isSubmitting ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
+            <div className="text-center mb-6">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-700 bg-teal-50 px-3 py-1 rounded-full">Secure Session</span>
+            </div>
 
-        <div className="mt-6 border-t border-gray-100 pt-4 text-sm">
-          <Link
-            to="/"
-            className="font-medium text-gray-700 underline decoration-gray-300 underline-offset-4 transition-colors hover:text-teal-700"
-          >
-            Back to website
-          </Link>
+            <div className="space-y-1">
+              <label htmlFor="admin-email" className="block text-xs font-bold text-teal-900 uppercase tracking-tighter">
+                Admin Email
+              </label>
+              <input
+                id="admin-email"
+                name="email"
+                type="email"
+                value={credentials.email}
+                onChange={handleChange}
+                required
+                autoComplete="username"
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-teal-600 focus:ring-4 focus:ring-teal-100"
+                placeholder="admin@helponcall.com"
+              />
+              {fieldErrors.email.length > 0 ? (
+                <ul className="mt-1 list-disc pl-5 text-xs text-red-700" role="alert">
+                  {fieldErrors.email.map((message, index) => (
+                    <li key={`${message}-${index}`}>{message}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="admin-password" className="block text-xs font-bold text-teal-900 uppercase tracking-tighter">
+                Access Password
+              </label>
+              <input
+                id="admin-password"
+                name="password"
+                type="password"
+                value={credentials.password}
+                onChange={handleChange}
+                required
+                autoComplete="current-password"
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-teal-600 focus:ring-4 focus:ring-teal-100"
+                placeholder="••••••••"
+              />
+              {fieldErrors.password.length > 0 ? (
+                <ul className="mt-1 list-disc pl-5 text-xs text-red-700" role="alert">
+                  {fieldErrors.password.map((message, index) => (
+                    <li key={`${message}-${index}`}>{message}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <label className="block text-xs font-bold text-teal-900 uppercase tracking-tighter">
+                Portal Experience
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDashboardDesign('old')}
+                  className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${dashboardDesign === 'old' 
+                    ? 'bg-teal-700 text-white border-teal-700 shadow-md ring-2 ring-teal-100' 
+                    : 'bg-white text-slate-500 border-slate-200 hover:border-teal-400'}`}
+                >
+                  Classic
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDashboardDesign('new')}
+                  className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${dashboardDesign === 'new' 
+                    ? 'bg-teal-700 text-white border-teal-700 shadow-md ring-2 ring-teal-100' 
+                    : 'bg-white text-slate-500 border-slate-200 hover:border-teal-400'}`}
+                >
+                  Modern
+                </button>
+              </div>
+            </div>
+
+            {errorMessage ? (
+              <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 font-medium" role="alert">
+                {errorMessage}
+              </p>
+            ) : null}
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="btn-primary w-full py-3.5 rounded-xl shadow-lg shadow-teal-700/20 active:scale-[0.98] transition-transform"
+            >
+              {isSubmitting ? 'Authenticating...' : 'Secure Sign In'}
+            </button>
+            
+            <div className="pt-4 text-center border-t border-slate-100 mt-6">
+              <Link
+                to="/"
+                className="text-xs font-bold text-slate-500 uppercase tracking-widest hover:text-teal-700 transition-colors"
+              >
+                ← Return to Public Website
+              </Link>
+            </div>
+          </form>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 }
