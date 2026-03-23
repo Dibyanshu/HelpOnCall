@@ -9,6 +9,7 @@ import authRoutes from "./routes/auth.js";
 import employmentRoutes from "./routes/employment.js";
 import healthRoutes from "./routes/health.js";
 import servicesRoutes from "./routes/services.js";
+import testimonialsRoutes from "./routes/testimonials.js";
 
 export function buildApp() {
   const app = Fastify({
@@ -34,6 +35,7 @@ export function buildApp() {
   app.register(adminUserRoutes, { prefix: "/api/v1" });
   app.register(servicesRoutes, { prefix: "/api/v1" });
   app.register(employmentRoutes, { prefix: "/api/v1" });
+  app.register(testimonialsRoutes, { prefix: "/api/v1" });
 
   return app;
 }

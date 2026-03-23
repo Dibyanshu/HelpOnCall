@@ -65,6 +65,21 @@ const EMPLOYMENT_TABLE_DDL = sql`
   )
 `;
 
+const CUSTOMER_TESTIMONIALS_TABLE_DDL = sql`
+  CREATE TABLE IF NOT EXISTS customer_testimonials (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    customer_name TEXT NOT NULL,
+    customer_email TEXT NOT NULL,
+    message TEXT NOT NULL,
+    rating REAL NOT NULL,
+    profile_pic TEXT,
+    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+    created_by TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL DEFAULT 0,
+    updated_at INTEGER NOT NULL DEFAULT 0
+  )
+`;
+
 async function migrateUsersRoleConstraintForAdmin(): Promise<void> {
   const tableMeta = await db.get<{ sql: string | null }>(
     sql`SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'users'`
@@ -243,6 +258,7 @@ export async function ensureTables(): Promise<void> {
   await db.run(SERVICES_TABLE_DDL);
   await db.run(EMPLOYMENT_TABLE_DDL);
   await db.run(SERVICES_CATEGORY_ID_INDEX_DDL);
+  await db.run(CUSTOMER_TESTIMONIALS_TABLE_DDL);
   await migrateUsersRoleConstraintForAdmin();
   await migrateUsersAddCreatedByColumn();
   await migrateServiceCategoriesAddStandardColumns();

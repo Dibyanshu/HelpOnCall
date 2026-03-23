@@ -3,7 +3,7 @@ import { Upload, CheckCircle2, ChevronDown, X, Briefcase, Check, User, Mail, Pho
 import {
   fetchEmploymentSpecializationGroups,
   submitEmploymentApplication,
-} from './employmentSubmission';
+} from '../../appServices/employmentSubmission';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 

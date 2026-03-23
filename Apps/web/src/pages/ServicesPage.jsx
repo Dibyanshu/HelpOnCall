@@ -1,6 +1,6 @@
 import { Home, ChefHat, Utensils, Bath, Sparkles, Shirt, Accessibility, Users, Footprints } from 'lucide-react';
 import serviceHero from '../assets/Service_Hero.png';
-import { useServices } from '../hooks/useServices.js';
+import { useServices } from '../appServices/useServices.js';
 
 const ICONS_BY_NAME = {
   Home,
