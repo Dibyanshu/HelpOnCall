@@ -29,7 +29,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAdminAuth } from '../../admin/auth/AdminAuthContext.jsx';
 import Layout from '../../components/layout/Layout';
-import serviceHero from '../../assets/Service_Hero.png';
+import adminHero from '../../assets/admin/admin_hero.jpg';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -175,7 +175,7 @@ export default function AdminDashboard() {
         {/* Unified Hero Section */}
         <section className="relative px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <img
-            src={serviceHero}
+            src={adminHero}
             alt="Admin Portal Background"
             className="absolute inset-0 h-full w-full object-cover grayscale opacity-80 mix-blend-multiply"
             loading="eager"
