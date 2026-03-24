@@ -74,7 +74,7 @@ export default function CategoryForm({ initialData, onClose, onSubmit }) {
         />
       </div>
 
-      <div>
+      <div className='hidden'>
         <label htmlFor="category-display-order" className="mb-1 block text-sm font-medium text-slate-700">
           Display Order
         </label>

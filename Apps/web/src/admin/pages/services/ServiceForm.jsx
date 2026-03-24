@@ -157,7 +157,7 @@ export default function ServiceForm({ initialData, categories, onSubmit }) {
         />
       </div>
 
-      <div>
+      <div className='hidden'>
         <label htmlFor="service-display-order" className="mb-1 block text-sm font-medium text-slate-700">
           Display Order
         </label>

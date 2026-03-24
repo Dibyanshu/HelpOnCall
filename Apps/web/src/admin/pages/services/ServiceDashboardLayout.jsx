@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { FolderTree, PlusCircle, RefreshCcw, Settings2, Trash2, Wrench } from 'lucide-react';
+import { ChevronDown, ChevronUp, FolderTree, PlusCircle, RefreshCcw, Settings2, Trash2, Wrench } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../../auth/AdminAuthContext.jsx';
 import { useServiceManagement } from '../../../appServices/useServiceManagement.js';
@@ -30,7 +30,7 @@ function buildFormModeTitle(mode) {
 
 // This method increases the service category indexing value by 1 just for better end-user visibility
 function toDisplayNumber(order) {
-  return order + 1;
+  return order;
 }
 
 export default function ServiceDashboardLayout() {
@@ -174,6 +174,64 @@ export default function ServiceDashboardLayout() {
     setMode('create-service');
   };
 
+  const handleMoveService = async (categoryServices, currentIndex, direction) => {
+    const currentService = categoryServices[currentIndex];
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    const targetService = categoryServices[targetIndex];
+
+    if (!currentService || !targetService || isSaving) {
+      return;
+    }
+
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    const currentOrder = currentService.displayOrder ?? 0;
+    const targetOrder = targetService.displayOrder ?? 0;
+
+    const moveResult = await updateService(currentService.id, { displayOrder: targetOrder });
+
+    if (!moveResult.ok) {
+      setErrorMessage(moveResult.message || 'Failed to reorder service.');
+      return;
+    }
+
+    const swapResult = await updateService(targetService.id, { displayOrder: currentOrder });
+
+    if (!swapResult.ok) {
+      setErrorMessage(swapResult.message || 'Failed to reorder service.');
+    }
+  };
+
+  const handleMoveCategory = async (categoriesList, currentIndex, direction) => {
+    const currentCategory = categoriesList[currentIndex];
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    const targetCategory = categoriesList[targetIndex];
+
+    if (!currentCategory || !targetCategory || isSaving) {
+      return;
+    }
+
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    const currentOrder = currentCategory.displayOrder ?? 0;
+    const targetOrder = targetCategory.displayOrder ?? 0;
+
+    const moveResult = await updateCategory(currentCategory.id, { displayOrder: targetOrder });
+
+    if (!moveResult.ok) {
+      setErrorMessage(moveResult.message || 'Failed to reorder category.');
+      return;
+    }
+
+    const swapResult = await updateCategory(targetCategory.id, { displayOrder: currentOrder });
+
+    if (!swapResult.ok) {
+      setErrorMessage(swapResult.message || 'Failed to reorder category.');
+    }
+  };
+
   return (
     <Layout>
       {/* Hero Section */}
@@ -248,29 +306,97 @@ export default function ServiceDashboardLayout() {
             ) : null}
 
             {!isLoading
-              ? serviceTree.map((category) => (
+              ? serviceTree.map((category, categoryIndex) => (
                 <div key={category.id} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
-                  <button
-                    type="button"
-                    onClick={() => startEditCategory(category.id)}
-                    className="flex w-full items-center justify-between gap-2 text-left"
-                  >
-                    <span className="text-sm font-semibold text-slate-900">{category.title}</span>
-                    <span className="text-[11px] text-slate-500">#{toDisplayNumber(category.displayOrder ?? 0)}</span>
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => startEditCategory(category.id)}
+                      className="flex min-w-0 flex-1 items-center justify-between gap-2 text-left"
+                    >
+                      <span className="truncate text-sm font-semibold text-slate-900">{category.title}</span>
+                      {/* <span className="text-[11px] text-slate-500">#{toDisplayNumber(category.displayOrder ?? 0)}</span> */}
+                    </button>
+
+                    <div className="flex items-center gap-0.5">
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          void handleMoveCategory(serviceTree, categoryIndex, 'up');
+                        }}
+                        disabled={isSaving || categoryIndex === 0}
+                        className="inline-flex h-5 w-5 items-center justify-center rounded border border-slate-300 text-slate-600 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+                        aria-label={`Move ${category.title} up`}
+                        title="Move up"
+                      >
+                        <ChevronUp className="h-3 w-3" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          void handleMoveCategory(serviceTree, categoryIndex, 'down');
+                        }}
+                        disabled={isSaving || categoryIndex === serviceTree.length - 1}
+                        className="inline-flex h-5 w-5 items-center justify-center rounded border border-slate-300 text-slate-600 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+                        aria-label={`Move ${category.title} down`}
+                        title="Move down"
+                      >
+                        <ChevronDown className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </div>
 
                   <div className="mt-2 space-y-1 border-l border-slate-200">
                     {category.services.length > 0 ? (
-                      category.services.map((service) => (
-                        <button
+                      category.services.map((service, serviceIndex) => (
+                        <div
                           key={service.id}
-                          type="button"
-                          onClick={() => startEditService(service.id)}
-                          className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-xs text-slate-700 transition-colors hover:bg-slate-100"
+                          className="flex w-full items-center gap-1 rounded-md px-1 py-0.5 text-xs text-slate-700 transition-colors hover:bg-slate-100"
                         >
-                          <span className="font-bold text-slate-400">{toDisplayNumber(service.displayOrder ?? 0)}.</span>
-                          <span>{service.label}</span>
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => startEditService(service.id)}
+                            className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-1 text-left"
+                          >
+                            {/* <span className="font-bold text-slate-400">{toDisplayNumber(service.displayOrder ?? 0)}.</span> */}
+                            <span className="truncate">{service.label}</span>
+                          </button>
+
+                          <div className="flex items-center gap-0.5">
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                void handleMoveService(category.services, serviceIndex, 'up');
+                              }}
+                              disabled={isSaving || serviceIndex === 0}
+                              className="inline-flex h-5 w-5 items-center justify-center rounded border border-slate-300 text-slate-600 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+                              aria-label={`Move ${service.label} up`}
+                              title="Move up"
+                            >
+                              <ChevronUp className="h-3 w-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                void handleMoveService(category.services, serviceIndex, 'down');
+                              }}
+                              disabled={isSaving || serviceIndex === category.services.length - 1}
+                              className="inline-flex h-5 w-5 items-center justify-center rounded border border-slate-300 text-slate-600 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+                              aria-label={`Move ${service.label} down`}
+                              title="Move down"
+                            >
+                              <ChevronDown className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </div>
                       ))
                     ) : (
                       <p className="text-xs text-slate-500">No services in this category.</p>
@@ -332,11 +458,6 @@ export default function ServiceDashboardLayout() {
                     <Settings2 className="h-4 w-4 text-teal-700" />
                     Category Details
                   </div>
-                  {selectedCategory && (
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 ring-1 ring-inset ring-slate-200">
-                      #{toDisplayNumber(selectedCategory.displayOrder ?? 0)}
-                    </span>
-                  )}
                 </div>
                 <CategoryForm
                   key={`category-${selectedCategory?.id || 'new'}`}
@@ -353,11 +474,6 @@ export default function ServiceDashboardLayout() {
                     <Wrench className="h-4 w-4 text-teal-700" />
                     Service Details
                   </div>
-                  {selectedService && (
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 ring-1 ring-inset ring-slate-200">
-                      #{toDisplayNumber(selectedService.displayOrder ?? 0)}
-                    </span>
-                  )}
                 </div>
                 <ServiceForm
                   key={`service-${selectedService?.id || 'new'}`}
