@@ -1,12 +1,11 @@
 import { useCallback, useMemo, useState } from 'react';
-import { ChevronDown, ChevronUp, FolderTree, PlusCircle, RefreshCcw, Settings2, Trash2, Wrench } from 'lucide-react';
+import { ChevronDown, ChevronUp, FolderTree, PlusCircle, RefreshCcw, Settings2, Trash2, Wrench, Database } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useAdminAuth } from '../../auth/AdminAuthContext.jsx';
-import { useServiceManagement } from '../../../appServices/useServiceManagement.js';
-import CategoryForm from './CategoryForm.jsx';
-import ServiceForm from './ServiceForm.jsx';
-import Layout from '../../../components/layout/Layout';
-import serviceHero from '../../../assets/Service_Hero.png';
+import { useAdminAuth } from '../auth/AdminAuthContext.jsx';
+import { useServiceManagement } from '../../appServices/useServiceManagement.js';
+import CategoryForm from './services/CategoryForm.jsx';
+import ServiceForm from './services/ServiceForm.jsx';
 
 function buildFormModeTitle(mode) {
   if (mode === 'create-category') {
@@ -33,7 +32,7 @@ function toDisplayNumber(order) {
   return order;
 }
 
-export default function ServiceDashboardLayout() {
+export default function AdminServicePage() {
   const [mode, setMode] = useState('create-category');
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [selectedServiceId, setSelectedServiceId] = useState(null);
@@ -233,66 +232,65 @@ export default function ServiceDashboardLayout() {
   };
 
   return (
-    <Layout>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-        <img
-          src={serviceHero}
-          alt="Healthcare professional supporting a senior at home"
-          className="absolute inset-0 h-full w-full object-cover"
-          loading="eager"
-        />
-        <div className="absolute inset-0 bg-teal-900/75" aria-hidden="true" />
-        <div className="relative mx-auto max-w-5xl">
-          <p className="text-sm font-semibold uppercase tracking-wider text-teal-100">Admin Portal</p>
-          <h1 className="mt-3 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
-            Service Manager Dashboard
-          </h1>
-          <p className="mt-4 max-w-3xl text-base leading-relaxed text-teal-100 sm:text-lg">
-            Manage your service categories and offerings. You are signed in as {user?.name || user?.email} ({user?.role}).
-          </p>
-        </div>
-      </section>
-
-      <div className="bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
-        <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Internal Control</p>
-              <h1 className="mt-2 flex items-center gap-2 text-xl font-bold text-slate-900">
-                <FolderTree className="h-5 w-5 text-teal-700" />
-                Services Tree
-              </h1>
+    <div className="space-y-6">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="rounded-md border border-slate-200 bg-white p-6 shadow-md sm:p-8"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-12 rounded-md bg-teal-50 flex items-center justify-center text-teal-700">
+              <Database size={24} />
             </div>
-            <button
-              type="button"
-              onClick={refresh}
-              className="rounded-md border border-slate-300 p-2 text-slate-700 transition-colors hover:bg-slate-100"
-              aria-label="Refresh service data"
-            >
-              <RefreshCcw className="h-4 w-4" />
-            </button>
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Service Manager Dashboard</h2>
+              <p className="text-sm text-slate-500 font-sans">
+                Signed in as <span className="font-semibold text-teal-700">{user?.name || user?.email}</span> ({user?.role})
+              </p>
+            </div>
           </div>
-
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-4">
             <button
               type="button"
               onClick={startCreateCategory}
-              className={`${mode === 'create-category' || mode === 'edit-category' ? 'btn-primary' : 'btn-secondary'} gap-2`}
+              className={`${mode === 'create-category' || mode === 'edit-category' ? 'btn-primary' : 'btn-secondary'} gap-2 px-6 transition-all`}
             >
-              <PlusCircle className="h-4 w-4" />
+              <PlusCircle size={16} />
               Add Category
             </button>
             <button
               type="button"
               onClick={startCreateService}
-              className={`${mode === 'create-service' || mode === 'edit-service' ? 'btn-primary' : 'btn-secondary'} gap-2`}
+              className={`${mode === 'create-service' || mode === 'edit-service' ? 'btn-primary' : 'btn-secondary'} gap-2 px-6 transition-all`}
             >
-              <PlusCircle className="h-4 w-4" />
+              <PlusCircle size={16} />
               Add Service
             </button>
+            <button
+              type="button"
+              onClick={refresh}
+              className="btn-secondary gap-2 px-6 transition-all"
+            >
+              <RefreshCcw size={16} />
+              Refresh
+            </button>
           </div>
+        </div>
+      </motion.div>
+
+      <div className="grid max-w-full gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
+        <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h1 className="mt-2 flex items-center gap-2 text-xl font-bold text-slate-900">
+                <FolderTree className="h-5 w-5 text-teal-700" />
+                Services Tree
+              </h1>
+            </div>
+          </div>
+
+
 
           <div className="mt-5 max-h-[60vh] space-y-3 overflow-y-auto pr-1">
             {isLoading ? (
@@ -458,6 +456,11 @@ export default function ServiceDashboardLayout() {
                     <Settings2 className="h-4 w-4 text-teal-700" />
                     Category Details
                   </div>
+                  {selectedCategory && (
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 ring-1 ring-inset ring-slate-200">
+                      #{toDisplayNumber(selectedCategory.displayOrder ?? 0)}
+                    </span>
+                  )}
                 </div>
                 <CategoryForm
                   key={`category-${selectedCategory?.id || 'new'}`}
@@ -474,6 +477,11 @@ export default function ServiceDashboardLayout() {
                     <Wrench className="h-4 w-4 text-teal-700" />
                     Service Details
                   </div>
+                  {selectedService && (
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 ring-1 ring-inset ring-slate-200">
+                      #{toDisplayNumber(selectedService.displayOrder ?? 0)}
+                    </span>
+                  )}
                 </div>
                 <ServiceForm
                   key={`service-${selectedService?.id || 'new'}`}
@@ -487,6 +495,5 @@ export default function ServiceDashboardLayout() {
         </main>
       </div>
     </div>
-  </Layout>
-);
+  );
 }

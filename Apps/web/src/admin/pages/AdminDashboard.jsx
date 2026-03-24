@@ -28,8 +28,7 @@ import {
 } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAdminAuth } from '../../admin/auth/AdminAuthContext.jsx';
-import Layout from '../../components/layout/Layout';
-import adminHero from '../../assets/admin/admin_hero.jpg';
+
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -170,34 +169,7 @@ export default function AdminDashboard() {
   );
 
   return (
-    <Layout>
-      <div className="bg-slate-50 min-h-screen pb-20 overflow-hidden">
-        {/* Unified Hero Section */}
-        <section className="relative px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-          <img
-            src={adminHero}
-            alt="Admin Portal Background"
-            className="absolute inset-0 h-full w-full object-cover grayscale opacity-80 mix-blend-multiply"
-            loading="eager"
-          />
-          <div className="absolute inset-0 bg-teal-900/75" aria-hidden="true" />
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="relative mx-auto max-w-5xl"
-          >
-            <p className="text-sm font-semibold uppercase tracking-wider text-teal-100 italic">Command Center</p>
-            <h1 className="mt-3 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
-              Welcome {user?.email?.split('@')[0] || "Admin"}
-            </h1>
-            <p className="mt-4 max-w-3xl text-sm leading-relaxed text-teal-100 sm:text-lg">
-              Monitor system metrics, monitor user lists, and optimize customer service performance across the network.
-            </p>
-          </motion.div>
-        </section>
-
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-10 relative z-10 space-y-8">
+    <div className="space-y-8">
           {/* Action Header Card */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -238,13 +210,13 @@ export default function AdminDashboard() {
                     />
                   </div>
                 </div>
-                <button className="btn-secondary gap-2 px-6 active:scale-95 transition-all">
+                <button className="btn-secondary gap-2 px-6 transition-all">
                   <Download size={16} />
                   Export Reports
                 </button>
                 <button
                   onClick={signOut}
-                  className="btn-primary gap-2 px-6 py-2.5 uppercase tracking-widest active:scale-95 transition-all"
+                  className="btn-primary gap-2 px-6 py-2.5 uppercase tracking-widest transition-all"
                 >
                   <LogOut size={16} />
                   Sign Out
@@ -408,8 +380,6 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </Layout>
+    </div>
   );
 }

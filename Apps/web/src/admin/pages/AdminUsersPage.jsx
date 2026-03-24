@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { RotateCw, LayoutDashboard, Plus } from 'lucide-react';
+import { RotateCw, Plus, Users } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useAdminAuth } from '../../admin/auth/AdminAuthContext.jsx';
 import AdminUserEditPage from './AdminUserEditPage.jsx';
-import Layout from '../../components/layout/Layout';
-import serviceHero from '../../assets/Service_Hero.png';
 import { useAdminUserEditForm } from '../../appServices/useAdminUserEditForm.js';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
@@ -136,44 +135,31 @@ export default function AdminUsersPage() {
   }, [canManageStatus, navigate, signOut, token, updatingUserId]);
 
   return (
-    <Layout>
-      <div className="bg-slate-50 min-h-screen">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-          <img
-            src={serviceHero}
-            alt="Admin Portal Background"
-            className="absolute inset-0 h-full w-full object-cover grayscale opacity-80 mix-blend-multiply"
-            loading="eager"
-          />
-          <div className="absolute inset-0 bg-teal-900/75" aria-hidden="true" />
-          <div className="relative mx-auto max-w-5xl">
-            <p className="text-sm font-semibold uppercase tracking-wider text-teal-100 italic">User Management</p>
-            <h1 className="mt-3 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
-              Admin Portal: Users
-            </h1>
-            <p className="mt-4 max-w-3xl text-sm leading-relaxed text-teal-100 sm:text-lg">
-              Manage system administrators, control access levels, and monitor user activity across the Greater Toronto Area.
-            </p>
-          </div>
-        </section>
-
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6 my-10 relative z-10 pt-8">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-md sm:p-8">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900">Active Administrators</h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Signed in as <span className="font-semibold text-teal-700">{user?.name || user?.email}</span> ({user?.role})
-                </p>
+    <div className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="rounded-md border border-slate-200 bg-white p-6 shadow-md sm:p-8"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-md bg-teal-50 flex items-center justify-center text-teal-700">
+                  <Users size={24} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 tracking-tight">Active Administrators</h2>
+                  <p className="text-sm text-slate-500">
+                    Signed in as <span className="font-semibold text-teal-700">{user?.name || user?.email}</span> ({user?.role})
+                  </p>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap items-center gap-4">
                 {canManageStatus ? (
                   <Link
                     to="/admin/users/new"
-                    className="btn-primary px-6"
+                    className="btn-primary gap-2 px-6 transition-all"
                   >
-                    <Plus className="mr-2 h-4 w-4" />
+                    <Plus size={16} />
                     New User
                   </Link>
                 ) : null}
@@ -181,21 +167,14 @@ export default function AdminUsersPage() {
                   type="button"
                   onClick={loadUsers}
                   disabled={isLoading}
-                  className="btn-secondary px-6"
+                  className="btn-secondary gap-2 px-6 transition-all"
                 >
-                  <RotateCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                  <RotateCw size={16} className={isLoading ? 'animate-spin' : ''} />
                   Refresh
                 </button>
-                <Link
-                  to="/admin/dashboard"
-                  className="btn-secondary border border-slate-300 px-6"
-                >
-                  <LayoutDashboard className="mr-2 h-4 w-4" />
-                  Back To Dashboard
-                </Link>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-md sm:p-6 overflow-hidden">
             {successMessage || statusMessage ? (
@@ -303,8 +282,6 @@ export default function AdminUsersPage() {
               </div>
             ) : null}
           </div>
-        </div>
-
         <AdminUserEditPage
           isOpen={isEditOpen}
           formData={editFormData}
@@ -316,7 +293,6 @@ export default function AdminUsersPage() {
           onSubmit={handleEditSubmit}
           onClose={closeEditPanel}
         />
-      </div>
-    </Layout>
+    </div>
   );
 }
