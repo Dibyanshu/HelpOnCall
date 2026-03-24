@@ -1,12 +1,11 @@
-import { buildApp } from "./app.js";
-import { ensureTables } from "./db/bootstrap.js";
-import { seedInitialServices, seedInitialTestimonials, seedSuperAdmin } from "./db/seed.js";
-
 let appPromise: Promise<any> | null = null;
 
 async function getApp() {
   if (!appPromise) {
     appPromise = (async () => {
+      const [{ buildApp }, { ensureTables }, { seedInitialServices, seedInitialTestimonials, seedSuperAdmin }] =
+        await Promise.all([import("./app.js"), import("./db/bootstrap.js"), import("./db/seed.js")]);
+
       const app = buildApp();
 
       try {
@@ -29,6 +28,16 @@ async function getApp() {
 }
 
 export default async function handler(req: any, res: any) {
-  const app = await getApp();
-  app.server.emit("request", req, res);
+  try {
+    const app = await getApp();
+    app.server.emit("request", req, res);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown startup error";
+
+    console.error("Serverless startup failed", error);
+
+    res.statusCode = 500;
+    res.setHeader("content-type", "application/json");
+    res.end(JSON.stringify({ status: "error", message }));
+  }
 }
