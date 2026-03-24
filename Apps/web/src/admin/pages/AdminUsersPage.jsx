@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { RotateCw, Plus, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAdminAuth } from '../../admin/auth/AdminAuthContext.jsx';
+import { useToast } from '../../components/common/Toast.jsx';
+import { useConfirm } from '../../components/common/ConfirmDialog.jsx';
 import AdminUserEditPage from './AdminUserEditPage.jsx';
 import { useAdminUserEditForm } from '../../appServices/useAdminUserEditForm.js';
 
@@ -22,14 +24,22 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [updatingUserId, setUpdatingUserId] = useState(null);
-  const [statusMessage, setStatusMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const toast = useToast();
+  const confirm = useConfirm();
 
   const { token, user, signOut } = useAdminAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const successMessage = location.state?.message || '';
   const canManageStatus = user?.role === 'super_admin' || user?.role === 'admin';
+
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      // Clear state to avoid toast on refresh
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [successMessage, toast, navigate, location.pathname]);
 
   const {
     isEditOpen,
@@ -50,13 +60,10 @@ export default function AdminUsersPage() {
     signOut,
     users,
     setUsers,
-    setStatusMessage,
-    setErrorMessage,
   });
 
   const loadUsers = useCallback(async () => {
     setIsLoading(true);
-    setErrorMessage('');
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/admin/users`, {
@@ -80,7 +87,7 @@ export default function AdminUsersPage() {
 
       setUsers(Array.isArray(data?.data) ? data.data : []);
     } catch (error) {
-      setErrorMessage(error.message || 'Failed to load users.');
+      toast.error(error.message || 'Failed to load users.');
     } finally {
       setIsLoading(false);
     }
@@ -95,8 +102,20 @@ export default function AdminUsersPage() {
       return;
     }
 
-    setStatusMessage('');
-    setErrorMessage('');
+    if (targetUser.isActive) {
+      const confirmed = await confirm({
+        title: 'Deactivate User?',
+        message: `Are you sure you want to de-authorize "${targetUser.name}"? They will lose all access to the admin portal immediately.`,
+        confirmText: 'Yes, Deactivate',
+        cancelText: 'Cancel',
+        type: 'deactivate',
+      });
+
+      if (!confirmed) {
+        return;
+      }
+    }
+
     setUpdatingUserId(targetUser.id);
 
     try {
@@ -126,9 +145,9 @@ export default function AdminUsersPage() {
 
       const updatedUser = data?.user;
       setUsers((prev) => prev.map((item) => (item.id === updatedUser.id ? { ...item, ...updatedUser } : item)));
-      setStatusMessage(data?.message || 'User status updated successfully.');
+      toast.success(data?.message || 'User status updated successfully.');
     } catch (error) {
-      setErrorMessage(error.message || 'Failed to update user status.');
+      toast.error(error.message || 'Failed to update user status.');
     } finally {
       setUpdatingUserId(null);
     }
@@ -176,31 +195,16 @@ export default function AdminUsersPage() {
             </div>
           </motion.div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-md sm:p-6 overflow-hidden">
-            {successMessage || statusMessage ? (
-              <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800" role="status">
-                {successMessage || statusMessage}
-              </div>
-            ) : null}
+<div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-md sm:p-6 overflow-hidden">
+
 
             {isLoading ? (
               <p className="text-sm text-slate-600 animate-pulse">Fetching users from database...</p>
             ) : null}
 
-            {!isLoading && errorMessage ? (
-              <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
-                <p>{errorMessage}</p>
-                <button
-                  type="button"
-                  onClick={loadUsers}
-                  className="mt-3 btn-primary text-xs bg-red-700 hover:bg-red-800 border-none"
-                >
-                  Retry Connection
-                </button>
-              </div>
-            ) : null}
 
-            {!isLoading && !errorMessage ? (
+
+            {!isLoading ? (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200 text-sm">
                   <thead className="bg-slate-50/50">
