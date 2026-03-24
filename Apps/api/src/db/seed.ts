@@ -214,11 +214,12 @@ async function ensureServiceCategorySeed(title: string, displayOrder: number): P
     return existing[0].id;
   }
 
+  const readableDisplayOrder = displayOrder +1; // Start display order from 1 for better readability
   const created = await db
     .insert(serviceCategories)
     .values({
       title,
-      displayOrder,
+      displayOrder: readableDisplayOrder,
       ...buildAuditCreateFields("system_seed")
     })
     .returning({ id: serviceCategories.id });
@@ -241,13 +242,14 @@ async function ensureServiceSeed(
     return;
   }
 
+  const readableDisplayOrder = displayOrder +1; // Start display order from 1 for better readability 
   await db.insert(services).values({
     categoryId,
     label: item.label,
     description: item.description,
     imageUrl: item.imageUrl,
     iconName: item.iconName,
-    displayOrder,
+    displayOrder: readableDisplayOrder,
     ...buildAuditCreateFields("system_seed")
   });
 }

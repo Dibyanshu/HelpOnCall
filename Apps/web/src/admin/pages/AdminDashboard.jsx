@@ -255,7 +255,7 @@ export default function AdminDashboard() {
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatBox title="ACTIVE USERS" value={loading ? '...' : stats.usersCount} trend="3" isUp={true} period="LAST MONTH" link="/admin/users" linkTitle="Manage Users" />
+            <StatBox title="ACTIVE USERS" value={loading ? '...' : stats.usersCount} trend="300000" isUp={true} period="LAST MONTH" link="/admin/users" linkTitle="Manage Users" />
             <StatBox title="ACTIVE CUSTOMERS" value={loading ? '...' : stats.pendingEmployment} trend="0" isUp={true} period="LAST MONTH" link="/admin/employment" linkTitle="Manage Customers" />
             <StatBox title="ACTIVE SERVICES" value={stats.servicesCount} trend="2" isUp={true} period="TOTAL SERVICES" link="/admin/services" linkTitle="Manage Services" />
             <StatBox title="ACTIVE JOB APPLICATIONS" value={loading ? '...' : stats.employmentCount} trend="0" isUp={true} period="LAST MONTH" link="/admin/employment" linkTitle="Manage Job Applications" />
