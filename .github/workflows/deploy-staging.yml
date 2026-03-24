@@ -39,7 +39,7 @@ jobs:
         run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
 
   deploy-staging:
-    name: Manual Approval and Deploy Staging
+    name: Approval and Deploy
     needs: build-and-preview
     runs-on: ubuntu-latest
     environment: staging
