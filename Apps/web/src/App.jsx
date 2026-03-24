@@ -15,7 +15,7 @@ import AdminUserNewPage from './admin/pages/AdminUserNewPage';
 import ServiceDashboardLayout from './admin/pages/services/ServiceDashboardLayout';
 import EmploymentAdminPage from './admin/pages/employment/EmploymentAdminPage';
 import RequireAdminAuth from './admin/routes/RequireAdminAuth';
-import RFQSlideInPanel from './components/RFQSlideInPanel';
+import RequestForQuote from './pages/RequestForQuote';
 
 function App() {
   return (
@@ -79,9 +79,9 @@ function App() {
         <Route path="/employment" element={<Layout><EmploymentPage /></Layout>} />
         <Route path="/sitemap" element={<Layout><SitemapPage /></Layout>} />
         <Route path="/privacy-policy" element={<Layout><PrivacyPolicyPage /></Layout>} />
+        <Route path="/quote" element={<Layout><RequestForQuote /></Layout>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <RFQSlideInPanel />
     </>
   );
 }

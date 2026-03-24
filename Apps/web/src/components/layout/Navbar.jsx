@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useSearchParams, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const navLinks = [
   { label: 'Home', href: '/', isRoute: true },
@@ -11,7 +11,6 @@ const navLinks = [
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
 
   const isActive = (href) => {
     if (href === '/') {
@@ -21,16 +20,10 @@ export default function Navbar() {
     return location.pathname === href || location.pathname.startsWith(`${href}/`);
   };
 
-  const openPanel = () => {
-    const nextParams = new URLSearchParams(searchParams);
-    nextParams.set('rfqPanel', 'open');
-    setSearchParams(nextParams);
-  };
-
   return (
     <header className="sticky top-0 z-50 bg-white/70 backdrop-blur-md border-b border-gray-200 shadow-sm">
       <nav
-        className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
+        className="mx-auto flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
         aria-label="Main navigation"
       >
         <Link to="/" className="flex items-center gap-2" aria-label="Help On Call home">
@@ -57,24 +50,22 @@ export default function Navbar() {
 
         <ul className="hidden items-center gap-6 md:flex" role="list">
           {navLinks.map((link) => {
-            const active = isActive(link.href); 
+            const active = isActive(link.href);
             return (
               <li key={link.href} className="relative py-2">
                 {link.isRoute ? (
                   <Link
                     to={link.href}
-                    className={`text-sm font-medium transition-all duration-300 hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${
-                      active ? 'text-teal-700' : 'text-gray-700'
-                    }`}
+                    className={`text-sm font-medium transition-all duration-300 hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${active ? 'text-teal-700' : 'text-gray-700'
+                      }`}
                   >
                     {link.label}
                   </Link>
                 ) : (
                   <a
                     href={link.href}
-                    className={`text-sm font-medium transition-all duration-300 hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${
-                      active ? 'text-teal-700' : 'text-gray-700'
-                    }`}
+                    className={`text-sm font-medium transition-all duration-300 hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${active ? 'text-teal-700' : 'text-gray-700'
+                      }`}
                   >
                     {link.label}
                   </a>
@@ -87,13 +78,12 @@ export default function Navbar() {
             );
           })}
           <li>
-            <button
-              type="button"
-              onClick={openPanel}
+            <Link
+              to="/quote"
               className="btn-primary"
             >
               Request For Quote
-            </button>
+            </Link>
           </li>
         </ul>
 
@@ -127,9 +117,8 @@ export default function Navbar() {
                   {link.isRoute ? (
                     <Link
                       to={link.href}
-                      className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                        active ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50 hover:text-teal-700'
-                      }`}
+                      className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors ${active ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50 hover:text-teal-700'
+                        }`}
                       onClick={() => setMobileOpen(false)}
                     >
                       {link.label}
@@ -137,9 +126,8 @@ export default function Navbar() {
                   ) : (
                     <a
                       href={link.href}
-                      className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                        active ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50 hover:text-teal-700'
-                      }`}
+                      className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors ${active ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50 hover:text-teal-700'
+                        }`}
                       onClick={() => setMobileOpen(false)}
                     >
                       {link.label}
@@ -149,16 +137,13 @@ export default function Navbar() {
               );
             })}
             <li>
-              <button
-                type="button"
-                onClick={() => {
-                  openPanel();
-                  setMobileOpen(false);
-                }}
-                className="mt-2 btn-primary w-full"
+              <Link
+                to="/quote"
+                className="mt-2 btn-primary w-full flex justify-center"
+                onClick={() => setMobileOpen(false)}
               >
                 Request A Quote
-              </button>
+              </Link>
             </li>
           </ul>
         </div>
