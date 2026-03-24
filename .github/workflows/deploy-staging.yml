@@ -57,6 +57,33 @@ jobs:
           echo "### Preview Deployment" >> "$GITHUB_STEP_SUMMARY"
           echo "${{ steps.deploy_preview.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Health check preview API
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="${{ steps.deploy_preview.outputs.url }}/api/v1/health"
+          echo "Checking $URL"
+
+          ATTEMPTS=10
+          SLEEP_SECONDS=6
+          for i in $(seq 1 "$ATTEMPTS"); do
+            HTTP_CODE="$(curl -sS -o /tmp/preview-health.json -w "%{http_code}" "$URL" || true)"
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "Preview health check passed"
+              cat /tmp/preview-health.json
+              exit 0
+            fi
+
+            echo "Attempt $i/$ATTEMPTS failed with HTTP $HTTP_CODE"
+            if [ "$i" -lt "$ATTEMPTS" ]; then
+              sleep "$SLEEP_SECONDS"
+            fi
+          done
+
+          echo "Preview health check failed"
+          cat /tmp/preview-health.json || true
+          exit 1
+
   deploy-staging:
     name: Approval and Deploy
     needs: build-and-preview
@@ -96,3 +123,30 @@ jobs:
         run: |
           echo "### Staging Deployment" >> "$GITHUB_STEP_SUMMARY"
           echo "${{ steps.deploy_staging.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Health check staging API
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="${{ steps.deploy_staging.outputs.url }}/api/v1/health"
+          echo "Checking $URL"
+
+          ATTEMPTS=10
+          SLEEP_SECONDS=6
+          for i in $(seq 1 "$ATTEMPTS"); do
+            HTTP_CODE="$(curl -sS -o /tmp/staging-health.json -w "%{http_code}" "$URL" || true)"
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "Staging health check passed"
+              cat /tmp/staging-health.json
+              exit 0
+            fi
+
+            echo "Attempt $i/$ATTEMPTS failed with HTTP $HTTP_CODE"
+            if [ "$i" -lt "$ATTEMPTS" ]; then
+              sleep "$SLEEP_SECONDS"
+            fi
+          done
+
+          echo "Staging health check failed"
+          cat /tmp/staging-health.json || true
+          exit 1
