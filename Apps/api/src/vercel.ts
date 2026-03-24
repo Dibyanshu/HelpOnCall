@@ -9,10 +9,16 @@ async function getApp() {
     appPromise = (async () => {
       const app = buildApp();
 
-      await ensureTables();
-      await seedSuperAdmin();
-      await seedInitialServices();
-      await seedInitialTestimonials();
+      try {
+        await ensureTables();
+        await seedSuperAdmin();
+        await seedInitialServices();
+        await seedInitialTestimonials();
+      } catch (error) {
+        // Avoid crashing the whole function on startup; log details for Vercel logs.
+        app.log.error({ error }, "Startup bootstrap/seed failed in serverless mode");
+      }
+
       await app.ready();
 
       return app;
