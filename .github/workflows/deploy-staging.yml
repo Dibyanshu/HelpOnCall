@@ -36,7 +36,26 @@ jobs:
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy preview build
-        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+        id: deploy_preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEPLOY_OUTPUT="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
+          echo "$DEPLOY_OUTPUT"
+
+          DEPLOY_URL="$(echo "$DEPLOY_OUTPUT" | grep -Eo 'https://[^[:space:]]+\.vercel\.app' | tail -n 1)"
+          if [ -z "$DEPLOY_URL" ]; then
+            echo "Unable to detect deployment URL from Vercel output" >&2
+            exit 1
+          fi
+
+          echo "url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Preview Deployment URL::$DEPLOY_URL"
+
+      - name: Publish preview URL
+        run: |
+          echo "### Preview Deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.deploy_preview.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
 
   deploy-staging:
     name: Approval and Deploy
@@ -50,11 +69,30 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
-      - name: Pull Vercel production env
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Pull Vercel preview env
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build project for staging target
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy staging target
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        id: deploy_staging
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEPLOY_OUTPUT="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
+          echo "$DEPLOY_OUTPUT"
+
+          DEPLOY_URL="$(echo "$DEPLOY_OUTPUT" | grep -Eo 'https://[^[:space:]]+\.vercel\.app' | tail -n 1)"
+          if [ -z "$DEPLOY_URL" ]; then
+            echo "Unable to detect deployment URL from Vercel output" >&2
+            exit 1
+          fi
+
+          echo "url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Staging Deployment URL::$DEPLOY_URL"
+
+      - name: Publish staging URL
+        run: |
+          echo "### Staging Deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.deploy_staging.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
