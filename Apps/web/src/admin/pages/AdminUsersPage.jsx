@@ -155,148 +155,148 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="rounded-md border border-slate-200 bg-white p-6 shadow-md sm:p-8"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-md bg-teal-50 flex items-center justify-center text-teal-700">
-                  <Users size={24} />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-slate-900 tracking-tight">Active Administrators</h2>
-                  <p className="text-sm text-slate-500">
-                    Signed in as <span className="font-semibold text-teal-700">{user?.name || user?.email}</span> ({user?.role})
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-4">
-                {canManageStatus ? (
-                  <Link
-                    to="/admin/users/new"
-                    className="btn-primary gap-2 px-6 transition-all"
-                  >
-                    <Plus size={16} />
-                    New User
-                  </Link>
-                ) : null}
-                <button
-                  type="button"
-                  onClick={loadUsers}
-                  disabled={isLoading}
-                  className="btn-secondary gap-2 px-6 transition-all"
-                >
-                  <RotateCw size={16} className={isLoading ? 'animate-spin' : ''} />
-                  Refresh
-                </button>
-              </div>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="rounded-md border border-slate-200 bg-white p-6 shadow-md sm:p-8"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-12 rounded-md bg-teal-50 flex items-center justify-center text-teal-700">
+              <Users size={24} />
             </div>
-          </motion.div>
-
-<div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-md sm:p-6 overflow-hidden">
-
-
-            {isLoading ? (
-              <p className="text-sm text-slate-600 animate-pulse">Fetching users from database...</p>
-            ) : null}
-
-
-
-            {!isLoading ? (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200 text-sm">
-                  <thead className="bg-slate-50/50">
-                    <tr>
-                      <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Full Name</th>
-                      <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Email Address</th>
-                      <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">System Role</th>
-                      <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Added By</th>
-                      <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Status</th>
-                      <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Created At</th>
-                      {canEditUsers ? (
-                        <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Action</th>
-                      ) : null}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 bg-white">
-                    {users.length > 0 ? (
-                      users.map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                          <td className="whitespace-nowrap px-3 py-4 text-slate-800 font-medium">{item.name}</td>
-                          <td className="whitespace-nowrap px-3 py-4 text-slate-600 tracking-tight">{item.email}</td>
-                          <td className="whitespace-nowrap px-3 py-4">
-                            <span className={`px-2 py-1 rounded text-[10px] uppercase font-black tracking-widest ${item.role === 'super_admin' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>
-                              {item.role.replace('_', ' ')}
-                            </span>
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-slate-500 italic text-xs">{item.createdBy || 'System'}</td>
-                          <td className="whitespace-nowrap px-3 py-4">
-                            <span
-                              className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold shadow-sm ${item.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}`}
-                            >
-                              {item.isActive ? 'Active' : 'Inactive'}
-                            </span>
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-slate-500 text-xs">{formatDateTime(item.createdAt)}</td>
-                          {canEditUsers ? (
-                            <td className="whitespace-nowrap px-3 py-4">
-                              <div className="flex items-center gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => openEditPanel(item)}
-                                  disabled={user?.role === 'admin' && item.role === 'super_admin'}
-                                  className="btn-secondary px-3 py-1.5 text-xs rounded-md hover:bg-slate-100"
-                                >
-                                  Edit
-                                </button>
-
-                                {canManageStatus ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleUpdateStatus(item)}
-                                    disabled={updatingUserId !== null || (user?.role === 'admin' && item.role === 'super_admin')}
-                                    className={`px-3 py-1.5 text-xs rounded-md font-bold transition-all ${item.isActive
-                                      ? 'btn-deactivate'
-                                      : 'btn-activate'
-                                      } disabled:opacity-50`}
-                                  >
-                                    {updatingUserId === item.id
-                                      ? '...'
-                                      : item.isActive
-                                        ? 'Deactivate'
-                                        : 'Activate'}
-                                  </button>
-                                ) : null}
-                              </div>
-                            </td>
-                          ) : null}
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={canEditUsers ? 7 : 6} className="px-3 py-10 text-center text-slate-500 italic">
-                          No administrative users were found in the database.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Manage Our Employees</h2>
+              <p className="text-sm text-slate-500">
+                Signed in as <span className="font-semibold text-teal-700">{user?.name || user?.email}</span> ({user?.role})
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-4">
+            <button
+              type="button"
+              onClick={loadUsers}
+              disabled={isLoading}
+              className="btn-secondary gap-2 px-6 transition-all"
+            >
+              <RotateCw size={16} className={isLoading ? 'animate-spin' : ''} />
+              Refresh
+            </button>
+            {canManageStatus ? (
+              <Link
+                to="/admin/users/new"
+                className="btn-primary gap-2 px-6 transition-all"
+              >
+                <Plus size={16} />
+                New User
+              </Link>
             ) : null}
           </div>
-        <AdminUserEditPage
-          isOpen={isEditOpen}
-          formData={editFormData}
-          fieldErrors={editFieldErrors}
-          errorMessage={editErrorMessage}
-          isSubmitting={isSubmittingEdit}
-          canEditRoles={canEditRoles}
-          onChange={handleEditFieldChange}
-          onSubmit={handleEditSubmit}
-          onClose={closeEditPanel}
-        />
+        </div>
+      </motion.div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-md sm:p-6 overflow-hidden">
+
+
+        {isLoading ? (
+          <p className="text-sm text-slate-600 animate-pulse">Fetching users from database...</p>
+        ) : null}
+
+
+
+        {!isLoading ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-200 text-sm">
+              <thead className="bg-slate-50/50">
+                <tr>
+                  <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Full Name</th>
+                  <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Email Address</th>
+                  <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">System Role</th>
+                  <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Added By</th>
+                  <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Status</th>
+                  <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Created At</th>
+                  {canEditUsers ? (
+                    <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Action</th>
+                  ) : null}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {users.length > 0 ? (
+                  users.map((item) => (
+                    <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="whitespace-nowrap px-3 py-4 text-slate-800 font-medium">{item.name}</td>
+                      <td className="whitespace-nowrap px-3 py-4 text-slate-600 tracking-tight">{item.email}</td>
+                      <td className="whitespace-nowrap px-3 py-4">
+                        <span className={`px-2 py-1 rounded text-[10px] uppercase font-black tracking-widest ${item.role === 'super_admin' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>
+                          {item.role.replace('_', ' ')}
+                        </span>
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-slate-500 italic text-xs">{item.createdBy || 'System'}</td>
+                      <td className="whitespace-nowrap px-3 py-4">
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold shadow-sm ${item.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}`}
+                        >
+                          {item.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-slate-500 text-xs">{formatDateTime(item.createdAt)}</td>
+                      {canEditUsers ? (
+                        <td className="whitespace-nowrap px-3 py-4">
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => openEditPanel(item)}
+                              disabled={user?.role === 'admin' && item.role === 'super_admin'}
+                              className="btn-secondary px-3 py-1.5 text-xs rounded-md hover:bg-slate-100"
+                            >
+                              Edit
+                            </button>
+
+                            {canManageStatus ? (
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateStatus(item)}
+                                disabled={updatingUserId !== null || (user?.role === 'admin' && item.role === 'super_admin')}
+                                className={`px-3 py-1.5 text-xs rounded-md font-bold transition-all ${item.isActive
+                                  ? 'btn-deactivate'
+                                  : 'btn-activate'
+                                  } disabled:opacity-50`}
+                              >
+                                {updatingUserId === item.id
+                                  ? '...'
+                                  : item.isActive
+                                    ? 'Deactivate'
+                                    : 'Activate'}
+                              </button>
+                            ) : null}
+                          </div>
+                        </td>
+                      ) : null}
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={canEditUsers ? 7 : 6} className="px-3 py-10 text-center text-slate-500 italic">
+                      No administrative users were found in the database.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+      </div>
+      <AdminUserEditPage
+        isOpen={isEditOpen}
+        formData={editFormData}
+        fieldErrors={editFieldErrors}
+        errorMessage={editErrorMessage}
+        isSubmitting={isSubmittingEdit}
+        canEditRoles={canEditRoles}
+        onChange={handleEditFieldChange}
+        onSubmit={handleEditSubmit}
+        onClose={closeEditPanel}
+      />
     </div>
   );
 }

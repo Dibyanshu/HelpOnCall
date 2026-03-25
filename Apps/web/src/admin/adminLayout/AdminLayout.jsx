@@ -18,8 +18,8 @@ const sidebarItems = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
   { label: 'Services', icon: Database, path: '/admin/services' },
   { label: 'Customers', icon: UserCheck, path: '/admin/customers' },
-  { label: 'Users', icon: Users, path: '/admin/users' },
-  { label: 'Employment', icon: Briefcase, path: '/admin/employment' },
+  { label: 'Our Team', icon: Users, path: '/admin/users' },
+  { label: 'Careers', icon: Briefcase, path: '/admin/employment' },
 ];
 
 export default function AdminLayout() {
