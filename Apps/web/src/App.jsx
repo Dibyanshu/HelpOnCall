@@ -12,7 +12,7 @@ import AdminLayout from './admin/adminLayout/AdminLayout';
 import AdminDashboard from './admin/pages/AdminDashboard';
 import AdminUsersPage from './admin/pages/AdminUsersPage';
 import AdminUserNewPage from './admin/pages/AdminUserNewPage';
-import AdminCustomersPage from './admin/pages/AdminCustomersPage';
+import AdminQuotationManagementPage from './admin/pages/AdminQuotationManagementPage';
 import AdminServicePage from './admin/pages/AdminServicePage';
 import EmploymentAdminPage from './admin/pages/employment/EmploymentAdminPage';
 import RequireAdminAuth from './admin/routes/RequireAdminAuth';
@@ -44,9 +44,9 @@ function App() {
               <AdminUserNewPage />
             </RequireAdminAuth>
           } />
-          <Route path="/admin/customers" element={
+          <Route path="/admin/quotations" element={
             <RequireAdminAuth allowedRoles={['super_admin', 'admin']}>
-              <AdminCustomersPage />
+              <AdminQuotationManagementPage />
             </RequireAdminAuth>
           } />
           <Route path="/admin/services" element={

@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { UserCheck } from 'lucide-react';
 import { useAdminAuth } from '../auth/AdminAuthContext.jsx';
 
-export default function AdminCustomersPage() {
+export default function AdminQuotationManagementPage() {
   const { user } = useAdminAuth();
   return (
     <div className="space-y-6">
@@ -17,7 +17,7 @@ export default function AdminCustomersPage() {
               <UserCheck size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Customer Management</h2>
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Quotation Management</h2>
               <p className="text-sm text-slate-500 font-sans">
                 Signed in as <span className="font-semibold text-teal-700">{user?.name || user?.email}</span> ({user?.role})
               </p>
@@ -30,9 +30,9 @@ export default function AdminCustomersPage() {
         <div className="text-slate-300 mb-4">
           <UserCheck size={48} className="mx-auto" />
         </div>
-        <h3 className="text-lg font-bold text-slate-700 mb-2">Customer Management</h3>
+        <h3 className="text-lg font-bold text-slate-700 mb-2">Quotation Management</h3>
         <p className="text-sm text-slate-400 max-w-md mx-auto">
-          This section will display customer records, service requests, and interaction history. Coming soon.
+          This section will display quotation records, service requests, and interaction history. Coming soon.
         </p>
       </div>
     </div>
