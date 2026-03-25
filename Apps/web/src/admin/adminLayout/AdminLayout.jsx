@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAdminAuth } from '../auth/AdminAuthContext.jsx';
-import Layout from '../../components/layout/Layout';
 import adminHero from '../../assets/admin/admin_hero.jpg';
 
 const sidebarItems = [
@@ -34,10 +33,10 @@ export default function AdminLayout() {
   };
 
   return (
-    <Layout>
-      <div className="bg-slate-50 min-h-screen">
+    <>
+      <div className="bg-slate-50 min-h-screen flex flex-col">
         {/* Hero Section — sits above the sidebar + content area */}
-        <section className="relative px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+        <section className="relative px-4 py-16 sm:px-6 sm:py-10 lg:px-8 lg:py-10">
           <img
             src={adminHero}
             alt="Admin Portal Background"
@@ -49,9 +48,9 @@ export default function AdminLayout() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="relative mx-auto max-w-5xl"
+            className="relative"
           >
-            <p className="text-sm font-semibold uppercase tracking-wider text-teal-100 italic">Command Center</p>
+            <p className="text-sm font-semibold uppercase tracking-wider text-teal-100 italic">Help On Call {user?.role.toUpperCase()} Portal</p>
             <h1 className="mt-3 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
               Welcome {user?.name || user?.email?.split('@')[0] || 'Admin'}
             </h1>
@@ -62,7 +61,7 @@ export default function AdminLayout() {
         </section>
 
         {/* Sidebar + Content Area — below the hero */}
-        <div className="flex">
+        <div className="flex flex-1 items-stretch relative">
           {/* Sidebar */}
           <aside
             className={`flex-shrink-0 flex flex-col bg-white border-r border-slate-200 shadow-sm transition-all duration-300 ease-in-out z-10 ${collapsed ? 'w-[68px]' : 'w-[240px]'
@@ -126,7 +125,14 @@ export default function AdminLayout() {
             </div>
           </main>
         </div>
+
+        {/* Subtle Footer */}
+        <footer className="bg-gray-900 py-6 px-4 sm:px-6 lg:px-8 border-t border-gray-800 shrink-0 w-full relative z-20">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-xs font-medium text-gray-500">
+            <p>&copy; {new Date().getFullYear()} Help On Call. All rights reserved.</p>
+          </div>
+        </footer>
       </div>
-    </Layout>
+    </>
   );
 }

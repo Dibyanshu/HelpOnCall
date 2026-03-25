@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState, useEffect } from 'react';
-import { ChevronDown, ChevronRight, ChevronUp, FolderTree, PlusCircle, RefreshCcw, Settings2, Trash2, Wrench, Database } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChevronUp, FolderTree, PlusCircle, RefreshCcw, Settings2, Trash2, Wrench, Database, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../auth/AdminAuthContext.jsx';
@@ -36,6 +36,7 @@ function toDisplayNumber(order) {
 
 export default function AdminServicePage() {
   const [mode, setMode] = useState('create-service');
+  const [hasChanges, setHasChanges] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [selectedServiceId, setSelectedServiceId] = useState(null);
   const [expandedCategories, setExpandedCategories] = useState({});
@@ -129,6 +130,7 @@ export default function AdminServicePage() {
       if (!result.ok) {
         throw new Error(result.message || 'Failed to update category.');
       }
+      setHasChanges(true);
       return;
     }
 
@@ -137,6 +139,7 @@ export default function AdminServicePage() {
     if (!result.ok) {
       throw new Error(result.message || 'Failed to create category.');
     }
+    setHasChanges(true);
   };
 
   const handleServiceSubmit = async (payload) => {
@@ -145,6 +148,7 @@ export default function AdminServicePage() {
       if (!result.ok) {
         throw new Error(result.message || 'Failed to update service.');
       }
+      setHasChanges(true);
       return;
     }
 
@@ -153,6 +157,7 @@ export default function AdminServicePage() {
     if (!result.ok) {
       throw new Error(result.message || 'Failed to create service.');
     }
+    setHasChanges(true);
   };
 
   const handleDeleteCategory = async () => {
@@ -178,6 +183,7 @@ export default function AdminServicePage() {
       return;
     }
 
+    setHasChanges(true);
     setSelectedCategoryId(null);
     setSelectedServiceId(null);
     setMode('create-category');
@@ -206,6 +212,7 @@ export default function AdminServicePage() {
       return;
     }
 
+    setHasChanges(true);
     setSelectedServiceId(null);
     setMode('create-service');
   };
@@ -229,6 +236,7 @@ export default function AdminServicePage() {
     }
 
     await updateService(targetService.id, { displayOrder: currentOrder });
+    setHasChanges(true);
   };
 
   const handleMoveCategory = async (categoriesList, currentIndex, direction) => {
@@ -250,6 +258,7 @@ export default function AdminServicePage() {
     }
 
     await updateCategory(targetCategory.id, { displayOrder: currentOrder });
+    setHasChanges(true);
   };
 
   return (
@@ -272,6 +281,23 @@ export default function AdminServicePage() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-4">
+            <button
+              type="button"
+              disabled={!hasChanges}
+              onClick={() => {
+                const newWindow = window.open('/services', '_blank');
+                if (newWindow) {
+                  setHasChanges(false);
+                  window.location.reload();
+                } else {
+                  toast.error('Please allow popups to open the services page.');
+                }
+              }}
+              className={`${hasChanges ? 'btn-primary bg-indigo-600 hover:bg-indigo-700 hover:scale-105' : 'btn-secondary opacity-50 cursor-not-allowed border-slate-200 text-slate-400'} gap-2 px-6 transition-all`}
+            >
+              <ExternalLink size={16} />
+              View Changes
+            </button>
             <button
               type="button"
               onClick={refresh}
