@@ -9,7 +9,7 @@
       "src": "web/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "web/dist"
+        "distDir": "dist"
       }
     }
   ],
@@ -20,22 +20,18 @@
     },
     {
       "src": "/web",
-      "dest": "/web/index.html"
+      "dest": "/index.html"
     },
     {
       "src": "/web/(.*)",
-      "dest": "/web/$1"
+      "dest": "/$1"
     },
     {
       "handle": "filesystem"
     },
     {
-      "src": "/index.html",
-      "dest": "/web/index.html"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/web/index.html"
+      "dest": "/index.html"
     }
   ]
 }
