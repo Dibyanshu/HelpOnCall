@@ -1,6 +1,11 @@
 import { sql } from "drizzle-orm";
 import { db } from "./index.js";
 
+function supportsSqliteIntrospection(): boolean {
+  const candidate = db as unknown as { get?: unknown; all?: unknown };
+  return typeof candidate.get === "function" && typeof candidate.all === "function";
+}
+
 const USERS_TABLE_DDL = sql`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -259,6 +264,13 @@ export async function ensureTables(): Promise<void> {
   await db.run(EMPLOYMENT_TABLE_DDL);
   await db.run(SERVICES_CATEGORY_ID_INDEX_DDL);
   await db.run(CUSTOMER_TESTIMONIALS_TABLE_DDL);
+
+  // These migration helpers depend on better-sqlite3 specific db.get/db.all APIs.
+  // Turso/libsql uses a different driver shape, so skip introspection-based migrations there.
+  if (!supportsSqliteIntrospection()) {
+    return;
+  }
+
   await migrateUsersRoleConstraintForAdmin();
   await migrateUsersAddCreatedByColumn();
   await migrateServiceCategoriesAddStandardColumns();

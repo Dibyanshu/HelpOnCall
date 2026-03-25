@@ -1,6 +1,22 @@
 import "dotenv/config";
 import { z } from "zod";
 
+const optionalUrlFromEnv = z.preprocess((value) => {
+  if (typeof value === "string" && value.trim() === "") {
+    return undefined;
+  }
+
+  return value;
+}, z.string().url().optional());
+
+const optionalNonEmptyStringFromEnv = z.preprocess((value) => {
+  if (typeof value === "string" && value.trim() === "") {
+    return undefined;
+  }
+
+  return value;
+}, z.string().min(1).optional());
+
 const envBoolean = z.preprocess((value) => {
   if (typeof value === "boolean") {
     return value;
@@ -22,10 +38,13 @@ const envBoolean = z.preprocess((value) => {
 }, z.boolean());
 
 const envSchema = z.object({
+  APP_ENV: z.enum(["development", "staging", "production"]).default("development"),
   PORT: z.coerce.number().default(3000),
   HOST: z.string().default("0.0.0.0"),
   JWT_SECRET: z.string().min(16),
   SQLITE_DB_PATH: z.string().default("./db/database.sqlite"),
+  TURSO_DATABASE_URL: optionalUrlFromEnv,
+  TURSO_AUTH_TOKEN: optionalNonEmptyStringFromEnv,
   SUPER_ADMIN_EMAIL: z.string().email().default("superadmin@helponcall.local"),
   SUPER_ADMIN_PASSWORD: z.string().min(8).default("ChangeMe123!"),
   MAIL_ENABLED: envBoolean.default(false),
@@ -41,6 +60,26 @@ const envSchema = z.object({
   EMPLOYMENT_RESUME_UPLOAD_DIR: z.string().default("./uploads/resumes"),
   EMPLOYMENT_RESUME_MAX_FILE_SIZE_MB: z.coerce.number().int().positive().default(10)
 }).superRefine((data, ctx) => {
+  const usesTurso = data.APP_ENV === "staging" || data.APP_ENV === "production";
+
+  if (usesTurso) {
+    if (!data.TURSO_DATABASE_URL) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["TURSO_DATABASE_URL"],
+        message: "TURSO_DATABASE_URL is required when APP_ENV is staging or production"
+      });
+    }
+
+    if (!data.TURSO_AUTH_TOKEN) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["TURSO_AUTH_TOKEN"],
+        message: "TURSO_AUTH_TOKEN is required when APP_ENV is staging or production"
+      });
+    }
+  }
+
   if (!data.MAIL_ENABLED) {
     return;
   }
