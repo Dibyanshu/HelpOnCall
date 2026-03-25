@@ -3,14 +3,14 @@ import nodemailer, { type Transporter } from "nodemailer";
 import type { FastifyInstance } from "fastify";
 import { env } from "../config/env.js";
 
-type SendMailInput = {
+export type SendMailInput = {
   to: string | string[];
   subject: string;
   text: string;
   html?: string;
 };
 
-type MailService = {
+export type MailService = {
   enabled: boolean;
   send(input: SendMailInput): Promise<void>;
   verify(): Promise<boolean>;
