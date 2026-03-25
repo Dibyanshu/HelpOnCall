@@ -1,19 +1,10 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Users,
-  Briefcase,
-  Database,
-  Calendar,
   Download,
-  MoreVertical,
   Search,
-  Clock,
   ArrowUpRight,
   ShieldCheck,
-  ChevronDown,
-  ChevronRight,
-  Mail,
   LogOut
 } from 'lucide-react';
 import {
