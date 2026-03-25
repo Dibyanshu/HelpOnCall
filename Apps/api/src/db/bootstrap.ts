@@ -85,6 +85,21 @@ const CUSTOMER_TESTIMONIALS_TABLE_DDL = sql`
   )
 `;
 
+const EMAIL_VALIDATOR_TABLE_DDL = sql`
+  CREATE TABLE IF NOT EXISTS email_validator (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL,
+    data TEXT NOT NULL,
+    code TEXT NOT NULL UNIQUE DEFAULT (
+      lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))), 2) || '-' || substr('89ab', abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))), 2) || '-' || lower(hex(randomblob(6)))
+    ),
+    module TEXT NOT NULL CHECK (module IN ('employee', 'user_registration', 'rfq')),
+    created_by TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL DEFAULT 0,
+    updated_at INTEGER NOT NULL DEFAULT 0
+  )
+`;
+
 async function migrateUsersRoleConstraintForAdmin(): Promise<void> {
   const tableMeta = await db.get<{ sql: string | null }>(
     sql`SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'users'`
@@ -257,6 +272,17 @@ async function migrateEmploymentToAddIdAndAuditColumns(): Promise<void> {
   }
 }
 
+async function migrateEmailValidatorAddCreatedByColumn(): Promise<void> {
+  const columns = await db.all<{ name: string }>(sql`PRAGMA table_info(email_validator)`);
+  const hasCreatedBy = columns.some((column) => column.name === "created_by");
+
+  if (hasCreatedBy) {
+    return;
+  }
+
+  await db.run(sql`ALTER TABLE email_validator ADD COLUMN created_by TEXT NOT NULL DEFAULT ''`);
+}
+
 export async function ensureTables(): Promise<void> {
   await db.run(USERS_TABLE_DDL);
   await db.run(SERVICE_CATEGORIES_TABLE_DDL);
@@ -264,6 +290,7 @@ export async function ensureTables(): Promise<void> {
   await db.run(EMPLOYMENT_TABLE_DDL);
   await db.run(SERVICES_CATEGORY_ID_INDEX_DDL);
   await db.run(CUSTOMER_TESTIMONIALS_TABLE_DDL);
+  await db.run(EMAIL_VALIDATOR_TABLE_DDL);
 
   // These migration helpers depend on better-sqlite3 specific db.get/db.all APIs.
   // Turso/libsql uses a different driver shape, so skip introspection-based migrations there.
@@ -276,4 +303,5 @@ export async function ensureTables(): Promise<void> {
   await migrateServiceCategoriesAddStandardColumns();
   await migrateServicesAddStandardColumns();
   await migrateEmploymentToAddIdAndAuditColumns();
+  await migrateEmailValidatorAddCreatedByColumn();
 }
