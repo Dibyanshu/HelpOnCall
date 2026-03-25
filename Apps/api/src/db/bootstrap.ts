@@ -94,6 +94,7 @@ const EMAIL_VALIDATOR_TABLE_DDL = sql`
       lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))), 2) || '-' || substr('89ab', abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))), 2) || '-' || lower(hex(randomblob(6)))
     ),
     module TEXT NOT NULL CHECK (module IN ('employee', 'user_registration', 'rfq')),
+    created_by TEXT NOT NULL DEFAULT '',
     created_at INTEGER NOT NULL DEFAULT 0,
     updated_at INTEGER NOT NULL DEFAULT 0
   )
@@ -271,6 +272,17 @@ async function migrateEmploymentToAddIdAndAuditColumns(): Promise<void> {
   }
 }
 
+async function migrateEmailValidatorAddCreatedByColumn(): Promise<void> {
+  const columns = await db.all<{ name: string }>(sql`PRAGMA table_info(email_validator)`);
+  const hasCreatedBy = columns.some((column) => column.name === "created_by");
+
+  if (hasCreatedBy) {
+    return;
+  }
+
+  await db.run(sql`ALTER TABLE email_validator ADD COLUMN created_by TEXT NOT NULL DEFAULT ''`);
+}
+
 export async function ensureTables(): Promise<void> {
   await db.run(USERS_TABLE_DDL);
   await db.run(SERVICE_CATEGORIES_TABLE_DDL);
@@ -291,4 +303,5 @@ export async function ensureTables(): Promise<void> {
   await migrateServiceCategoriesAddStandardColumns();
   await migrateServicesAddStandardColumns();
   await migrateEmploymentToAddIdAndAuditColumns();
+  await migrateEmailValidatorAddCreatedByColumn();
 }

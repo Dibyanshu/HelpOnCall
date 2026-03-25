@@ -426,6 +426,115 @@ curl --location '{{baseUrl}}/api/v1/admin/employment/8e4d6574-8f8f-4962-9f65-3a7
 
 ---
 
+## 4.6) Request Email Verification Code (Public)
+
+### Request
+
+- Method: `POST`
+- URL: `{{baseUrl}}/api/v1/email-validator/request-code`
+- Auth: None
+- Header: `Content-Type: application/json`
+
+Body (raw JSON):
+
+```json
+{
+  "email": "candidate@example.com",
+  "module": "employee",
+  "data": {
+    "fullName": "Jane Doe",
+    "phone": "+1 647-000-0000"
+  }
+}
+```
+
+Allowed module values:
+
+- `employee`
+- `user_registration`
+- `rfq`
+
+Validation note:
+
+- For `employee` module, if the email already exists in employment submissions, API returns `400` with message `Employment application already exists for this email`.
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/email-validator/request-code' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "email": "candidate@example.com",
+  "module": "employee",
+  "data": { "fullName": "Jane Doe", "phone": "+1 647-000-0000" }
+}'
+```
+
+### Success Response (201)
+
+```json
+{
+  "message": "Verification code sent successfully",
+  "data": {
+    "email": "candidate@example.com",
+    "module": "employee",
+    "expiresInSeconds": 900
+  }
+}
+```
+
+---
+
+## 4.7) Verify Email Verification Code (Public)
+
+### Request
+
+- Method: `POST`
+- URL: `{{baseUrl}}/api/v1/email-validator/verify-code`
+- Auth: None
+- Header: `Content-Type: application/json`
+
+Body (raw JSON):
+
+```json
+{
+  "email": "candidate@example.com",
+  "module": "employee",
+  "code": "a6f90e33-81f0-4d3f-a27d-cf61ff13df53"
+}
+```
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/email-validator/verify-code' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "email": "candidate@example.com",
+  "module": "employee",
+  "code": "a6f90e33-81f0-4d3f-a27d-cf61ff13df53"
+}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "message": "Email verified successfully",
+  "data": {
+    "email": "candidate@example.com",
+    "module": "employee",
+    "verified": true,
+    "payload": {
+      "fullName": "Jane Doe",
+      "phone": "+1 647-000-0000"
+    }
+  }
+}
+```
+
+---
+
 ## 5) Create User (Super Admin)
 
 ### Request
@@ -673,6 +782,185 @@ Notes:
 - Allowed roles to call this endpoint: `admin`, `super_admin`
 - At least one field is required in request body
 - Admin cannot edit `super_admin` users or assign `super_admin` role
+
+---
+
+## 8.1) Email Validator CRUD (Admin / Super Admin)
+
+### 8.1.1) List Email Validators
+
+### Request
+
+- Method: `GET`
+- URL: `{{baseUrl}}/api/v1/admin/email-validators`
+- Auth: Bearer Token -> `{{accessToken}}`
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/admin/email-validators' \
+--header 'Authorization: Bearer {{accessToken}}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "email": "candidate@example.com",
+      "data": "{\"fullName\":\"Jane Doe\",\"phone\":\"+1 647-000-0000\"}",
+      "code": "a6f90e33-81f0-4d3f-a27d-cf61ff13df53",
+      "module": "employee",
+      "createdBy": "admin",
+      "createdAt": "2026-03-25T11:00:00.000Z",
+      "updatedAt": "2026-03-25T11:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+### 8.1.2) Create Email Validator
+
+### Request
+
+- Method: `POST`
+- URL: `{{baseUrl}}/api/v1/admin/email-validator`
+- Auth: Bearer Token -> `{{accessToken}}`
+- Header: `Content-Type: application/json`
+
+Body (raw JSON):
+
+```json
+{
+  "email": "candidate@example.com",
+  "data": "{\"fullName\":\"Jane Doe\",\"phone\":\"+1 647-000-0000\"}",
+  "module": "employee"
+}
+```
+
+Allowed module values:
+
+- `employee`
+- `user_registration`
+- `rfq`
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/admin/email-validator' \
+--header 'Authorization: Bearer {{accessToken}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "email": "candidate@example.com",
+  "data": "{\"fullName\":\"Jane Doe\",\"phone\":\"+1 647-000-0000\"}",
+  "module": "employee"
+}'
+```
+
+### Success Response (201)
+
+```json
+{
+  "message": "Email validator created successfully",
+  "data": {
+    "id": 1,
+    "email": "candidate@example.com",
+    "data": "{\"fullName\":\"Jane Doe\",\"phone\":\"+1 647-000-0000\"}",
+    "code": "a6f90e33-81f0-4d3f-a27d-cf61ff13df53",
+    "module": "employee",
+    "createdBy": "admin",
+    "createdAt": "2026-03-25T11:00:00.000Z",
+    "updatedAt": "2026-03-25T11:00:00.000Z"
+  }
+}
+```
+
+---
+
+### 8.1.3) Update Email Validator
+
+### Request
+
+- Method: `PATCH`
+- URL: `{{baseUrl}}/api/v1/admin/email-validator/:id`
+- Auth: Bearer Token -> `{{accessToken}}`
+- Header: `Content-Type: application/json`
+
+Body (raw JSON, at least one field required):
+
+```json
+{
+  "module": "user_registration"
+}
+```
+
+### cURL
+
+```bash
+curl --location --request PATCH '{{baseUrl}}/api/v1/admin/email-validator/1' \
+--header 'Authorization: Bearer {{accessToken}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "module": "user_registration"
+}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "message": "Email validator updated successfully",
+  "data": {
+    "id": 1,
+    "email": "candidate@example.com",
+    "data": "{\"fullName\":\"Jane Doe\",\"phone\":\"+1 647-000-0000\"}",
+    "code": "a6f90e33-81f0-4d3f-a27d-cf61ff13df53",
+    "module": "user_registration",
+    "createdBy": "admin",
+    "createdAt": "2026-03-25T11:00:00.000Z",
+    "updatedAt": "2026-03-25T11:10:00.000Z"
+  }
+}
+```
+
+---
+
+### 8.1.4) Delete Email Validator
+
+### Request
+
+- Method: `DELETE`
+- URL: `{{baseUrl}}/api/v1/admin/email-validator/:id`
+- Auth: Bearer Token -> `{{accessToken}}`
+
+### cURL
+
+```bash
+curl --location --request DELETE '{{baseUrl}}/api/v1/admin/email-validator/1' \
+--header 'Authorization: Bearer {{accessToken}}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "message": "Email validator deleted successfully",
+  "data": {
+    "id": 1,
+    "email": "candidate@example.com",
+    "data": "{\"fullName\":\"Jane Doe\",\"phone\":\"+1 647-000-0000\"}",
+    "code": "a6f90e33-81f0-4d3f-a27d-cf61ff13df53",
+    "module": "employee",
+    "createdBy": "admin",
+    "createdAt": "2026-03-25T11:00:00.000Z",
+    "updatedAt": "2026-03-25T11:00:00.000Z"
+  }
+}
+```
 
 ---
 

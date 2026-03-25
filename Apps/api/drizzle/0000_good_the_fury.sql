@@ -33,6 +33,7 @@ CREATE TABLE `email_validator` (
 	`data` text NOT NULL,
 	`code` text DEFAULT (lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))), 2) || '-' || substr('89ab', abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))), 2) || '-' || lower(hex(randomblob(6)))) NOT NULL,
 	`module` text NOT NULL,
+	`created_by` text DEFAULT '' NOT NULL,
 	`created_at` integer DEFAULT '"1970-01-01T00:00:00.000Z"' NOT NULL,
 	`updated_at` integer DEFAULT '"1970-01-01T00:00:00.000Z"' NOT NULL
 );
