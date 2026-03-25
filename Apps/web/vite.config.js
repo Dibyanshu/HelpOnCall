@@ -3,8 +3,8 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
-export default defineConfig({
-  base: '/',
+export default defineConfig(({ mode }) => ({
+  base: mode === 'staging' ? '/web/' : '/',
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
@@ -14,4 +14,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))
