@@ -19,15 +19,15 @@
       "dest": "api/src/vercel.ts"
     },
     {
+      "handle": "filesystem"
+    },
+    {
       "src": "/web",
       "dest": "/index.html"
     },
     {
       "src": "/web/(.*)",
       "dest": "/$1"
-    },
-    {
-      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
