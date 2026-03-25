@@ -173,7 +173,7 @@ export default function AdminDashboard() {
       {/* --- PAID FEATURE OVERLAY START --- */}
       {/* Remove this block to unlock the dashboard */}
       <div className="absolute inset-x-[-2rem] inset-y-[-2rem] z-50 flex items-center justify-center p-8 overflow-hidden rounded-[2.5rem]">
-        <div className="absolute inset-0 bg-white/5 backdrop-blur-[16px] pointer-events-none" />
+        <div className="absolute inset-0 bg-white/5 backdrop-blur-[4px] pointer-events-none" />
 
         <motion.div
           animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0], opacity: [0.3, 0.5, 0.3] }}
