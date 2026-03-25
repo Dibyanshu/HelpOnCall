@@ -1,6 +1,22 @@
 import "dotenv/config";
 import { z } from "zod";
 
+const optionalUrlFromEnv = z.preprocess((value) => {
+  if (typeof value === "string" && value.trim() === "") {
+    return undefined;
+  }
+
+  return value;
+}, z.string().url().optional());
+
+const optionalNonEmptyStringFromEnv = z.preprocess((value) => {
+  if (typeof value === "string" && value.trim() === "") {
+    return undefined;
+  }
+
+  return value;
+}, z.string().min(1).optional());
+
 const envBoolean = z.preprocess((value) => {
   if (typeof value === "boolean") {
     return value;
@@ -27,8 +43,8 @@ const envSchema = z.object({
   HOST: z.string().default("0.0.0.0"),
   JWT_SECRET: z.string().min(16),
   SQLITE_DB_PATH: z.string().default("./db/database.sqlite"),
-  TURSO_DATABASE_URL: z.string().url().optional(),
-  TURSO_AUTH_TOKEN: z.string().min(1).optional(),
+  TURSO_DATABASE_URL: optionalUrlFromEnv,
+  TURSO_AUTH_TOKEN: optionalNonEmptyStringFromEnv,
   SUPER_ADMIN_EMAIL: z.string().email().default("superadmin@helponcall.local"),
   SUPER_ADMIN_PASSWORD: z.string().min(8).default("ChangeMe123!"),
   MAIL_ENABLED: envBoolean.default(false),
