@@ -1,6 +1,5 @@
-import { eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { db } from "./index.js";
-import { emailTemplates } from "./schema.js";
 
 function supportsSqliteIntrospection(): boolean {
   const candidate = db as unknown as { get?: unknown; all?: unknown };
@@ -104,70 +103,6 @@ const EMAIL_TEMPLATES_TABLE_DDL = sql`
     updated_at INTEGER NOT NULL DEFAULT 0
   )
 `;
-
-const DEFAULT_EMAIL_TEMPLATES = [
-  {
-    templateKey: "user_registration_ack",
-    module: "user_registration" as const,
-    subjectTemplate: "HelpOnCall registration received",
-    textTemplate: [
-      "Hi {{name}},",
-      "",
-      "Your registration has been received successfully.",
-      "An administrator will review and activate your account soon.",
-      "",
-      "Thanks,",
-      "HelpOnCall Team"
-    ].join("\n"),
-    htmlTemplate: `<p>Hi {{name}},</p>
-    <p>Your registration has been received successfully.</p>
-    <p>An administrator will review and activate your account soon.</p>
-    <p>Thanks,<br/>HelpOnCall Team</p>`,
-    variablesSchema: JSON.stringify({ required: ["name"] }),
-    description: "Sent to users after public registration",
-  },
-  {
-    templateKey: "email_verification_code",
-    module: "system" as const,
-    subjectTemplate: "HelpOnCall {{moduleLabel}} email verification code",
-    textTemplate: [
-      "Your HelpOnCall verification code is: {{code}}",
-      "",
-      "This code expires in 15 minutes.",
-      "If you did not request this, you can ignore this email."
-    ].join("\n"),
-    htmlTemplate: `<p>Your HelpOnCall verification code is:</p>
-    <p style="font-size: 22px; font-weight: 700; letter-spacing: 1px;">{{code}}</p>
-    <p>This code expires in 15 minutes.</p>
-    <p>If you did not request this, you can ignore this email.</p>`,
-    variablesSchema: JSON.stringify({ required: ["code", "moduleLabel"] }),
-    description: "Sent when a user requests an email verification code",
-  }
-];
-
-async function seedDefaultEmailTemplates(): Promise<void> {
-  const now = new Date();
-
-  for (const template of DEFAULT_EMAIL_TEMPLATES) {
-    const existing = await db
-      .select({ id: emailTemplates.id })
-      .from(emailTemplates)
-      .where(eq(emailTemplates.templateKey, template.templateKey))
-      .limit(1);
-
-    if (existing.length === 0) {
-      await db.insert(emailTemplates).values({
-        ...template,
-        channel: "email",
-        isActive: true,
-        version: 1,
-        createdBy: "system",
-        createdAt: now,
-        updatedAt: now
-      });
-    }
-  }
-}
 
 const EMAIL_VALIDATOR_TABLE_DDL = sql`
   CREATE TABLE IF NOT EXISTS email_validator (
@@ -380,7 +315,6 @@ export async function ensureTables(): Promise<void> {
   // These migration helpers depend on better-sqlite3 specific db.get/db.all APIs.
   // Turso/libsql uses a different driver shape, so skip introspection-based migrations there.
   if (!supportsSqliteIntrospection()) {
-    await seedDefaultEmailTemplates();
     return;
   }
 
@@ -390,5 +324,4 @@ export async function ensureTables(): Promise<void> {
   await migrateServicesAddStandardColumns();
   await migrateEmploymentToAddIdAndAuditColumns();
   await migrateEmailValidatorAddCreatedByColumn();
-  await seedDefaultEmailTemplates();
 }
