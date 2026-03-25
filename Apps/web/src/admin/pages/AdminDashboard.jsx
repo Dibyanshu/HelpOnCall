@@ -169,213 +169,262 @@ export default function AdminDashboard() {
   );
 
   return (
-    <div className="space-y-8">
-      {/* Action Header Card */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="rounded-md border border-slate-200 bg-white p-6 shadow-md sm:p-8"
-      >
-        <div className="flex flex-wrap items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-md bg-teal-50 flex items-center justify-center text-teal-700">
-              <ShieldCheck size={24} />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900 tracking-tight">System Overview</h2>
-              <p className="text-sm text-slate-500">
-                Signed in as <span className="font-semibold text-teal-700">{user?.name || user?.email?.split('@')[0]}</span>
-              </p>
+    <div className="relative isolate min-h-[800px]">
+      {/* --- PAID FEATURE OVERLAY START --- */}
+      {/* Remove this block to unlock the dashboard */}
+      <div className="absolute inset-x-[-2rem] inset-y-[-2rem] z-50 flex items-center justify-center p-8 overflow-hidden rounded-[2.5rem]">
+        <div className="absolute inset-0 bg-white/5 backdrop-blur-[16px] pointer-events-none" />
+
+        <motion.div
+          animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-[20%] -left-[20%] w-[140%] h-[140%] bg-radial-to-br from-teal-500/20 via-rose-500/10 to-transparent pointer-events-none"
+        />
+
+        <motion.div
+          initial={{ opacity: 0, y: 40, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="relative z-10 max-w-xl text-center"
+        >
+          <div className="inline-flex items-center justify-center p-6 rounded-[2.5rem] bg-white shadow-2xl mb-8 border border-white/50">
+            <div className="relative">
+              <div className="absolute -inset-4 bg-teal-500/20 blur-2xl rounded-full animate-pulse" />
+              <ShieldCheck size={64} className="relative text-teal-700" strokeWidth={1.5} />
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-md border border-slate-200">
-              <div className="flex flex-col px-3 border-r border-slate-200">
-                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Start Date</label>
-                <input
-                  type="date"
-                  value={dateRange.start}
-                  onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                  className="bg-transparent text-xs font-bold text-slate-700 outline-none p-0 cursor-pointer"
-                />
-              </div>
-              <div className="flex flex-col px-3">
-                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">End Date</label>
-                <input
-                  type="date"
-                  value={dateRange.end}
-                  onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                  className="bg-transparent text-xs font-bold text-slate-700 outline-none p-0 cursor-pointer"
-                />
-              </div>
-            </div>
-            <button className="btn-secondary gap-2 px-6 transition-all">
-              <Download size={16} />
-              Export Reports
-            </button>
-            <button
-              onClick={signOut}
-              className="btn-primary gap-2 px-6 py-2.5 uppercase tracking-widest transition-all"
-            >
-              <LogOut size={16} />
-              Sign Out
+          <h2 className="text-4xl font-black text-slate-900 tracking-tight leading-tight mb-6">
+            Unlock Advanced <br />
+            <span className="text-teal-700">Predictive Analytics</span>
+          </h2>
+
+          <p className="text-lg font-medium text-slate-600 leading-relaxed mb-10 max-w-md mx-auto">
+            This module is part of our <span className="text-teal-800 font-bold decoration-teal-500/30 underline decoration-4 underline-offset-4">Premium Business Suite</span>. Gain deeper insights into customer behavior and system performance.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button className="btn-primary px-10 py-4 text-base rounded-2xl shadow-xl shadow-teal-500/30 hover:scale-105 transition-all">
+              Go Premium
             </button>
           </div>
-        </div>
-      </motion.div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatBox title="ACTIVE USERS" value={loading ? '...' : stats.usersCount} trend="3" isUp={true} period="LAST MONTH" link="/admin/users" linkTitle="Manage Users" />
-        <StatBox title="ACTIVE CUSTOMERS" value={loading ? '...' : stats.pendingEmployment} trend="0" isUp={true} period="LAST MONTH" link="/admin/employment" linkTitle="Manage Customers" />
-        <StatBox title="ACTIVE SERVICES" value={stats.servicesCount} trend="2" isUp={true} period="TOTAL SERVICES" link="/admin/services" linkTitle="Manage Services" />
-        <StatBox title="ACTIVE JOB APPLICATIONS" value={loading ? '...' : stats.employmentCount} trend="0" isUp={true} period="LAST MONTH" link="/admin/employment" linkTitle="Manage Job Applications" />
+          <p className="mt-8 text-xs font-bold text-slate-400 uppercase tracking-widest">
+            Trusted by top service providers Dibyanshu and Shriman
+          </p>
+        </motion.div>
       </div>
+      {/* --- PAID FEATURE OVERLAY END --- */}
 
-      <div className="grid lg:grid-cols-[1fr_420px] gap-8">
-        {/* User List Module */}
-        <div className="bg-white rounded-md border border-slate-200 shadow-md p-6 sm:p-8 overflow-hidden">
-          <div className="flex flex-wrap items-center justify-between gap-6 mb-8">
-            <h3 className="text-lg font-bold text-slate-900 whitespace-nowrap">User List</h3>
-            <div className="relative w-full sm:w-64">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search user names..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-700/5 focus:border-teal-700 transition-all"
-              />
+      {/* DASHBOARD CONTENT (Locked/Blurred State) */}
+      <div className="space-y-8 select-none pointer-events-none opacity-40 grayscale-[0.3]">
+        {/* Action Header Card */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="rounded-md border border-slate-200 bg-white p-6 shadow-md sm:p-8"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-md bg-teal-50 flex items-center justify-center text-teal-700">
+                <ShieldCheck size={24} />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight">System Overview</h2>
+                <p className="text-sm text-slate-500">
+                  Signed in as <span className="font-semibold text-teal-700">{user?.name || user?.email?.split('@')[0]}</span>
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-md border border-slate-200">
+                <div className="flex flex-col px-3 border-r border-slate-200">
+                  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Start Date</label>
+                  <input
+                    type="date"
+                    value={dateRange.start}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                    className="bg-transparent text-xs font-bold text-slate-700 outline-none p-0 cursor-pointer"
+                  />
+                </div>
+                <div className="flex flex-col px-3">
+                  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">End Date</label>
+                  <input
+                    type="date"
+                    value={dateRange.end}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                    className="bg-transparent text-xs font-bold text-slate-700 outline-none p-0 cursor-pointer"
+                  />
+                </div>
+              </div>
+              <button className="btn-secondary gap-2 px-6 transition-all">
+                <Download size={16} />
+                Export Reports
+              </button>
+              <button
+                onClick={signOut}
+                className="btn-primary gap-2 px-6 py-2.5 uppercase tracking-widest transition-all"
+              >
+                <LogOut size={16} />
+                Sign Out
+              </button>
             </div>
           </div>
+        </motion.div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-100">
-              <thead className="bg-slate-50/50">
-                <tr>
-                  <th className="px-3 py-3 text-left text-[10px] font-bold text-teal-900 uppercase tracking-tighter">Full Name</th>
-                  <th className="px-3 py-3 text-left text-[10px] font-bold text-teal-900 uppercase tracking-tighter">Email</th>
-                  <th className="px-3 py-3 text-left text-[10px] font-bold text-teal-900 uppercase tracking-tighter">Role</th>
-                  <th className="px-3 py-3 text-center text-[10px] font-bold text-teal-900 uppercase tracking-tighter">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {filteredUsers.length > 0 ? filteredUsers.map((u, idx) => (
-                  <motion.tr
-                    key={u.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="hover:bg-slate-50 transition-colors"
-                  >
-                    <td className="py-4 px-3">
-                      <span className="text-sm font-semibold text-slate-800">{u.name}</span>
-                    </td>
-                    <td className="py-4 px-3 text-xs text-slate-500 font-medium">{u.email}</td>
-                    <td className="py-4 px-3 text-xs">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${u.role === 'super_admin' ? 'bg-indigo-50 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>
-                        {u.role.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td className="py-4 px-3 text-center">
-                      <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${u.isActive ? 'bg-teal-100 text-teal-800' : 'bg-slate-100 text-slate-400'}`}>
-                        {u.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                  </motion.tr>
-                )) : (
-                  <tr>
-                    <td colSpan={4} className="py-10 text-center text-slate-400 italic text-sm">No users matching "{searchQuery}" found.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatBox title="ACTIVE USERS" value={loading ? '...' : stats.usersCount} trend="3" isUp={true} period="LAST MONTH" link="/admin/users" linkTitle="Manage Users" />
+          <StatBox title="ACTIVE CUSTOMERS" value={loading ? '...' : stats.pendingEmployment} trend="0" isUp={true} period="LAST MONTH" link="/admin/employment" linkTitle="Manage Customers" />
+          <StatBox title="ACTIVE SERVICES" value={stats.servicesCount} trend="2" isUp={true} period="TOTAL SERVICES" link="/admin/services" linkTitle="Manage Services" />
+          <StatBox title="ACTIVE JOB APPLICATIONS" value={loading ? '...' : stats.employmentCount} trend="0" isUp={true} period="LAST MONTH" link="/admin/employment" linkTitle="Manage Job Applications" />
         </div>
 
-        {/* Customer Metrics Card with Dynamic Recharts */}
-        <div className="bg-white rounded-md border border-slate-200 shadow-md p-6 sm:p-8 flex flex-col h-full min-h-[500px]">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-lg font-bold text-slate-900 whitespace-nowrap">Customer Metrics</h3>
-            <select
-              value={metricPeriod}
-              onChange={(e) => setMetricPeriod(e.target.value)}
-              className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-md text-[10px] font-bold text-slate-500 uppercase tracking-widest cursor-pointer outline-none focus:border-teal-700 transition-all shadow-inner"
-            >
-              <option>Weekly</option>
-              <option>Monthly</option>
-              <option>Yearly</option>
-            </select>
-          </div>
-
-          {/* Dynamic Chart Area */}
-          <div className="flex-1 w-full min-h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={currentChartData}
-                margin={{ top: 20, right: 30, left: -20, bottom: 0 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="name"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
-                  dy={10}
+        <div className="grid lg:grid-cols-[1fr_420px] gap-8">
+          {/* User List Module */}
+          <div className="bg-white rounded-md border border-slate-200 shadow-md p-6 sm:p-8 overflow-hidden">
+            <div className="flex flex-wrap items-center justify-between gap-6 mb-8">
+              <h3 className="text-lg font-bold text-slate-900 whitespace-nowrap">User List</h3>
+              <div className="relative w-full sm:w-64">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search user names..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-700/5 focus:border-teal-700 transition-all"
                 />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
-                  domain={[0, 'dataMax + 20%']}
-                />
-                <Tooltip
-                  content={<CustomTooltip />}
-                  cursor={{ fill: 'rgba(241, 245, 249, 0.5)' }}
-                />
-                <Bar
-                  dataKey="quote"
-                  fill="#0f766e"
-                  radius={[4, 4, 0, 0]}
-                  barSize={12}
-                  animationDuration={1500}
-                  animationBegin={200}
-                >
-                  {currentChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#0f766e' : '#0d9488'} />
-                  ))}
-                </Bar>
-                <Bar
-                  dataKey="active"
-                  fill="#10b981"
-                  radius={[4, 4, 0, 0]}
-                  barSize={12}
-                  animationDuration={1500}
-                  animationBegin={400}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="space-y-4 pt-8 border-t border-slate-100 mt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-md bg-teal-700" />
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Customers Requested For Quote</span>
               </div>
-              <span className="text-xs font-black text-slate-900">
-                {currentChartData.reduce((acc, curr) => acc + curr.quote, 0)} Units
-              </span>
             </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-md bg-teal-500" />
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active Customers</span>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-slate-100">
+                <thead className="bg-slate-50/50">
+                  <tr>
+                    <th className="px-3 py-3 text-left text-[10px] font-bold text-teal-900 uppercase tracking-tighter">Full Name</th>
+                    <th className="px-3 py-3 text-left text-[10px] font-bold text-teal-900 uppercase tracking-tighter">Email</th>
+                    <th className="px-3 py-3 text-left text-[10px] font-bold text-teal-900 uppercase tracking-tighter">Role</th>
+                    <th className="px-3 py-3 text-center text-[10px] font-bold text-teal-900 uppercase tracking-tighter">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {filteredUsers.length > 0 ? filteredUsers.map((u, idx) => (
+                    <motion.tr
+                      key={u.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="hover:bg-slate-50 transition-colors"
+                    >
+                      <td className="py-4 px-3">
+                        <span className="text-sm font-semibold text-slate-800">{u.name}</span>
+                      </td>
+                      <td className="py-4 px-3 text-xs text-slate-500 font-medium">{u.email}</td>
+                      <td className="py-4 px-3 text-xs">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${u.role === 'super_admin' ? 'bg-indigo-50 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>
+                          {u.role.replace('_', ' ')}
+                        </span>
+                      </td>
+                      <td className="py-4 px-3 text-center">
+                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${u.isActive ? 'bg-teal-100 text-teal-800' : 'bg-slate-100 text-slate-400'}`}>
+                          {u.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                    </motion.tr>
+                  )) : (
+                    <tr>
+                      <td colSpan={4} className="py-10 text-center text-slate-400 italic text-sm">No users matching "{searchQuery}" found.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Customer Metrics Card with Dynamic Recharts */}
+          <div className="bg-white rounded-md border border-slate-200 shadow-md p-6 sm:p-8 flex flex-col h-full min-h-[500px]">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-lg font-bold text-slate-900 whitespace-nowrap">Customer Metrics</h3>
+              <select
+                value={metricPeriod}
+                onChange={(e) => setMetricPeriod(e.target.value)}
+                className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-md text-[10px] font-bold text-slate-500 uppercase tracking-widest cursor-pointer outline-none focus:border-teal-700 transition-all shadow-inner"
+              >
+                <option>Weekly</option>
+                <option>Monthly</option>
+                <option>Yearly</option>
+              </select>
+            </div>
+
+            {/* Dynamic Chart Area */}
+            <div className="flex-1 w-full min-h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={currentChartData}
+                  margin={{ top: 20, right: 30, left: -20, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
+                    dy={10}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
+                    domain={[0, 'dataMax + 20%']}
+                  />
+                  <Tooltip
+                    content={<CustomTooltip />}
+                    cursor={{ fill: 'rgba(241, 245, 249, 0.5)' }}
+                  />
+                  <Bar
+                    dataKey="quote"
+                    fill="#0f766e"
+                    radius={[4, 4, 0, 0]}
+                    barSize={12}
+                    animationDuration={1500}
+                    animationBegin={200}
+                  >
+                    {currentChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#0f766e' : '#0d9488'} />
+                    ))}
+                  </Bar>
+                  <Bar
+                    dataKey="active"
+                    fill="#10b981"
+                    radius={[4, 4, 0, 0]}
+                    barSize={12}
+                    animationDuration={1500}
+                    animationBegin={400}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="space-y-4 pt-8 border-t border-slate-100 mt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-3 w-3 rounded-md bg-teal-700" />
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Customers Requested For Quote</span>
+                </div>
+                <span className="text-xs font-black text-slate-900">
+                  {currentChartData.reduce((acc, curr) => acc + curr.quote, 0)} Units
+                </span>
               </div>
-              <span className="text-xs font-black text-slate-900">
-                {currentChartData.reduce((acc, curr) => acc + curr.active, 0)} Units
-              </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-3 w-3 rounded-md bg-teal-500" />
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active Customers</span>
+                </div>
+                <span className="text-xs font-black text-slate-900">
+                  {currentChartData.reduce((acc, curr) => acc + curr.active, 0)} Units
+                </span>
+              </div>
             </div>
           </div>
         </div>
