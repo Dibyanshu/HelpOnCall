@@ -39,9 +39,12 @@ const TOAST_TYPES = {
   },
 };
 
-const ToastItem = ({ toast, onRemove }) => {
-  const { id, message, type = 'info', duration = 5000 } = toast;
+const ToastItem = ({ toast, onRemove, isRecent }) => {
+  const { id, message, type = 'info', duration: originalDuration = 5000 } = toast;
   const config = TOAST_TYPES[type] || TOAST_TYPES.info;
+
+  // Accelerated duration for older toasts (10% of original, 90% reduction)
+  const duration = isRecent ? originalDuration : originalDuration * 0.1;
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -82,9 +85,10 @@ const ToastItem = ({ toast, onRemove }) => {
         <X size={16} strokeWidth={2.5} />
       </button>
 
-      {/* Progress Bar (Liquid Gradient Style) */}
+      {/* Progress Bar (Liquid Gradient Style) - Origin at top if top center? No, bottom of toast is fine */}
       <div className="absolute bottom-0 left-0 h-1 bg-black/5 rounded-b-2xl overflow-hidden w-full">
         <motion.div
+          key={duration} // Reset animation when duration changes
           initial={{ scaleX: 1 }}
           animate={{ scaleX: 0 }}
           transition={{ duration: duration / 1000, ease: "linear" }}
@@ -105,7 +109,8 @@ export const ToastProvider = ({ children }) => {
 
   const showToast = useCallback((message, type = 'info', options = {}) => {
     const id = Math.random().toString(36).substring(2, 9);
-    setToasts((prev) => [...prev, { id, message, type, ...options }]);
+    // Prepend new toasts to show at the top
+    setToasts((prev) => [{ id, message, type, ...options }, ...prev]);
     return id;
   }, []);
 
@@ -120,11 +125,16 @@ export const ToastProvider = ({ children }) => {
   return (
     <ToastContext.Provider value={contextValue}>
       {children}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-3 pointer-events-none max-w-md">
-        <div className="flex flex-col items-center gap-3 pointer-events-auto">
-          <AnimatePresence mode="popLayout">
-            {toasts.map((toast) => (
-              <ToastItem key={toast.id} toast={toast} onRemove={removeToast} />
+      <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[9999] flex flex-col-reverse gap-3 pointer-events-none max-w-md">
+        <div className="flex flex-col-reverse items-center gap-3 pointer-events-auto">
+          <AnimatePresence mode="popLayout" initial={false}>
+            {toasts.map((toast, index) => (
+              <ToastItem
+                key={toast.id}
+                toast={toast}
+                onRemove={removeToast}
+                isRecent={index === 0}
+              />
             ))}
           </AnimatePresence>
         </div>
@@ -132,3 +142,4 @@ export const ToastProvider = ({ children }) => {
     </ToastContext.Provider>
   );
 };
+

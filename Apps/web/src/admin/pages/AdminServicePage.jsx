@@ -296,7 +296,7 @@ export default function AdminServicePage() {
               className={`${hasChanges ? 'btn-primary bg-indigo-600 hover:bg-indigo-700 hover:scale-105' : 'btn-secondary opacity-50 cursor-not-allowed border-slate-200 text-slate-400'} gap-2 px-6 transition-all`}
             >
               <ExternalLink size={16} />
-              View Changes
+              Preview Changes
             </button>
             <button
               type="button"
@@ -340,129 +340,131 @@ export default function AdminServicePage() {
             </div>
 
             <div className="mt-5 flex-1 overflow-y-auto pr-2 pb-2">
-            {isLoading ? (
-              <p className="text-sm text-slate-600">Loading categories and services...</p>
-            ) : null}
+              {isLoading ? (
+                <p className="text-sm text-slate-600">Loading categories and services...</p>
+              ) : null}
 
-            {!isLoading && serviceTree.length === 0 ? (
-              <p className="rounded-md border border-dashed border-slate-300 p-3 text-sm text-slate-600">
-                No categories or services found.
-              </p>
-            ) : null}
+              {!isLoading && serviceTree.length === 0 ? (
+                <p className="rounded-md border border-dashed border-slate-300 p-3 text-sm text-slate-600">
+                  No categories or services found.
+                </p>
+              ) : null}
 
-            {!isLoading
-              ? serviceTree.map((category, categoryIndex) => {
+              {!isLoading
+                ? serviceTree.map((category, categoryIndex) => {
                   const isExpanded = expandedCategories[category.id] ?? false;
                   return (
-                <div key={category.id} className="mb-1">
-                  <div className={`group flex items-center justify-between gap-2 rounded-md px-2 py-2 transition-colors ${selectedCategoryId === category.id && mode === 'edit-category' ? 'bg-teal-50 text-teal-900 border border-teal-100' : 'hover:bg-slate-50 text-slate-700 border border-transparent'}`}>
-                    <div className="flex flex-1 items-center gap-1.5 min-w-0">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleCategory(category.id);
-                        }}
-                        className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded hover:bg-slate-200 cursor-pointer"
-                        aria-label={isExpanded ? "Collapse" : "Expand"}
-                      >
-                        {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => startEditCategory(category.id)}
-                        className="truncate text-sm font-semibold flex-1 text-left cursor-pointer"
-                      >
-                        {category.title}
-                      </button>
-                    </div>
-
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          void handleMoveCategory(serviceTree, categoryIndex, 'up');
-                        }}
-                        disabled={isSaving || categoryIndex === 0}
-                        className="inline-flex h-6 w-6 items-center justify-center rounded border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
-                        title="Move Up"
-                      >
-                        <ChevronUp size={14} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          void handleMoveCategory(serviceTree, categoryIndex, 'down');
-                        }}
-                        disabled={isSaving || categoryIndex === serviceTree.length - 1}
-                        className="inline-flex h-6 w-6 items-center justify-center rounded border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
-                        title="Move Down"
-                      >
-                        <ChevronDown size={14} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {isExpanded && (
-                    <div className="ml-5 mt-1 space-y-1 border-l-2 border-slate-100 pl-3 pt-1 pb-2">
-                      {category.services.length > 0 ? (
-                        category.services.map((service, serviceIndex) => {
-                          const isCustomSelected = selectedServiceId === service.id && mode === 'edit-service';
-                          return (
-                          <div
-                            key={service.id}
-                            className={`group flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 transition-colors ${isCustomSelected ? 'bg-teal-50 text-teal-800 font-medium' : 'hover:bg-slate-50 text-slate-600'}`}
+                    <div key={category.id} className="mb-1">
+                      <div className={`group flex items-center justify-between gap-2 rounded-md px-2 py-2 transition-colors ${selectedCategoryId === category.id && mode === 'edit-category' ? 'bg-teal-50 text-teal-900 border border-teal-100' : 'hover:bg-slate-50 text-slate-700 border border-transparent'}`}>
+                        <div className="flex flex-1 items-center gap-1.5 min-w-0">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleCategory(category.id);
+                            }}
+                            className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded hover:bg-slate-200 cursor-pointer"
+                            aria-label={isExpanded ? "Collapse" : "Expand"}
                           >
-                            <button
-                              type="button"
-                              onClick={() => startEditService(service.id)}
-                              className="flex min-w-0 flex-1 items-center gap-2 text-left text-xs cursor-pointer"
-                            >
-                              <span className="truncate">{service.label}</span>
-                            </button>
+                            {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => startEditCategory(category.id)}
+                            className="truncate text-sm font-semibold flex-1 text-left cursor-pointer"
+                          >
+                            {category.title}
+                          </button>
+                        </div>
 
-                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                              <button
-                                type="button"
-                                onClick={(event) => {
-                                  event.preventDefault();
-                                  event.stopPropagation();
-                                  void handleMoveService(category.services, serviceIndex, 'up');
-                                }}
-                                disabled={isSaving || serviceIndex === 0}
-                                className="inline-flex h-5 w-5 items-center justify-center rounded border border-slate-200 bg-white text-slate-400 shadow-sm hover:bg-slate-50 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
-                                title="Move Up"
-                              >
-                                <ChevronUp size={12} />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(event) => {
-                                  event.preventDefault();
-                                  event.stopPropagation();
-                                  void handleMoveService(category.services, serviceIndex, 'down');
-                                }}
-                                disabled={isSaving || serviceIndex === category.services.length - 1}
-                                className="inline-flex h-5 w-5 items-center justify-center rounded border border-slate-200 bg-white text-slate-400 shadow-sm hover:bg-slate-50 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
-                                title="Move Down"
-                              >
-                                <ChevronDown size={12} />
-                              </button>
-                            </div>
-                          </div>
-                        )})
-                      ) : (
-                        <p className="px-2 py-1 text-xs text-slate-400 italic">No services available.</p>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              void handleMoveCategory(serviceTree, categoryIndex, 'up');
+                            }}
+                            disabled={isSaving || categoryIndex === 0}
+                            className="inline-flex h-6 w-6 items-center justify-center rounded border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
+                            title="Move Up"
+                          >
+                            <ChevronUp size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              void handleMoveCategory(serviceTree, categoryIndex, 'down');
+                            }}
+                            disabled={isSaving || categoryIndex === serviceTree.length - 1}
+                            className="inline-flex h-6 w-6 items-center justify-center rounded border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
+                            title="Move Down"
+                          >
+                            <ChevronDown size={14} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {isExpanded && (
+                        <div className="ml-5 mt-1 space-y-1 border-l-2 border-slate-100 pl-3 pt-1 pb-2">
+                          {category.services.length > 0 ? (
+                            category.services.map((service, serviceIndex) => {
+                              const isCustomSelected = selectedServiceId === service.id && mode === 'edit-service';
+                              return (
+                                <div
+                                  key={service.id}
+                                  className={`group flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 transition-colors ${isCustomSelected ? 'bg-teal-50 text-teal-800 font-medium' : 'hover:bg-slate-50 text-slate-600'}`}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => startEditService(service.id)}
+                                    className="flex min-w-0 flex-1 items-center gap-2 text-left text-xs cursor-pointer"
+                                  >
+                                    <span className="truncate">{service.label}</span>
+                                  </button>
+
+                                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                                    <button
+                                      type="button"
+                                      onClick={(event) => {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                        void handleMoveService(category.services, serviceIndex, 'up');
+                                      }}
+                                      disabled={isSaving || serviceIndex === 0}
+                                      className="inline-flex h-5 w-5 items-center justify-center rounded border border-slate-200 bg-white text-slate-400 shadow-sm hover:bg-slate-50 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
+                                      title="Move Up"
+                                    >
+                                      <ChevronUp size={12} />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={(event) => {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                        void handleMoveService(category.services, serviceIndex, 'down');
+                                      }}
+                                      disabled={isSaving || serviceIndex === category.services.length - 1}
+                                      className="inline-flex h-5 w-5 items-center justify-center rounded border border-slate-200 bg-white text-slate-400 shadow-sm hover:bg-slate-50 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
+                                      title="Move Down"
+                                    >
+                                      <ChevronDown size={12} />
+                                    </button>
+                                  </div>
+                                </div>
+                              )
+                            })
+                          ) : (
+                            <p className="px-2 py-1 text-xs text-slate-400 italic">No services available.</p>
+                          )}
+                        </div>
                       )}
                     </div>
-                  )}
-                </div>
-              )})
-              : null}
+                  )
+                })
+                : null}
             </div>
           </aside>
         </div>
