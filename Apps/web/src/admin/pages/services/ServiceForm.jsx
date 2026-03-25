@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Save } from 'lucide-react';
+import IconSelect, { availableIcons } from '../../../components/common/IconSelect.jsx';
 
 const DEFAULT_FORM = {
   category_id: '',
@@ -88,7 +89,7 @@ export default function ServiceForm({ initialData, categories, onSubmit }) {
           className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-200"
         >
           <option value="">Select category</option>
-          {categories.map((category) => (
+          {(categories || []).map((category) => (
             <option key={category.id} value={category.id}>
               {category.title}
             </option>
@@ -113,6 +114,16 @@ export default function ServiceForm({ initialData, categories, onSubmit }) {
       </div>
 
       <div>
+        <label htmlFor="service-icon-name" className="mb-1 block text-sm font-medium text-slate-700">
+          Icon
+        </label>
+        <IconSelect
+          value={formData.icon_name}
+          onChange={(val) => handleChange({ target: { name: 'icon_name', value: val } })}
+        />
+      </div>
+
+      <div>
         <label htmlFor="service-description" className="mb-1 block text-sm font-medium text-slate-700">
           Description
         </label>
@@ -129,7 +140,7 @@ export default function ServiceForm({ initialData, categories, onSubmit }) {
 
       <div>
         <label htmlFor="service-image-url" className="mb-1 block text-sm font-medium text-slate-700">
-          Image URL
+          Image URL (Image should in 2:1 ratio in landscape mode)
         </label>
         <input
           id="service-image-url"
@@ -139,21 +150,6 @@ export default function ServiceForm({ initialData, categories, onSubmit }) {
           onChange={handleChange}
           className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-200"
           placeholder="https://..."
-        />
-      </div>
-
-      <div>
-        <label htmlFor="service-icon-name" className="mb-1 block text-sm font-medium text-slate-700">
-          Icon Name
-        </label>
-        <input
-          id="service-icon-name"
-          name="icon_name"
-          type="text"
-          value={formData.icon_name}
-          onChange={handleChange}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-200"
-          placeholder="e.g., Home, ChefHat"
         />
       </div>
 

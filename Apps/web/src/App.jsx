@@ -8,11 +8,12 @@ import SitemapPage from './pages/SitemapPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import UserRegistrationPage from './pages/UserRegistrationPage';
 import AdminLoginPage from './admin/pages/AdminLoginPage';
+import AdminLayout from './admin/adminLayout/AdminLayout';
 import AdminDashboard from './admin/pages/AdminDashboard';
-import AdminDashboardPage from './admin/pages/AdminDashboardPage';
 import AdminUsersPage from './admin/pages/AdminUsersPage';
 import AdminUserNewPage from './admin/pages/AdminUserNewPage';
-import ServiceDashboardLayout from './admin/pages/services/ServiceDashboardLayout';
+import AdminCustomersPage from './admin/pages/AdminCustomersPage';
+import AdminServicePage from './admin/pages/AdminServicePage';
 import EmploymentAdminPage from './admin/pages/employment/EmploymentAdminPage';
 import RequireAdminAuth from './admin/routes/RequireAdminAuth';
 import RFQSlideInPanel from './components/RFQSlideInPanel';
@@ -23,54 +24,42 @@ function App() {
       <Routes>
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+
+        {/* All admin pages share AdminLayout (hero + sidebar + Outlet) */}
         <Route
-          path="/admin/dashboard"
           element={(
             <RequireAdminAuth>
-              <AdminDashboard />
+              <AdminLayout />
             </RequireAdminAuth>
           )}
-        />
-        <Route
-          path="/admin/dashboard-old"
-          element={(
-            <RequireAdminAuth>
-              <AdminDashboardPage />
-            </RequireAdminAuth>
-          )}
-        />
-        <Route
-          path="/admin/users"
-          element={(
+        >
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={
             <RequireAdminAuth allowedRoles={['super_admin', 'admin']}>
               <AdminUsersPage />
             </RequireAdminAuth>
-          )}
-        />
-        <Route
-          path="/admin/users/new"
-          element={(
+          } />
+          <Route path="/admin/users/new" element={
             <RequireAdminAuth allowedRoles={['super_admin']}>
               <AdminUserNewPage />
             </RequireAdminAuth>
-          )}
-        />
-        <Route
-          path="/admin/services"
-          element={(
+          } />
+          <Route path="/admin/customers" element={
             <RequireAdminAuth allowedRoles={['super_admin', 'admin']}>
-              <ServiceDashboardLayout />
+              <AdminCustomersPage />
             </RequireAdminAuth>
-          )}
-        />
-        <Route
-          path="/admin/employment"
-          element={(
+          } />
+          <Route path="/admin/services" element={
+            <RequireAdminAuth allowedRoles={['super_admin', 'admin']}>
+              <AdminServicePage />
+            </RequireAdminAuth>
+          } />
+          <Route path="/admin/employment" element={
             <RequireAdminAuth allowedRoles={['super_admin', 'admin']}>
               <EmploymentAdminPage />
             </RequireAdminAuth>
-          )}
-        />
+          } />
+        </Route>
 
         <Route path="/" element={<Layout><Home /></Layout>} />
         <Route path="/about" element={<Layout><AboutUsPage /></Layout>} />
@@ -87,3 +76,4 @@ function App() {
 }
 
 export default App;
+

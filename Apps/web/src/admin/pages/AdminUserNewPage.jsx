@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Shield, Lock, ChevronDown } from 'lucide-react';
+import { User, Mail, Shield, Lock, ChevronDown, UserPlus, ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useAdminAuth } from '../../admin/auth/AdminAuthContext.jsx';
 import {
   createInitialFieldErrors,
   hasAnyFieldErrors,
   normalizeZodFieldErrors,
 } from '../../admin/utils/formFieldErrors.js';
-import Layout from '../../components/layout/Layout';
-import serviceHero from '../../assets/Service_Hero.png';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -161,42 +160,32 @@ export default function AdminUserNewPage() {
   const fieldStyles = "block w-full rounded-xl border-0 py-3.5 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-100 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 transition-all duration-200 bg-white";
 
   return (
-    <Layout>
-      <div className="bg-slate-50 min-h-screen">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-          <img
-            src={serviceHero}
-            alt="Admin Portal Background"
-            className="absolute inset-0 h-full w-full object-cover grayscale opacity-80 mix-blend-multiply"
-            loading="eager"
-          />
-          <div className="absolute inset-0 bg-teal-900/75" aria-hidden="true" />
-          <div className="relative mx-auto max-w-5xl">
-            <p className="text-sm font-semibold uppercase tracking-wider text-teal-100 italic">User Management</p>
-            <h1 className="mt-3 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
-              Create New Administrator
-            </h1>
-            <p className="mt-4 max-w-3xl text-sm leading-relaxed text-teal-100 sm:text-lg">
-              Set up a new staff member with the appropriate access levels to manage the Help On Call platform securely.
-            </p>
-          </div>
-        </section>
-
-        <div className="mx-auto max-w-3xl px-4 py-12 relative z-10 space-y-6">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900">User Details</h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Fill in the credentials and role for the new manager.
-                </p>
+    <div className="max-w-3xl space-y-6">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="rounded-md border border-slate-200 bg-white p-6 shadow-md sm:p-8"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-md bg-teal-50 flex items-center justify-center text-teal-700">
+                  <UserPlus size={24} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 tracking-tight">User Details</h2>
+                  <p className="text-sm text-slate-500">
+                    Fill in the credentials and role for the new manager.
+                  </p>
+                </div>
               </div>
-              <Link to="/admin/users" className="btn-secondary border border-slate-300">
-                Cancel & Return
-              </Link>
+              <div className="flex flex-wrap items-center gap-4">
+                <Link to="/admin/users" className="btn-secondary gap-2 border border-slate-300 px-6 transition-all">
+                  <ArrowLeft size={16} />
+                  Cancel & Return
+                </Link>
+              </div>
             </div>
-          </div>
+          </motion.div>
 
           <form
             onSubmit={handleSubmit}
@@ -358,8 +347,6 @@ export default function AdminUserNewPage() {
               </Link>
             </div>
           </form>
-        </div>
-      </div>
-    </Layout>
+    </div>
   );
 }
