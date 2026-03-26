@@ -36,8 +36,8 @@ const FIELD_HELP = {
   },
   variablesSchema: {
     title: 'Variables Schema',
-    description: 'JSON descriptor of required and optional placeholders.',
-    example: '{"required":["name"],"optional":["role"]}',
+    description: 'Backend accepts empty/nullable or any valid JSON. Runtime checks only read required/optional arrays when present.',
+    example: '"" (empty) | null | {} | {"required":["name"]} | {"optional":["role"]} | {"required":["name"],"optional":["role"]}',
   },
   description: {
     title: 'Description',
@@ -69,6 +69,8 @@ export default function EmailTemplateForm({
   fieldErrors,
   onDirtyChange,
 }) {
+  const [activeTemplateTab, setActiveTemplateTab] = useState('text');
+
   const buildInitialForm = () => ({
     templateKey: initialData.templateKey || '',
     module: initialData.module || 'system',
@@ -95,6 +97,34 @@ export default function EmailTemplateForm({
     const { name, value, type, checked } = e.target;
     setForm((prev) => {
       const nextForm = { ...prev, [name]: type === 'checkbox' ? checked : value };
+      reportDirtyState(nextForm);
+      return nextForm;
+    });
+  };
+
+  const handleTemplateTabValueChange = (value) => {
+    setForm((prev) => {
+      const wereTemplatesInSync = prev.textTemplate === prev.htmlTemplate;
+      const nextForm = {
+        ...prev,
+      };
+
+      if (activeTemplateTab === 'text') {
+        nextForm.textTemplate = value;
+
+        // Mirror into HTML only while both fields are still coupled.
+        if (wereTemplatesInSync) {
+          nextForm.htmlTemplate = value;
+        }
+      } else {
+        nextForm.htmlTemplate = value;
+
+        // Mirror back to text only when still coupled and input is plain text-like.
+        if (wereTemplatesInSync && !/[<>]/.test(value)) {
+          nextForm.textTemplate = value;
+        }
+      }
+
       reportDirtyState(nextForm);
       return nextForm;
     });
@@ -183,33 +213,62 @@ export default function EmailTemplateForm({
       </div>
 
       <div>
-        <LabelWithHelp label="Text Template *" htmlFor="textTemplate" help={FIELD_HELP.textTemplate} />
+        <div className="mb-2 flex items-center gap-2 border-b border-slate-200">
+          <div className="inline-flex items-center gap-1.5 px-1">
+            <button
+              type="button"
+              onClick={() => setActiveTemplateTab('text')}
+              className={`border-b-2 px-2 py-2 text-xs font-semibold transition-colors ${activeTemplateTab === 'text' ? 'border-teal-600 text-teal-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+              aria-pressed={activeTemplateTab === 'text'}
+            >
+              Text Template *
+            </button>
+            <FormHelpTooltip
+              title={FIELD_HELP.textTemplate.title}
+              description={FIELD_HELP.textTemplate.description}
+              example={FIELD_HELP.textTemplate.example}
+            />
+          </div>
+
+          <div className="inline-flex items-center gap-1.5 px-1">
+            <button
+              type="button"
+              onClick={() => setActiveTemplateTab('html')}
+              className={`border-b-2 px-2 py-2 text-xs font-semibold transition-colors ${activeTemplateTab === 'html' ? 'border-teal-600 text-teal-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+              aria-pressed={activeTemplateTab === 'html'}
+            >
+              HTML Template
+            </button>
+            <FormHelpTooltip
+              title={FIELD_HELP.htmlTemplate.title}
+              description={FIELD_HELP.htmlTemplate.description}
+              example={FIELD_HELP.htmlTemplate.example}
+            />
+          </div>
+        </div>
+
         <textarea
-          id="textTemplate"
-          name="textTemplate"
-          value={form.textTemplate}
-          onChange={handleChange}
-          required
-          rows={5}
-          placeholder="Plain text body. Use {{variableName}} placeholders."
+          id={activeTemplateTab === 'text' ? 'textTemplate' : 'htmlTemplate'}
+          name={activeTemplateTab === 'text' ? 'textTemplate' : 'htmlTemplate'}
+          value={activeTemplateTab === 'text' ? form.textTemplate : form.htmlTemplate}
+          onChange={(e) => handleTemplateTabValueChange(e.target.value)}
+          required={activeTemplateTab === 'text'}
+          rows={activeTemplateTab === 'text' ? 5 : 6}
+          placeholder={
+            activeTemplateTab === 'text'
+              ? 'Plain text body. Use {{variableName}} placeholders.'
+              : 'Optional HTML body. Use {{variableName}} placeholders.'
+          }
           className="input w-full font-mono text-xs"
         />
-        {fieldErrors?.textTemplate ? (
+
+        {fieldErrors?.textTemplate && activeTemplateTab === 'text' ? (
           <p className="mt-1 text-xs text-rose-600">{fieldErrors.textTemplate[0]}</p>
         ) : null}
-      </div>
 
-      <div>
-        <LabelWithHelp label="HTML Template" htmlFor="htmlTemplate" help={FIELD_HELP.htmlTemplate} />
-        <textarea
-          id="htmlTemplate"
-          name="htmlTemplate"
-          value={form.htmlTemplate}
-          onChange={handleChange}
-          rows={6}
-          placeholder="Optional HTML body. Use {{variableName}} placeholders."
-          className="input w-full font-mono text-xs"
-        />
+        {fieldErrors?.htmlTemplate && activeTemplateTab === 'html' ? (
+          <p className="mt-1 text-xs text-rose-600">{fieldErrors.htmlTemplate[0]}</p>
+        ) : null}
       </div>
 
       <div>

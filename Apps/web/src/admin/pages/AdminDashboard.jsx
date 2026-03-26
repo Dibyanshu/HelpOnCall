@@ -186,11 +186,11 @@ export default function AdminDashboard() {
           </div>
 
           <h2 className="text-4xl font-black text-slate-900 tracking-tight leading-tight mb-6">
-            <span className="text-teal-700">Real-time dashboards and performance metrics are on the roadmap.</span>
+            <span className="text-teal-700">Real-time dashboards and KPIs are on the roadmap.</span>
           </h2>
 
           <p className="text-lg font-medium text-slate-600 leading-relaxed mb-10 max-w-md mx-auto">
-            The best hospitality and service is built on deeply understanding your clients. Our upcoming analytics module will put the metrics that matter most right at your fingertips. From average response times to peak service hours, you will have the exact data you need to streamline operations and grow your business with total confidence.
+            The best hospitality and service is built on deeply understanding your clients.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

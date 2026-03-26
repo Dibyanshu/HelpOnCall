@@ -105,6 +105,48 @@ Suggested utility behavior:
 1. textTemplate: raw replacement.
 2. htmlTemplate: escaped replacement unless explicitly marked safe in future.
 
+## 4.1 Injectable Properties (Current Backend Reality)
+
+This section documents what can be injected into templates today.
+
+### Currently used by live API flows
+
+1. `name`
+- Used by `user_registration_ack` flow in auth registration.
+
+2. `code`
+- Used by `email_verification_code` flow.
+
+3. `moduleLabel`
+- Used by `email_verification_code` flow.
+
+### Supported by API contract (dynamic keys)
+
+1. Any string key is accepted for rendering payload (`Record<string, string>`).
+2. Admin test-send endpoint accepts arbitrary string keys in `data` JSON.
+3. Placeholders in templates can therefore use any key name matching `{{keyName}}` pattern.
+
+Examples:
+
+- `{{fullName}}`
+- `{{requestId}}`
+- `{{empId}}`
+- `{{expiryMinutes}}`
+
+### How `variablesSchema` affects injection
+
+1. `variablesSchema` can define `required` and `optional` arrays.
+2. Only `required` is strictly enforced at runtime.
+3. `optional` is descriptive (useful for UI/docs) and not strictly enforced.
+4. If `variablesSchema` is empty/null/missing, rendering still works with provided keys.
+
+Examples:
+
+1. `{"required":["name"]}`
+2. `{"required":["code","moduleLabel"],"optional":["expiryMinutes"]}`
+3. `{}`
+4. `null`
+
 ## 5. API Utility Layer (Central Mail Hook)
 
 Create a dedicated utility service (example):
