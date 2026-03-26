@@ -163,7 +163,7 @@ export default function AdminDashboard() {
     <div className="relative isolate min-h-[800px]">
       {/* --- PAID FEATURE OVERLAY START --- */}
       {/* Remove this block to unlock the dashboard */}
-      <div className="absolute inset-x-[-2rem] inset-y-[-2rem] z-50 flex items-center justify-center p-8 overflow-hidden rounded-[2.5rem]">
+      <div className="absolute inset-x-[-2rem] inset-y-[-2rem] z-50 flex justify-center p-8 overflow-hidden rounded-[2.5rem]">
         <div className="absolute inset-0 bg-white/5 backdrop-blur-[4px] pointer-events-none" />
 
         <motion.div
@@ -181,28 +181,27 @@ export default function AdminDashboard() {
           <div className="inline-flex items-center justify-center p-6 rounded-[2.5rem] bg-white shadow-2xl mb-8 border border-white/50">
             <div className="relative">
               <div className="absolute -inset-4 bg-teal-500/20 blur-2xl rounded-full animate-pulse" />
-              <ShieldCheck size={64} className="relative text-teal-700" strokeWidth={1.5} />
+              <ShieldCheck size={48} className="relative text-teal-700" strokeWidth={1.5} />
             </div>
           </div>
 
           <h2 className="text-4xl font-black text-slate-900 tracking-tight leading-tight mb-6">
-            Unlock Advanced <br />
-            <span className="text-teal-700">Predictive Analytics</span>
+            <span className="text-teal-700">Real-time dashboards and performance metrics are on the roadmap.</span>
           </h2>
 
           <p className="text-lg font-medium text-slate-600 leading-relaxed mb-10 max-w-md mx-auto">
-            This module is part of our <span className="text-teal-800 font-bold decoration-teal-500/30 underline decoration-4 underline-offset-4">Premium Business Suite</span>. Gain deeper insights into customer behavior and system performance.
+            The best hospitality and service is built on deeply understanding your clients. Our upcoming analytics module will put the metrics that matter most right at your fingertips. From average response times to peak service hours, you will have the exact data you need to streamline operations and grow your business with total confidence.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button className="btn-primary px-10 py-4 text-base rounded-2xl shadow-xl shadow-teal-500/30 hover:scale-105 transition-all">
-              Go Premium
+            <button className="btn-primary px-10 py-4 text-base rounded-2xl shadow-xl shadow-teal-500/30 hover:scale-105 transition-all" onClick={() => window.location.href = 'mailto:superadmin_dibby@yopmail.com'}>
+              Contact System Admin
             </button>
           </div>
 
-          <p className="mt-8 text-xs font-bold text-slate-400 uppercase tracking-widest">
+          {/* <p className="mt-8 text-xs font-bold text-slate-400 uppercase tracking-widest">
             Trusted by top service providers Dibyanshu and Shriman
-          </p>
+          </p> */}
         </motion.div>
       </div>
       {/* --- PAID FEATURE OVERLAY END --- */}

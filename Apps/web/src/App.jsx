@@ -14,7 +14,7 @@ import AdminUsersPage from './admin/pages/AdminUsersPage';
 import AdminUserNewPage from './admin/pages/AdminUserNewPage';
 import AdminQuotationManagementPage from './admin/pages/AdminQuotationManagementPage';
 import AdminServicePage from './admin/pages/AdminServicePage';
-import AdminEmailTemplatesPage from './admin/pages/AdminEmailTemplatesPage';
+import AdminEmailTemplatesPage from './admin/pages/email-templates/AdminEmailTemplatesPage';
 import EmploymentAdminPage from './admin/pages/employment/EmploymentAdminPage';
 import RequireAdminAuth from './admin/routes/RequireAdminAuth';
 import RFQSlideInPanel from './components/RFQSlideInPanel';
