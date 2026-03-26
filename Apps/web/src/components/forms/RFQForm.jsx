@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Check, ChevronDown, Calendar, Clock, MapPin, User, Mail, Phone, MessageSquare, Navigation, Cake, UsersRound, Globe, Loader2, AlertCircle } from 'lucide-react';
-import MapSelector from './MapSelector';
+import GoogleMapSelector from './GoogleMapSelector';
 import ServiceCategorySelect from './ServiceCategorySelect';
 import { validateEmail, validatePhone, validateTorontoPostalCode, validateRequired } from '../../utils/validation';
 
@@ -366,7 +366,9 @@ export default function RFQForm({ onCancel }) {
               Pin Precision Location (Optional)
             </label>
             <div className="h-[110px] rounded-lg overflow-hidden border border-gray-200">
-              <MapSelector
+              <GoogleMapSelector
+                initializeCountryBound="ca"
+                postalCodeToPin={formData.postalCode}
                 onLocationPinned={(confirmedAddress) => {
                   setFormData(prev => ({ ...prev, address: confirmedAddress }));
                   if (errors.address) {
