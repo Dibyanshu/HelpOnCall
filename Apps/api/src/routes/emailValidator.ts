@@ -5,6 +5,8 @@ import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
 import { emailValidator, employment } from "../db/schema.js";
 import type { Role } from "../types/auth.js";
+import { sendTemplatedEmail } from "../utils/email-template/email-template.service.js";
+import { TEMPLATE_KEYS } from "../utils/email-template/template-registry.js";
 
 const MODULE_VALUES = ["employee", "user_registration", "rfq"] as const;
 const VERIFICATION_CODE_TTL_MS = 1 * 60 * 1000;
@@ -25,13 +27,13 @@ function deserializePayloadData(data: string): unknown {
   }
 }
 
-function buildVerificationEmail(input: { module: (typeof MODULE_VALUES)[number]; code: string }) {
-  const moduleLabelMap: Record<(typeof MODULE_VALUES)[number], string> = {
-    employee: "Employment",
-    user_registration: "User Registration",
-    rfq: "Request for Quote"
-  };
+const moduleLabelMap: Record<(typeof MODULE_VALUES)[number], string> = {
+  employee: "Employment",
+  user_registration: "User Registration",
+  rfq: "Request for Quote"
+};
 
+function buildVerificationEmailFallback(input: { module: (typeof MODULE_VALUES)[number]; code: string }) {
   const moduleLabel = moduleLabelMap[input.module];
   const subject = `HelpOnCall ${moduleLabel} email verification code`;
   const text = [
@@ -135,15 +137,18 @@ const emailValidatorRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.code(500).send({ message: "Unable to generate verification code" });
     }
 
-    const verificationEmail = buildVerificationEmail({ module, code: verificationCode });
-
     try {
-      await fastify.mail.send({
-        to: email,
-        subject: verificationEmail.subject,
-        text: verificationEmail.text,
-        html: verificationEmail.html
-      });
+      await sendTemplatedEmail(
+        {
+          to: email,
+          templateKey: TEMPLATE_KEYS.EMAIL_VERIFICATION_CODE,
+          data: { code: verificationCode, moduleLabel: moduleLabelMap[module] },
+          fallback: () => buildVerificationEmailFallback({ module, code: verificationCode }),
+          strict: false
+        },
+        fastify.mail,
+        fastify.log
+      );
     } catch (error) {
       fastify.log.error({ error, email, module }, "Failed to send verification code email");
       return reply.code(500).send({ message: "Failed to send verification code" });

@@ -6,6 +6,7 @@ import {
   Briefcase,
   LayoutDashboard,
   Database,
+  Mail,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -20,6 +21,7 @@ const sidebarItems = [
   { label: 'Quotations', icon: UserCheck, path: '/admin/quotations' },
   { label: 'Our Team', icon: Users, path: '/admin/users' },
   { label: 'Careers', icon: Briefcase, path: '/admin/employment' },
+  { label: 'Email Templates', icon: Mail, path: '/admin/email-templates', roles: ['super_admin'] },
 ];
 
 export default function AdminLayout() {
@@ -56,7 +58,7 @@ export default function AdminLayout() {
 
               {/* Nav Items */}
               <nav className="flex-1 flex flex-col gap-1 px-2 py-4 overflow-y-auto custom-scrollbar">
-                {sidebarItems.map((item) => (
+                {sidebarItems.filter((item) => !item.roles || item.roles.includes(user?.role)).map((item) => (
                   <NavLink
                     key={item.path}
                     to={item.path}
