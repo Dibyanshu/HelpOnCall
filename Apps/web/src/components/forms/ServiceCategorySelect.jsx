@@ -52,16 +52,16 @@ export default function ServiceCategorySelect({ value = [], onChange, fieldStyle
 
   return (
     <div className="space-y-1.5" ref={dropdownRef}>
-      <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+      <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-700 mb-1">
         <Info className="h-3.5 w-3.5 text-teal-600/70" />
-        Service Category
+        Service Category <span className="text-rose-500">*</span>
       </label>
 
       <div className="relative">
         <button
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
-          className={`${fieldStyles} flex min-h-[52px] bg-white items-center justify-between text-left cursor-pointer`}
+          className={`${fieldStyles} flex min-h-[80px] bg-white items-center justify-between text-left cursor-pointer`}
         >
           <div className="flex flex-wrap gap-1.5">
             {value.length === 0 ? (
@@ -90,7 +90,7 @@ export default function ServiceCategorySelect({ value = [], onChange, fieldStyle
         </button>
 
         {isOpen && (
-          <div className="absolute z-20 mt-2 w-full max-h-80 overflow-y-auto rounded-xl bg-white p-2 shadow-2xl ring-1 ring-black/5">
+          <div className="absolute z-[70] mt-2 w-full max-h-80 overflow-y-auto rounded-xl bg-white p-2 shadow-2xl ring-1 ring-black/5">
             {isLoading ? (
               <p className="px-4 py-3 text-sm text-gray-400">Loading services...</p>
             ) : serviceGroups.length === 0 ? (
@@ -99,7 +99,6 @@ export default function ServiceCategorySelect({ value = [], onChange, fieldStyle
               serviceGroups.map((group) => (
                 <div key={group.categoryId} className="mb-4 last:mb-0">
                   <h3 className="flex items-center gap-2 px-3 py-1.5 border-b border-gray-50 mb-1">
-                    <span className="text-[9px] font-bold text-gray-300">#{group.displayOrder + 1}</span>
                     <span className="text-[10px] font-black uppercase tracking-widest text-gray-400/80">
                       {group.title}
                     </span>
@@ -118,7 +117,6 @@ export default function ServiceCategorySelect({ value = [], onChange, fieldStyle
                             }`}
                         >
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-gray-300 font-bold">#{option.displayOrder + 1}</span>
                             <span>{option.label}</span>
                           </div>
                           <div className="flex items-center gap-2">

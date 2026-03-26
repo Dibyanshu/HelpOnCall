@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useSearchParams, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const navLinks = [
   { label: 'Home', href: '/', isRoute: true },
@@ -11,7 +11,6 @@ const navLinks = [
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
 
   const isActive = (href) => {
     if (href === '/') {
@@ -19,12 +18,6 @@ export default function Navbar() {
     }
 
     return location.pathname === href || location.pathname.startsWith(`${href}/`);
-  };
-
-  const openPanel = () => {
-    const nextParams = new URLSearchParams(searchParams);
-    nextParams.set('rfqPanel', 'open');
-    setSearchParams(nextParams);
   };
 
   return (
@@ -85,13 +78,12 @@ export default function Navbar() {
             );
           })}
           <li>
-            <button
-              type="button"
-              onClick={openPanel}
+            <Link
+              to="/quote"
               className="btn-primary"
             >
               Request For Quote
-            </button>
+            </Link>
           </li>
         </ul>
 
@@ -145,16 +137,13 @@ export default function Navbar() {
               );
             })}
             <li>
-              <button
-                type="button"
-                onClick={() => {
-                  openPanel();
-                  setMobileOpen(false);
-                }}
-                className="mt-2 btn-primary w-full"
+              <Link
+                to="/quote"
+                className="mt-2 btn-primary w-full flex justify-center"
+                onClick={() => setMobileOpen(false)}
               >
                 Request A Quote
-              </button>
+              </Link>
             </li>
           </ul>
         </div>
