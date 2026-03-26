@@ -88,6 +88,25 @@ export const emailValidator = sqliteTable("email_validator", {
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(new Date(0))
 });
 
+export const EMAIL_TEMPLATE_MODULE_VALUES = ["employee", "user_registration", "rfq", "system"] as const;
+
+export const emailTemplates = sqliteTable("email_templates", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  templateKey: text("template_key").notNull().unique(),
+  module: text("module", { enum: EMAIL_TEMPLATE_MODULE_VALUES }).notNull(),
+  channel: text("channel").notNull().default("email"),
+  subjectTemplate: text("subject_template").notNull(),
+  textTemplate: text("text_template").notNull(),
+  htmlTemplate: text("html_template"),
+  variablesSchema: text("variables_schema"),
+  description: text("description"),
+  isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+  version: integer("version").notNull().default(1),
+  createdBy: text("created_by").notNull().default(""),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(new Date(0)),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(new Date(0))
+});
+
 export type UserRole = typeof users.$inferSelect.role;
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -101,3 +120,5 @@ export type CustomerTestimonial = typeof customerTestimonials.$inferSelect;
 export type NewCustomerTestimonial = typeof customerTestimonials.$inferInsert;
 export type EmailValidator = typeof emailValidator.$inferSelect;
 export type NewEmailValidator = typeof emailValidator.$inferInsert;
+export type EmailTemplate = typeof emailTemplates.$inferSelect;
+export type NewEmailTemplate = typeof emailTemplates.$inferInsert;

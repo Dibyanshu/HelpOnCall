@@ -14,6 +14,7 @@ import AdminUsersPage from './admin/pages/AdminUsersPage';
 import AdminUserNewPage from './admin/pages/AdminUserNewPage';
 import AdminQuotationManagementPage from './admin/pages/AdminQuotationManagementPage';
 import AdminServicePage from './admin/pages/AdminServicePage';
+import AdminEmailTemplatesPage from './admin/pages/email-templates/AdminEmailTemplatesPage';
 import EmploymentAdminPage from './admin/pages/employment/EmploymentAdminPage';
 import RequireAdminAuth from './admin/routes/RequireAdminAuth';
 import RFQSlideInPanel from './components/RFQSlideInPanel';
@@ -57,6 +58,11 @@ function App() {
           <Route path="/admin/employment" element={
             <RequireAdminAuth allowedRoles={['super_admin', 'admin']}>
               <EmploymentAdminPage />
+            </RequireAdminAuth>
+          } />
+          <Route path="/admin/email-templates" element={
+            <RequireAdminAuth allowedRoles={['super_admin']}>
+              <AdminEmailTemplatesPage />
             </RequireAdminAuth>
           } />
         </Route>

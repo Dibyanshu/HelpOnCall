@@ -1,6 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
-
-const ANIMATION_MS = 180;
+import { useEffect } from 'react';
 
 /*
   Reuse guide:
@@ -32,38 +30,8 @@ export default function AdminSlideInPanel({
   panelClassName = 'max-w-md',
   children,
 }) {
-  const [shouldRender, setShouldRender] = useState(isOpen);
-  const [isVisible, setIsVisible] = useState(false);
-  const closeTimerRef = useRef(null);
-
   useEffect(() => {
-    if (isOpen) {
-      setShouldRender(true);
-
-      const frameId = window.requestAnimationFrame(() => {
-        setIsVisible(true);
-      });
-
-      return () => {
-        window.cancelAnimationFrame(frameId);
-      };
-    }
-
-    setIsVisible(false);
-
-    closeTimerRef.current = window.setTimeout(() => {
-      setShouldRender(false);
-    }, ANIMATION_MS);
-
-    return () => {
-      if (closeTimerRef.current) {
-        window.clearTimeout(closeTimerRef.current);
-      }
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!shouldRender || !canClose) {
+    if (!isOpen || !canClose) {
       return undefined;
     }
 
@@ -78,11 +46,7 @@ export default function AdminSlideInPanel({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [canClose, onClose, shouldRender]);
-
-  if (!shouldRender) {
-    return null;
-  }
+  }, [canClose, isOpen, onClose]);
 
   return (
     <>
@@ -95,12 +59,15 @@ export default function AdminSlideInPanel({
       <aside
         role="dialog"
         aria-modal="true"
-        aria-label="Edit User Panel"
-        className={`fixed right-0 top-0 z-[100] h-screen w-full md:w-[60%] lg:w-[40%] bg-white shadow-2xl transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        aria-label={ariaLabel}
+        className={`fixed right-0 top-0 z-[100] h-screen w-full md:w-[60%] lg:w-[40%] bg-white shadow-2xl transition-transform duration-300 ease-out ${panelClassName} ${isOpen ? 'translate-x-0' : 'pointer-events-none translate-x-full'}`}
       >
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 bg-gray-900">
-            <h2 className="text-lg font-semibold text-gray-300">{title}</h2>
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-gray-500">{eyebrow}</p>
+              <h2 className="text-lg font-semibold text-gray-300">{title}</h2>
+            </div>
             <button
               type="button"
               onClick={canClose ? onClose : undefined}

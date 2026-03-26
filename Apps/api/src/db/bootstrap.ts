@@ -85,6 +85,25 @@ const CUSTOMER_TESTIMONIALS_TABLE_DDL = sql`
   )
 `;
 
+const EMAIL_TEMPLATES_TABLE_DDL = sql`
+  CREATE TABLE IF NOT EXISTS email_templates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    template_key TEXT NOT NULL UNIQUE,
+    module TEXT NOT NULL CHECK (module IN ('employee', 'user_registration', 'rfq', 'system')),
+    channel TEXT NOT NULL DEFAULT 'email',
+    subject_template TEXT NOT NULL,
+    text_template TEXT NOT NULL,
+    html_template TEXT,
+    variables_schema TEXT,
+    description TEXT,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    version INTEGER NOT NULL DEFAULT 1,
+    created_by TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL DEFAULT 0,
+    updated_at INTEGER NOT NULL DEFAULT 0
+  )
+`;
+
 const EMAIL_VALIDATOR_TABLE_DDL = sql`
   CREATE TABLE IF NOT EXISTS email_validator (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -291,6 +310,7 @@ export async function ensureTables(): Promise<void> {
   await db.run(SERVICES_CATEGORY_ID_INDEX_DDL);
   await db.run(CUSTOMER_TESTIMONIALS_TABLE_DDL);
   await db.run(EMAIL_VALIDATOR_TABLE_DDL);
+  await db.run(EMAIL_TEMPLATES_TABLE_DDL);
 
   // These migration helpers depend on better-sqlite3 specific db.get/db.all APIs.
   // Turso/libsql uses a different driver shape, so skip introspection-based migrations there.
