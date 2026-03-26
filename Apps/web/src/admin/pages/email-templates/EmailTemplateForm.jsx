@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import FormHelpTooltip from './FormHelpTooltip.jsx';
 
 const MODULE_OPTIONS = ['employee', 'user_registration', 'rfq', 'system'];
@@ -67,8 +67,9 @@ export default function EmailTemplateForm({
   isSubmitting,
   errorMessage,
   fieldErrors,
+  onDirtyChange,
 }) {
-  const [form, setForm] = useState({
+  const buildInitialForm = () => ({
     templateKey: initialData.templateKey || '',
     module: initialData.module || 'system',
     channel: initialData.channel || 'email',
@@ -80,15 +81,28 @@ export default function EmailTemplateForm({
     isActive: initialData.isActive !== undefined ? initialData.isActive : true,
   });
 
+  const [form, setForm] = useState(buildInitialForm);
+  const initialSnapshotRef = useRef(JSON.stringify(buildInitialForm()));
+
   const isEdit = !!initialData.id;
+
+  const reportDirtyState = (nextForm) => {
+    const isDirty = JSON.stringify(nextForm) !== initialSnapshotRef.current;
+    onDirtyChange?.(isDirty);
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    setForm((prev) => {
+      const nextForm = { ...prev, [name]: type === 'checkbox' ? checked : value };
+      reportDirtyState(nextForm);
+      return nextForm;
+    });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    onDirtyChange?.(false);
     onSubmit(form);
   };
 
@@ -109,6 +123,7 @@ export default function EmailTemplateForm({
             name="templateKey"
             value={form.templateKey}
             onChange={handleChange}
+            autoFocus
             required
             placeholder="e.g. user_registration_ack"
             className="input w-full"
@@ -123,7 +138,14 @@ export default function EmailTemplateForm({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <LabelWithHelp label="Module *" htmlFor="module" help={FIELD_HELP.module} />
-          <select id="module" name="module" value={form.module} onChange={handleChange} className="input w-full">
+          <select
+            id="module"
+            name="module"
+            value={form.module}
+            onChange={handleChange}
+            autoFocus={isEdit}
+            className="input w-full"
+          >
             {MODULE_OPTIONS.map((m) => (
               <option key={m} value={m}>{m}</option>
             ))}

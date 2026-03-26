@@ -18,6 +18,7 @@ export default function AdminEmailTemplatesPage() {
   const [testSendTemplate, setTestSendTemplate] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFormDirty, setIsFormDirty] = useState(false);
   const [formError, setFormError] = useState('');
   const [formFieldErrors, setFormFieldErrors] = useState({});
 
@@ -56,6 +57,24 @@ export default function AdminEmailTemplatesPage() {
     void loadTemplates();
   }, [loadTemplates]);
 
+  useEffect(() => {
+    if (!isFormDirty || isSubmitting || !(panelMode === 'create' || panelMode === 'edit')) {
+      return undefined;
+    }
+
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      // Required for Chrome-based browsers to trigger confirmation prompt.
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isFormDirty, isSubmitting, panelMode]);
+
   const handleCreate = async (form) => {
     setIsSubmitting(true);
     setFormError('');
@@ -87,6 +106,7 @@ export default function AdminEmailTemplatesPage() {
 
       toast.success('Email template created successfully.');
       setPanelMode(null);
+      setIsFormDirty(false);
       void loadTemplates();
     } catch (error) {
       setFormError(error.message || 'Failed to create template.');
@@ -130,6 +150,7 @@ export default function AdminEmailTemplatesPage() {
 
       toast.success('Email template updated successfully.');
       setPanelMode(null);
+      setIsFormDirty(false);
       setEditingTemplate(null);
       void loadTemplates();
     } catch (error) {
@@ -182,28 +203,85 @@ export default function AdminEmailTemplatesPage() {
   };
 
   const openEdit = (template) => {
-    setFormError('');
-    setFormFieldErrors({});
-    setPanelMode('edit');
-    setEditingTemplate(template);
+    const proceed = async () => {
+      if (panelMode && isFormDirty) {
+        const confirmed = await confirm({
+          title: 'Discard unsaved changes?',
+          message: 'You have unsaved changes in the form. Switching templates will discard them.',
+          confirmText: 'Discard Changes',
+          cancelText: 'Keep Editing',
+          type: 'deactivate',
+        });
+
+        if (!confirmed) {
+          return;
+        }
+      }
+
+      setFormError('');
+      setFormFieldErrors({});
+      setIsFormDirty(false);
+      setPanelMode('edit');
+      setEditingTemplate(template);
+    };
+
+    void proceed();
   };
 
   const closePanel = () => {
-    if (isSubmitting) {
-      return;
-    }
+    const proceed = async () => {
+      if (isSubmitting) {
+        return;
+      }
 
-    setPanelMode(null);
-    setEditingTemplate(null);
-    setFormError('');
-    setFormFieldErrors({});
+      if (isFormDirty) {
+        const confirmed = await confirm({
+          title: 'Discard unsaved changes?',
+          message: 'You have unsaved changes in this form. Closing now will discard them.',
+          confirmText: 'Discard Changes',
+          cancelText: 'Keep Editing',
+          type: 'deactivate',
+        });
+
+        if (!confirmed) {
+          return;
+        }
+      }
+
+      setPanelMode(null);
+      setEditingTemplate(null);
+      setIsFormDirty(false);
+      setFormError('');
+      setFormFieldErrors({});
+    };
+
+    void proceed();
   };
 
   const openCreate = () => {
-    setFormError('');
-    setFormFieldErrors({});
-    setEditingTemplate(null);
-    setPanelMode('create');
+    const proceed = async () => {
+      if (panelMode && isFormDirty) {
+        const confirmed = await confirm({
+          title: 'Discard unsaved changes?',
+          message: 'You have unsaved changes in the form. Opening a new form will discard them.',
+          confirmText: 'Discard Changes',
+          cancelText: 'Keep Editing',
+          type: 'deactivate',
+        });
+
+        if (!confirmed) {
+          return;
+        }
+      }
+
+      setFormError('');
+      setFormFieldErrors({});
+      setEditingTemplate(null);
+      setIsFormDirty(false);
+      setPanelMode('create');
+    };
+
+    void proceed();
   };
 
   return (
@@ -307,6 +385,7 @@ export default function AdminEmailTemplatesPage() {
           isSubmitting={isSubmitting}
           errorMessage={formError}
           fieldErrors={formFieldErrors}
+          onDirtyChange={setIsFormDirty}
         />
       </AdminSlideInPanel>
     </div>
