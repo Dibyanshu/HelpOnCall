@@ -23,7 +23,8 @@ import {
   ArrowLeft,
   Calendar,
   Mail,
-  CheckCircle2
+  CheckCircle2,
+  Lock
 } from 'lucide-react';
 import {
   XAxis,
@@ -48,6 +49,7 @@ const COLORS = {
   green: '#009689',  // Teal-600
   red: '#e11d48', // Rose-600
   yellow: '#f59e0b',  // Yellow-500
+  blue: '#2e61a8ff'
 };
 
 // Mock Data
@@ -69,7 +71,7 @@ const LINE_DATA = [
 const DONUT_DATA = [
   { name: 'Household Chores', value: 25, color: COLORS.yellow },
   { name: 'Personal Hygiene', value: 35, color: COLORS.green },
-  { name: 'Mobility & Companionship', value: 15, color: COLORS.red },
+  { name: 'Mobility & Companionship', value: 15, color: COLORS.blue },
 ];
 
 const TRANSACTION_DATA = [
@@ -89,19 +91,19 @@ const TRANSACTION_DATA = [
 
 const EMPLOYMENT_STATS = {
   'Last Week': [
-    { name: 'Applied', value: 650, total: 1000, color: '#0d9488' },
-    { name: 'Interviewed', value: 320, total: 1000, color: '#0f766e' },
-    { name: 'Hired', value: 120, total: 1000, color: '#312e81' },
+    { name: 'Applied', value: 650, total: 1000, color: COLORS.blue },
+    { name: 'Interviewed', value: 320, total: 1000, color: COLORS.yellow },
+    { name: 'Hired', value: 120, total: 1000, color: COLORS.green },
   ],
   'Last Month': [
-    { name: 'Applied', value: 2800, total: 5000, color: '#0d9488' },
-    { name: 'Interviewed', value: 1450, total: 5000, color: '#0f766e' },
-    { name: 'Hired', value: 580, total: 5000, color: '#312e81' },
+    { name: 'Applied', value: 2800, total: 5000, color: COLORS.blue },
+    { name: 'Interviewed', value: 1450, total: 5000, color: COLORS.yellow },
+    { name: 'Hired', value: 580, total: 5000, color: COLORS.green },
   ],
   'Last Year': [
-    { name: 'Applied', value: 31200, total: 35000, color: '#0d9488' },
-    { name: 'Interviewed', value: 24500, total: 35000, color: '#0f766e' },
-    { name: 'Hired', value: 8900, total: 35000, color: '#312e81' },
+    { name: 'Applied', value: 31200, total: 35000, color: COLORS.blue },
+    { name: 'Interviewed', value: 24500, total: 35000, color: COLORS.yellow },
+    { name: 'Hired', value: 8900, total: 35000, color: COLORS.green },
   ]
 };
 
@@ -143,14 +145,14 @@ const RECENT_CUSTOMERS = [
 
 const SIDEBAR_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard-lite' },
-  { label: 'Manage Customers', icon: Users, path: '#' },
-  { label: 'Manage Employees', icon: UsersRound, path: '/admin/users' },
-  { label: 'Manage Job Applications', icon: ClipboardList, path: '#' },
   { label: 'Manage Services', icon: Database, path: '/admin/services' },
-  { label: 'Manage Blogs', icon: Building2, path: '#' },
-  { label: 'Manage Partners', icon: BriefcaseBusiness, path: '#' },
-  { label: 'Manage Locations', icon: Megaphone, path: '#' },
-  { label: 'Customer Support', icon: Headset, path: '#' },
+  { label: 'Manage Employees', icon: UsersRound, path: '/admin/users' },
+  { label: 'Job Applications', icon: ClipboardList, path: '#', isLocked: true },
+  { label: 'Manage Customers', icon: Users, path: '#', isLocked: true },
+  { label: 'Manage Blogs', icon: Building2, path: '#', isLocked: true },
+  { label: 'Manage Partners', icon: BriefcaseBusiness, path: '#', isLocked: true },
+  { label: 'Manage Locations', icon: Megaphone, path: '#', isLocked: true },
+  { label: 'Customer Support', icon: Headset, path: '#', isLocked: true },
 ];
 
 import { useServiceManagement } from '../../appServices/useServiceManagement.js';
@@ -208,6 +210,7 @@ export default function AdminDashboardLite() {
   const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0); // Scroll to top on mount
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsProfileOpen(false);
@@ -327,18 +330,21 @@ export default function AdminDashboardLite() {
               <button
                 key={item.label}
                 onClick={() => {
+                  if (item.isLocked) return;
                   setActiveItem(item.label);
                   if (item.path !== '#') navigate(item.path);
                 }}
+                disabled={item.isLocked}
                 className={`w-full flex items-center justify-between px-4 py-3 rounded-md text-[13px] font-bold transition-all duration-200 ${isActive
                   ? 'bg-teal-50 text-teal-700'
                   : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
-                  }`}
+                  } ${item.isLocked ? 'cursor-not-allowed' : ''}`}
               >
                 <div className="flex items-center gap-3">
                   <item.icon size={18} className={isActive ? 'stroke-[2.5px]' : 'stroke-[2px] opacity-70'} />
                   {item.label}
                 </div>
+                {item.isLocked && <Lock size={12} className="text-yellow-600" />}
                 {item.label === 'Client Support' && (
                   <div className="h-5 w-5 bg-teal-600 rounded flex items-center justify-center text-[10px] text-white">24</div>
                 )}
