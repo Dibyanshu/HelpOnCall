@@ -54,7 +54,7 @@ export default function ServiceCategorySelect({ value = [], onChange, fieldStyle
     <div className="space-y-1.5" ref={dropdownRef}>
       <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-700 mb-1">
         <Info className="h-3.5 w-3.5 text-teal-600/70" />
-        Service Category <span className="text-rose-500">*</span>
+        <span>What kind of care do you need (Please select all that apply) <span className="text-rose-500">*</span></span>
       </label>
 
       <div className="relative">

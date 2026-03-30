@@ -26,13 +26,13 @@ export default function EmploymentForm() {
   const [submitError, setSubmitError] = useState('');
   const [specializationGroups, setSpecializationGroups] = useState([]);
   const [isLoadingSpecializations, setIsLoadingSpecializations] = useState(true);
-  
+
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [emailError, setEmailError] = useState('');
   const [phoneError, setPhoneError] = useState('');
-  
+
   const dropdownRef = useRef(null);
   const toast = useToast();
 
@@ -222,7 +222,7 @@ export default function EmploymentForm() {
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <div className={`grid gap-4 ${isVerifyingEmail ? 'sm:grid-cols-2' : 'sm:grid-cols-1'}`}> 
+        <div className={`grid gap-4 ${isVerifyingEmail ? 'sm:grid-cols-2' : 'sm:grid-cols-1'}`}>
           <div className="relative space-y-1.5 flex-1">
             <label htmlFor="email" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
               <Mail className="h-3.5 w-3.5 text-teal-700/70" />
@@ -248,7 +248,7 @@ export default function EmploymentForm() {
                 autoComplete="off"
               />
               {!isEmailVerified && !isVerifyingEmail && (
-                <button 
+                <button
                   type="button"
                   onClick={handleSendVerification}
                   className="absolute right-2 top-1 bottom-1 px-4 my-1 mr-1 flex items-center justify-center bg-teal-600 hover:bg-teal-700 active:scale-95 text-white rounded-lg transition-all"
@@ -270,7 +270,7 @@ export default function EmploymentForm() {
               </p>
             )}
           </div>
-          
+
           {isVerifyingEmail && !isEmailVerified && (
             <div className="relative space-y-1.5 flex-1 animate-in fade-in slide-in-from-right-4 duration-300">
               <label htmlFor="verificationCode" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
@@ -288,7 +288,7 @@ export default function EmploymentForm() {
                   placeholder="000000"
                   autoComplete="off"
                 />
-                <button 
+                <button
                   type="button"
                   onClick={handleVerifyCode}
                   className="absolute right-2 top-1 bottom-1 px-4 my-1 mr-1 flex items-center justify-center bg-slate-900 hover:bg-slate-800 active:scale-95 text-white rounded-lg transition-all font-semibold text-xs"
@@ -472,10 +472,10 @@ export default function EmploymentForm() {
           />
           <div className={`
             flex items-center justify-center rounded-2xl border-2 border-dashed px-4 py-4 transition-all duration-300
-            ${!isEmailVerified ? 'border-slate-200 bg-slate-50/50 opacity-50' : 
+            ${!isEmailVerified ? 'border-slate-200 bg-slate-50/50 opacity-50' :
               formData.resume
-              ? 'border-teal-700 bg-teal-50/30'
-              : 'border-slate-200 bg-slate-50/50 hover:border-teal-400 hover:bg-white hover:shadow-xl hover:shadow-teal-500/5 hover:-translate-y-0.5'}
+                ? 'border-teal-700 bg-teal-50/30'
+                : 'border-slate-200 bg-slate-50/50 hover:border-teal-400 hover:bg-white hover:shadow-xl hover:shadow-teal-500/5 hover:-translate-y-0.5'}
           `}>
             {formData.resume ? (
               <div className="flex w-full items-center justify-between gap-4 animate-in fade-in duration-300">
