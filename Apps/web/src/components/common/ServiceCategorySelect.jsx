@@ -11,7 +11,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
  *  - onChange: (next: string[]) => void  — called with the updated selection
  *  - fieldStyles: string      — shared input class string from the parent form
  */
-export default function ServiceCategorySelect({ value = [], onChange, fieldStyles = '' }) {
+export default function ServiceCategorySelect({ value = [], onChange, fieldStyles = '', disabled = false }) {
   const [isOpen, setIsOpen] = useState(false);
   const [serviceGroups, setServiceGroups] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -60,8 +60,9 @@ export default function ServiceCategorySelect({ value = [], onChange, fieldStyle
       <div className="relative">
         <button
           type="button"
-          onClick={() => setIsOpen((prev) => !prev)}
-          className={`${fieldStyles} flex min-h-[80px] bg-white items-center justify-between text-left cursor-pointer`}
+          disabled={disabled}
+          onClick={() => !disabled && setIsOpen((prev) => !prev)}
+          className={`${fieldStyles} flex min-h-[80px] bg-white items-center justify-between text-left ${disabled ? 'opacity-50 cursor-not-allowed grayscale bg-slate-50' : 'cursor-pointer'}`}
         >
           <div className="flex flex-wrap gap-1.5">
             {value.length === 0 ? (
@@ -135,4 +136,3 @@ export default function ServiceCategorySelect({ value = [], onChange, fieldStyle
     </div>
   );
 }
-
