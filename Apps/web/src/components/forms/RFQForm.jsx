@@ -1,8 +1,7 @@
 import { useState, useRef } from 'react';
-import { Check, ChevronDown, Calendar, Clock, MapPin, User, Mail, Phone, MessageSquare, Navigation, Cake, UsersRound, Globe, Loader2, AlertCircle } from 'lucide-react';
-import GoogleMapSelector from './GoogleMapSelector';
+import { Check, ChevronDown, Calendar, Clock, MapPin, User, Mail, Phone, Navigation, UsersRound, Loader2, AlertCircle } from 'lucide-react';
 import ServiceCategorySelect from './ServiceCategorySelect';
-import { validateEmail, validatePhone, validateTorontoPostalCode, validateRequired } from '../../utils/validation';
+import { validateEmail, validatePhone, validateRequired } from '../../utils/validation';
 
 const relations = ['Spouse', 'Parent', 'Child', 'Sibling', 'Grandparent', 'Friend', 'Uncle', 'Aunt', 'Cousin', 'Niece', 'Nephew'];
 
@@ -153,11 +152,6 @@ export default function RFQForm({ onCancel }) {
     console.log('Form submitted:', formData);
     setIsSubmitting(false);
     setIsSubmitted(true);
-  };
-
-  const getWordCount = (text) => {
-    if (!text) return 0;
-    return text.trim().split(/\s+/).filter(word => word.length > 0).length;
   };
 
   const hasPostalCode = (text) => {
