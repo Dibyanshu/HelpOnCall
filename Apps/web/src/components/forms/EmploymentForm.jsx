@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-import { Upload, CheckCircle2, ChevronDown, X, Briefcase, Check, User, Mail, Phone } from 'lucide-react';
+import { Upload, CheckCircle2, ChevronDown, X, Briefcase, Check, User, Mail, Phone, Send, KeyRound } from 'lucide-react';
+import { useToast } from '../common/Toast';
 import {
   fetchEmploymentSpecializationGroups,
   submitEmploymentApplication,
 } from '../../appServices/employmentSubmission';
+import { validateEmail as utilValidateEmail, validatePhone as utilValidatePhone } from '../../utils/validation';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -24,7 +26,15 @@ export default function EmploymentForm() {
   const [submitError, setSubmitError] = useState('');
   const [specializationGroups, setSpecializationGroups] = useState([]);
   const [isLoadingSpecializations, setIsLoadingSpecializations] = useState(true);
+  
+  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  
   const dropdownRef = useRef(null);
+  const toast = useToast();
 
   const selectedSpecializationLabels = formData.specializations.map((selection) => {
     const match = specializationGroups
@@ -134,6 +144,42 @@ export default function EmploymentForm() {
     }
   };
 
+  const validateEmail = (email) => {
+    const error = utilValidateEmail(email);
+    setEmailError(error);
+    return !error;
+  };
+
+  const validatePhone = (phone) => {
+    const error = utilValidatePhone(phone);
+    setPhoneError(error);
+    return !error;
+  };
+
+  const handleSendVerification = () => {
+    if (!validateEmail(formData.email)) {
+      toast.error('Please enter a valid email address first.');
+      return;
+    }
+    setIsVerifyingEmail(true);
+    // Use a custom hook to talk to the backend
+    // Step-1: send the verification code to the user's email
+    // Step-2: user will enter the code and we will verify it on the backend
+    // The newly built custom hook will handle both steps and return the status to the component
+    // So that later we can reuse the same hook for other forms that require email verification
+    toast.success('Verification code has been sent. Check your email.', { duration: 4000 });
+  };
+
+  const handleVerifyCode = () => {
+    if (verificationCode === '123456') { // Mock logic for 123456
+      setIsVerifyingEmail(false);
+      setIsEmailVerified(true);
+      toast.success('Email verified successfully.');
+    } else {
+      toast.error('Invalid verification code.');
+    }
+  };
+
   const fieldStyles = "block w-full rounded-xl border-0 py-3.5 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-100 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-700 transition-all duration-200";
 
   if (isSubmitted) {
@@ -175,57 +221,131 @@ export default function EmploymentForm() {
         <h3 className="text-xl font-semibold text-slate-900">Career Application</h3>
       </div>
 
-      <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <label htmlFor="fullName" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
-            <User className="h-3.5 w-3.5 text-teal-700/70" />
-            Full Name
-          </label>
-          <input
-            id="fullName"
-            name="fullName"
-            type="text"
-            value={formData.fullName}
-            onChange={handleChange}
-            required
-            className={fieldStyles}
-            placeholder="John Doe"
-          />
+      <div className="grid grid-cols-1 gap-6">
+        <div className={`grid gap-4 ${isVerifyingEmail ? 'sm:grid-cols-2' : 'sm:grid-cols-1'}`}> 
+          <div className="relative space-y-1.5 flex-1">
+            <label htmlFor="email" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+              <Mail className="h-3.5 w-3.5 text-teal-700/70" />
+              Email Address
+            </label>
+            <div className="relative flex items-center">
+              <input
+                id="email"
+                name="email"
+                type="email"
+                disabled={isEmailVerified || isVerifyingEmail}
+                value={formData.email}
+                onChange={(e) => {
+                  handleChange(e);
+                  if (emailError) setEmailError('');
+                }}
+                onBlur={(e) => {
+                  if (e.target.value) validateEmail(e.target.value);
+                }}
+                required
+                className={`${fieldStyles} ${isEmailVerified || isVerifyingEmail ? 'opacity-75 bg-slate-50 cursor-not-allowed text-slate-500' : ''} ${emailError ? 'ring-rose-500 border-rose-500 focus:ring-rose-500 text-rose-900 bg-rose-50/50' : ''}`}
+                placeholder="john@example.com"
+                autoComplete="off"
+              />
+              {!isEmailVerified && !isVerifyingEmail && (
+                <button 
+                  type="button"
+                  onClick={handleSendVerification}
+                  className="absolute right-2 top-1 bottom-1 px-4 my-1 mr-1 flex items-center justify-center bg-teal-600 hover:bg-teal-700 active:scale-95 text-white rounded-lg transition-all"
+                  title="Verify Email"
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              )}
+              {isEmailVerified && (
+                <div className="absolute right-4 flex items-center gap-1.5 text-teal-600 bg-teal-50 px-3 py-1 rounded-full border border-teal-100 font-bold text-[11px] uppercase tracking-wider pointer-events-none">
+                  Verified
+                  <CheckCircle2 className="h-4 w-4" />
+                </div>
+              )}
+            </div>
+            {emailError && (
+              <p className="mt-1.5 text-[11px] font-semibold text-rose-500 animate-in fade-in slide-in-from-top-1">
+                {emailError}
+              </p>
+            )}
+          </div>
+          
+          {isVerifyingEmail && !isEmailVerified && (
+            <div className="relative space-y-1.5 flex-1 animate-in fade-in slide-in-from-right-4 duration-300">
+              <label htmlFor="verificationCode" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+                <KeyRound className="h-3.5 w-3.5 text-teal-700/70" />
+                Code (Use 123456)
+              </label>
+              <div className="relative flex items-center">
+                <input
+                  id="verificationCode"
+                  type="text"
+                  maxLength={6}
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
+                  className={fieldStyles}
+                  placeholder="000000"
+                  autoComplete="off"
+                />
+                <button 
+                  type="button"
+                  onClick={handleVerifyCode}
+                  className="absolute right-2 top-1 bottom-1 px-4 my-1 mr-1 flex items-center justify-center bg-slate-900 hover:bg-slate-800 active:scale-95 text-white rounded-lg transition-all font-semibold text-xs"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="space-y-1.5">
-          <label htmlFor="email" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
-            <Mail className="h-3.5 w-3.5 text-teal-700/70" />
-            Email Address
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className={fieldStyles}
-            placeholder="john@example.com"
-          />
-        </div>
-      </div>
+        <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <label htmlFor="fullName" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+              <User className="h-3.5 w-3.5 text-teal-700/70" />
+              Full Name
+            </label>
+            <input
+              id="fullName"
+              name="fullName"
+              type="text"
+              disabled={!isEmailVerified}
+              value={formData.fullName}
+              onChange={handleChange}
+              required
+              className={`${fieldStyles} ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : ''}`}
+              placeholder="John Doe"
+            />
+          </div>
 
-      <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <label htmlFor="phone" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
-            <Phone className="h-3.5 w-3.5 text-teal-700/70" />
-            Phone Number
-          </label>
-          <input
-            id="phone"
-            name="phone"
-            type="tel"
-            value={formData.phone}
-            onChange={handleChange}
-            className={fieldStyles}
-            placeholder="+1 (555) 000-0000"
-          />
+          <div className="space-y-1.5">
+            <label htmlFor="phone" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+              <Phone className="h-3.5 w-3.5 text-teal-700/70" />
+              Phone Number
+            </label>
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              disabled={!isEmailVerified}
+              value={formData.phone}
+              onChange={(e) => {
+                handleChange(e);
+                if (phoneError) setPhoneError('');
+              }}
+              onBlur={(e) => {
+                if (e.target.value) validatePhone(e.target.value);
+              }}
+              className={`${fieldStyles} ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : ''} ${phoneError ? 'ring-rose-500 border-rose-500 focus:ring-rose-500 text-rose-900 bg-rose-50/50' : ''}`}
+              placeholder="+1 (555) 000-0000"
+            />
+            {phoneError && (
+              <p className="mt-1.5 text-[11px] font-semibold text-rose-500 animate-in fade-in slide-in-from-top-1">
+                {phoneError}
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="space-y-1.5">
@@ -237,8 +357,9 @@ export default function EmploymentForm() {
             <button
               id="specializations"
               type="button"
+              disabled={!isEmailVerified}
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className={`${fieldStyles} flex min-h-[52px] items-center justify-between text-left cursor-pointer`}
+              className={`${fieldStyles} flex min-h-[52px] items-center justify-between text-left ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : 'cursor-pointer'}`}
             >
               <div className="flex flex-wrap gap-1.5 overflow-hidden">
                 {selectedSpecializationLabels.length === 0 ? (
@@ -324,11 +445,12 @@ export default function EmploymentForm() {
         <textarea
           id="coverLetter"
           name="coverLetter"
+          disabled={!isEmailVerified}
           value={formData.coverLetter}
           onChange={handleChange}
           rows={4}
           required
-          className={`${fieldStyles} resize-none`}
+          className={`${fieldStyles} resize-none ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : ''}`}
           placeholder="Why are you a good fit for Help On Call?"
         />
       </div>
@@ -342,14 +464,16 @@ export default function EmploymentForm() {
           <input
             type="file"
             id="resume"
+            disabled={!isEmailVerified}
             onChange={handleFileChange}
-            className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+            className={`absolute inset-0 z-10 h-full w-full opacity-0 ${!isEmailVerified ? 'pointer-events-none' : 'cursor-pointer'}`}
             accept=".pdf,.doc,.docx"
             required={!formData.resume}
           />
           <div className={`
             flex items-center justify-center rounded-2xl border-2 border-dashed px-4 py-4 transition-all duration-300
-            ${formData.resume
+            ${!isEmailVerified ? 'border-slate-200 bg-slate-50/50 opacity-50' : 
+              formData.resume
               ? 'border-teal-700 bg-teal-50/30'
               : 'border-slate-200 bg-slate-50/50 hover:border-teal-400 hover:bg-white hover:shadow-xl hover:shadow-teal-500/5 hover:-translate-y-0.5'}
           `}>
@@ -409,8 +533,8 @@ export default function EmploymentForm() {
 
       <button
         type="submit"
-        disabled={isSubmitting}
-        className="btn-primary w-full"
+        disabled={isSubmitting || !isEmailVerified}
+        className={`btn-primary w-full ${!isEmailVerified ? 'opacity-50 pointer-events-none' : ''}`}
       >
         {isSubmitting ? 'Sending Application...' : 'Submit Application'}
       </button>
