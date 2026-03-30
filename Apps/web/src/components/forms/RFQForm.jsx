@@ -302,7 +302,7 @@ export default function RFQForm({ onCancel }) {
                 name="address"
                 id="address"
                 disabled={!isEmailVerified}
-                placeholder="Enter full address where service is required"
+                placeholder="Enter Full Address Where Service Is Required Along With Pincode"
                 value={formData.address}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -408,7 +408,7 @@ export default function RFQForm({ onCancel }) {
                   type="number"
                   name="durationValue"
                   disabled={!isEmailVerified}
-                  placeholder="Val"
+                  placeholder="Enter Number Of"
                   value={formData.durationValue}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -481,7 +481,7 @@ export default function RFQForm({ onCancel }) {
                       type="text"
                       name="personName"
                       disabled={!isEmailVerified}
-                      placeholder="Full Name"
+                      placeholder="Recipient Name"
                       value={formData.personName}
                       onChange={handleChange}
                       onBlur={handleBlur}

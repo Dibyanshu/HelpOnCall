@@ -1,5 +1,6 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import { Check, ChevronDown, Info, X } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -16,6 +17,17 @@ export default function ServiceCategorySelect({ value = [], onChange, fieldStyle
   const [serviceGroups, setServiceGroups] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const dropdownRef = useRef(null);
+
+  // Map each service label to its icon for quick lookup in chips
+  const serviceIconMap = useMemo(() => {
+    const map = {};
+    serviceGroups.forEach(group => {
+      group.features.forEach(feat => {
+        map[feat.label] = feat.icon;
+      });
+    });
+    return map;
+  }, [serviceGroups]);
 
   useEffect(() => {
     async function loadServices() {
@@ -66,23 +78,28 @@ export default function ServiceCategorySelect({ value = [], onChange, fieldStyle
         >
           <div className="flex flex-wrap gap-1.5">
             {value.length === 0 ? (
-              <span className="text-gray-400">Select services...</span>
+              <span className="text-gray-400">Select Services You Need</span>
             ) : (
-              value.map((cat) => (
-                <span
-                  key={cat}
-                  className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-bold text-teal-700 border border-teal-100/50"
-                >
-                  {cat}
-                  <X
-                    className="h-3 w-3 hover:text-teal-900 cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleOption(cat);
-                    }}
-                  />
-                </span>
-              ))
+              value.map((cat) => {
+                const iconName = serviceIconMap[cat];
+                const Icon = LucideIcons[iconName] || LucideIcons.HelpCircle;
+                return (
+                  <span
+                    key={cat}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-2.5 py-1 text-xs font-bold text-teal-700 border border-teal-100/50 shadow-sm"
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {cat}
+                    <X
+                      className="h-3 w-3 hover:text-teal-900 cursor-pointer ml-0.5"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleOption(cat);
+                      }}
+                    />
+                  </span>
+                );
+              })
             )}
           </div>
           <ChevronDown
@@ -91,9 +108,11 @@ export default function ServiceCategorySelect({ value = [], onChange, fieldStyle
         </button>
 
         {isOpen && (
-          <div className="absolute z-[70] mt-2 w-full max-h-80 overflow-y-auto rounded-xl bg-white p-2 shadow-2xl ring-1 ring-black/5">
+          <div className="absolute z-[70] mt-2 w-full max-h-80 overflow-y-auto rounded-xl bg-white p-2 shadow-2xl ring-1 ring-black/5 animate-in fade-in zoom-in-95 duration-200">
             {isLoading ? (
-              <p className="px-4 py-3 text-sm text-gray-400">Loading services...</p>
+              <div className="flex items-center justify-center py-8">
+                <LucideIcons.Loader2 className="h-6 w-6 animate-spin text-teal-600/50" />
+              </div>
             ) : serviceGroups.length === 0 ? (
               <p className="px-4 py-3 text-sm text-gray-400">No services available</p>
             ) : (
@@ -107,6 +126,8 @@ export default function ServiceCategorySelect({ value = [], onChange, fieldStyle
                   <div className="space-y-1">
                     {group.features.map((option) => {
                       const isSelected = value.includes(option.label);
+                      const IconComponent = LucideIcons[option.icon] || LucideIcons.HelpCircle;
+
                       return (
                         <button
                           key={option.serviceId}
@@ -117,7 +138,10 @@ export default function ServiceCategorySelect({ value = [], onChange, fieldStyle
                             : 'text-gray-700 hover:bg-gray-50/80'
                             }`}
                         >
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2.5">
+                            <div className={`p-1.5 rounded-md ${isSelected ? 'bg-teal-100/50' : 'bg-gray-100/50'}`}>
+                              <IconComponent className={`h-4 w-4 shrink-0 ${isSelected ? 'text-teal-600' : 'text-gray-400'}`} />
+                            </div>
                             <span>{option.label}</span>
                           </div>
                           <div className="flex items-center gap-2">
@@ -132,6 +156,7 @@ export default function ServiceCategorySelect({ value = [], onChange, fieldStyle
             )}
           </div>
         )}
+
       </div>
     </div>
   );

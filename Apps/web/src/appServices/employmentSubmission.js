@@ -48,6 +48,7 @@ function normalizeServiceGroups(data) {
                 label,
                 categoryId,
                 serviceId,
+                icon: typeof feature.icon === 'string' ? feature.icon : null,
               };
             })
             .filter(Boolean)
