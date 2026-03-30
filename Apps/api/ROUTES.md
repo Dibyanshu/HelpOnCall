@@ -1269,6 +1269,406 @@ Notes:
 
 ---
 
+<a id="services-list-admin-categories"></a>
+### 9.8) List Service Categories (Admin/Super Admin)
+
+### Request
+
+- Method: `GET`
+- URL: `{{baseUrl}}/api/v1/admin/service-categories`
+- Auth: Bearer Token -> `{{accessToken}}`
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/admin/service-categories' \
+--header 'Authorization: Bearer {{accessToken}}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "Household Chores",
+      "displayOrder": 0,
+      "createdBy": "super_admin",
+      "createdAt": "2026-03-15T10:00:00.000Z",
+      "updatedAt": "2026-03-15T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+<a id="services-list-admin-services"></a>
+### 9.9) List Services (Admin/Super Admin)
+
+### Request
+
+- Method: `GET`
+- URL: `{{baseUrl}}/api/v1/admin/services`
+- Auth: Bearer Token -> `{{accessToken}}`
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/admin/services' \
+--header 'Authorization: Bearer {{accessToken}}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "data": [
+    {
+      "id": 20,
+      "categoryId": 1,
+      "label": "Post-op support",
+      "desc": "Assistance after surgery.",
+      "image": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "icon": "HeartPulse",
+      "displayOrder": 4,
+      "createdBy": "admin",
+      "createdAt": "2026-03-15T10:00:00.000Z",
+      "updatedAt": "2026-03-15T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+## 10) Email Templates CRUD (Super Admin)
+
+<a id="email-templates-list"></a>
+### 10.1) List Email Templates
+
+### Request
+
+- Method: `GET`
+- URL: `{{baseUrl}}/api/v1/admin/email-templates?module=employee&isActive=true&search=verification`
+- Auth: Bearer Token -> `{{accessToken}}`
+
+Optional query params:
+
+- `module`: `employee`, `user_registration`, `rfq`
+- `isActive`: `true` or `false`
+- `search`: partial match on `templateKey` or `description`
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/admin/email-templates?module=employee&isActive=true&search=verification' \
+--header 'Authorization: Bearer {{accessToken}}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "templateKey": "email_verification_code",
+      "module": "employee",
+      "channel": "email",
+      "subjectTemplate": "Your verification code",
+      "textTemplate": "Code: {{code}}",
+      "htmlTemplate": "<p>Code: <strong>{{code}}</strong></p>",
+      "variablesSchema": "{\"code\":\"string\"}",
+      "description": "Employment email verification",
+      "isActive": true,
+      "createdBy": "super_admin",
+      "createdAt": "2026-03-20T12:00:00.000Z",
+      "updatedAt": "2026-03-20T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+<a id="email-templates-get"></a>
+### 10.2) Get Email Template By ID
+
+### Request
+
+- Method: `GET`
+- URL: `{{baseUrl}}/api/v1/admin/email-templates/:id`
+- Auth: Bearer Token -> `{{accessToken}}`
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/admin/email-templates/1' \
+--header 'Authorization: Bearer {{accessToken}}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "data": {
+    "id": 1,
+    "templateKey": "email_verification_code",
+    "module": "employee",
+    "channel": "email",
+    "subjectTemplate": "Your verification code",
+    "textTemplate": "Code: {{code}}",
+    "htmlTemplate": "<p>Code: <strong>{{code}}</strong></p>",
+    "variablesSchema": "{\"code\":\"string\"}",
+    "description": "Employment email verification",
+    "isActive": true,
+    "createdBy": "super_admin",
+    "createdAt": "2026-03-20T12:00:00.000Z",
+    "updatedAt": "2026-03-20T12:00:00.000Z"
+  }
+}
+```
+
+---
+
+<a id="email-templates-create"></a>
+### 10.3) Create Email Template
+
+### Request
+
+- Method: `POST`
+- URL: `{{baseUrl}}/api/v1/admin/email-templates`
+- Auth: Bearer Token -> `{{accessToken}}`
+- Header: `Content-Type: application/json`
+
+Body (raw JSON):
+
+```json
+{
+  "templateKey": "rfq_submission_ack",
+  "module": "rfq",
+  "channel": "email",
+  "subjectTemplate": "We received your quote request",
+  "textTemplate": "Hi {{name}}, we received your request.",
+  "htmlTemplate": "<p>Hi {{name}}, we received your request.</p>",
+  "variablesSchema": "{\"name\":\"string\"}",
+  "description": "RFQ acknowledgement",
+  "isActive": true
+}
+```
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/admin/email-templates' \
+--header 'Authorization: Bearer {{accessToken}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "templateKey": "rfq_submission_ack",
+  "module": "rfq",
+  "channel": "email",
+  "subjectTemplate": "We received your quote request",
+  "textTemplate": "Hi {{name}}, we received your request.",
+  "htmlTemplate": "<p>Hi {{name}}, we received your request.</p>",
+  "variablesSchema": "{\"name\":\"string\"}",
+  "description": "RFQ acknowledgement",
+  "isActive": true
+}'
+```
+
+### Success Response (201)
+
+```json
+{
+  "message": "Email template created successfully",
+  "data": {
+    "id": 7,
+    "templateKey": "rfq_submission_ack",
+    "module": "rfq",
+    "channel": "email",
+    "isActive": true,
+    "createdBy": "super_admin",
+    "createdAt": "2026-03-20T13:00:00.000Z",
+    "updatedAt": "2026-03-20T13:00:00.000Z"
+  }
+}
+```
+
+---
+
+<a id="email-templates-update"></a>
+### 10.4) Update Email Template
+
+### Request
+
+- Method: `PATCH`
+- URL: `{{baseUrl}}/api/v1/admin/email-templates/:id`
+- Auth: Bearer Token -> `{{accessToken}}`
+- Header: `Content-Type: application/json`
+
+Body (raw JSON, at least one field required):
+
+```json
+{
+  "description": "RFQ acknowledgement email",
+  "isActive": true
+}
+```
+
+### cURL
+
+```bash
+curl --location --request PATCH '{{baseUrl}}/api/v1/admin/email-templates/7' \
+--header 'Authorization: Bearer {{accessToken}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "description": "RFQ acknowledgement email",
+  "isActive": true
+}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "message": "Email template updated successfully",
+  "data": {
+    "id": 7,
+    "templateKey": "rfq_submission_ack",
+    "module": "rfq",
+    "channel": "email",
+    "description": "RFQ acknowledgement email",
+    "isActive": true,
+    "updatedAt": "2026-03-20T13:10:00.000Z"
+  }
+}
+```
+
+---
+
+<a id="email-templates-delete"></a>
+### 10.5) Deactivate Email Template
+
+### Request
+
+- Method: `DELETE`
+- URL: `{{baseUrl}}/api/v1/admin/email-templates/:id`
+- Auth: Bearer Token -> `{{accessToken}}`
+
+### cURL
+
+```bash
+curl --location --request DELETE '{{baseUrl}}/api/v1/admin/email-templates/7' \
+--header 'Authorization: Bearer {{accessToken}}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "message": "Email template deactivated successfully",
+  "data": {
+    "id": 7,
+    "templateKey": "rfq_submission_ack",
+    "isActive": false,
+    "updatedAt": "2026-03-20T13:20:00.000Z"
+  }
+}
+```
+
+---
+
+<a id="email-templates-test-send"></a>
+### 10.6) Test Send Email Template
+
+### Request
+
+- Method: `POST`
+- URL: `{{baseUrl}}/api/v1/admin/email-templates/:id/test-send`
+- Auth: Bearer Token -> `{{accessToken}}`
+- Header: `Content-Type: application/json`
+
+Body (raw JSON):
+
+```json
+{
+  "to": "qa@example.com",
+  "data": {
+    "name": "QA User",
+    "code": "123456"
+  }
+}
+```
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/admin/email-templates/1/test-send' \
+--header 'Authorization: Bearer {{accessToken}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "to": "qa@example.com",
+  "data": {
+    "name": "QA User",
+    "code": "123456"
+  }
+}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "message": "Test email sent successfully"
+}
+```
+
+Notes:
+
+- All email template endpoints require role `super_admin`.
+
+---
+
+## 11) Testimonials
+
+<a id="testimonials-list"></a>
+### 11.1) List Active Testimonials (Public)
+
+### Request
+
+- Method: `GET`
+- URL: `{{baseUrl}}/api/v1/testimonials`
+- Auth: None
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/testimonials'
+```
+
+### Success Response (200)
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "customerName": "Jane Doe",
+      "customerEmail": "jane@example.com",
+      "message": "Excellent and compassionate care.",
+      "rating": 5,
+      "profilePic": "https://example.com/profile/jane.jpg",
+      "createdOn": "2026-03-10T10:00:00.000Z",
+      "status": "active"
+    }
+  ]
+}
+```
+
+---
+
 ## Suggested Postman Run Order
 
 1. `Health Check`
