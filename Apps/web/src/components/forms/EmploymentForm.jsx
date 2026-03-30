@@ -162,6 +162,11 @@ export default function EmploymentForm() {
       return;
     }
     setIsVerifyingEmail(true);
+    // Use a custom hook to talk to the backend
+    // Step-1: send the verification code to the user's email
+    // Step-2: user will enter the code and we will verify it on the backend
+    // The newly built custom hook will handle both steps and return the status to the component
+    // So that later we can reuse the same hook for other forms that require email verification
     toast.success('Verification code has been sent. Check your email.', { duration: 4000 });
   };
 
