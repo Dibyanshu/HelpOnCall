@@ -515,7 +515,7 @@ export default function RFQForm({ onCancel }) {
             {/* Consent Checkbox Section */}
             <div className="space-y-3">
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                <p className="text-[10px] leading-relaxed text-slate-500 text text-justify">
+                <p className="text-sm leading-relaxed text-slate-500 text text-justify">
                   By submitting this form, you provide your consent for Help On Call to collect and use the information provided, strictly for the purpose of assessing your needs and delivering the requested care services.
                   <span className="font-bold"> Your information will not be disclosed for any other purpose beyond service delivery.</span>
                 </p>
