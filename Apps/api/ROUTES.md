@@ -15,6 +15,11 @@ Optional variables:
 
 - `accessToken` = paste JWT from login response
 
+Last synced:
+
+- Endpoint definitions synced with README.md on 2026-04-01.
+- Timestamp: 2026-04-01 01:48:21 IST.
+
 ---
 
 ## 1) Health Check
