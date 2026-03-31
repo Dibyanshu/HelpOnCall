@@ -103,12 +103,12 @@ export default function ServiceCategorySelect({
             )}
           </div>
           <ChevronDown
-            className={`h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+            className={`h-4 w-4 shrink-0 text-gray-400 ${isOpen ? 'rotate-180' : ''}`}
           />
         </button>
 
         {isOpen && (
-          <div className="absolute z-[70] mt-2 w-full max-h-80 overflow-y-auto rounded-xl bg-white p-2 shadow-2xl ring-1 ring-black/5 animate-in fade-in zoom-in-95 duration-200">
+          <div className="absolute z-[70] mt-2 w-full max-h-80 overflow-y-auto rounded-xl bg-white p-2 shadow-2xl ring-1 ring-black/5">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <LucideIcons.Loader2 className="h-6 w-6 animate-spin text-teal-600/50" />
