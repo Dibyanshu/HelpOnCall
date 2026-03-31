@@ -1711,7 +1711,7 @@ Notes:
 
 - `preferredContact` allowed values: `email`, `phone`, `any`.
 - `durationType` allowed values: `Day`, `Week`, `Month`.
-- `serviceSelected` is a JSON object.
+- `serviceSelected` is a JSON array of objects, e.g. `[{"categoryId":1,"serviceId":2}]`.
 - `startDate` should be an ISO 8601 date string.
 
 ### cURL

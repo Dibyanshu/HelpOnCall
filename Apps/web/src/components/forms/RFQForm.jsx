@@ -3,6 +3,7 @@ import { Check, ChevronDown, Calendar, Clock, MapPin, User, Mail, Phone, Navigat
 import ServiceCategorySelect from '../common/ServiceCategorySelect';
 import EmailAddressValidation from '../common/EmailAddressValidation';
 import { validateEmail, validatePhone, validateRequired } from '../../utils/validation';
+import { useRFQS } from '../../appServices/useRFQS';
 
 const relations = ['Spouse', 'Parent', 'Child', 'Sibling', 'Grandparent', 'Friend', 'Uncle', 'Aunt', 'Cousin', 'Niece', 'Nephew'];
 
@@ -46,8 +47,13 @@ export default function RFQForm({ onCancel }) {
 
   const [errors, setErrors] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const {
+    isSubmitting,
+    errorMessage: submitErrorMessage,
+    setErrorMessage: setSubmitErrorMessage,
+    submitRFQ,
+  } = useRFQS();
 
   const validateField = (name, value, currentFormData = formData) => {
     let error = '';
@@ -134,6 +140,10 @@ export default function RFQForm({ onCancel }) {
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
+
+    if (submitErrorMessage) {
+      setSubmitErrorMessage('');
+    }
   };
 
   const handleBlur = (e) => {
@@ -179,11 +189,12 @@ export default function RFQForm({ onCancel }) {
       serviceCategories: normalizeServiceSelections(formData.serviceCategories),
     };
 
-    setIsSubmitting(true);
-    // Simulate API call for premium feel
-    await new Promise(r => setTimeout(r, 1200));
-    console.log('Form submitted:', payload);
-    setIsSubmitting(false);
+    const result = await submitRFQ(payload);
+
+    if (!result.ok) {
+      return;
+    }
+
     setIsSubmitted(true);
   };
 
@@ -203,7 +214,7 @@ export default function RFQForm({ onCancel }) {
         <h2 className="text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">Request Received!</h2>
         <div className="space-y-6 max-w-lg mx-auto">
           <p className="text-xl text-slate-600 font-medium leading-relaxed">
-            Your application for a personal statement has been logged in our premium care system.
+            Your request for a personal service has been logged in our premium care system.
           </p>
           <div className="bg-slate-50 border border-slate-100 p-6 rounded-2xl">
             <p className="text-gray-700">
@@ -571,6 +582,12 @@ export default function RFQForm({ onCancel }) {
         </div>
 
         {/* Global Action Terminal */}
+        {submitErrorMessage && (
+          <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+            {submitErrorMessage}
+          </div>
+        )}
+
         <div className="flex items-center justify-end gap-4 pt-3 border-t border-gray-100">
           <button
             type="button"

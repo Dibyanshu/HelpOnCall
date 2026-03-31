@@ -130,7 +130,7 @@ const RFQS_TABLE_DDL = sql`
     phone TEXT NOT NULL,
     address TEXT NOT NULL,
     preferred_contact TEXT NOT NULL CHECK (preferred_contact IN ('email', 'phone', 'any')),
-    service_selected TEXT NOT NULL, -- JSON
+    service_selected TEXT NOT NULL CHECK (json_valid(service_selected) AND json_type(service_selected) = 'array'),
     start_date INTEGER NOT NULL, -- Timestamp
     duration_val INTEGER NOT NULL,
     duration_type TEXT NOT NULL CHECK (duration_type IN ('Day', 'Week', 'Month')),

@@ -3,14 +3,19 @@ import { z } from "zod";
 import { db } from "../db/index.js";
 import { rfqs } from "../db/schema.js";
 
+const serviceSelectionSchema = z.object({
+  categoryId: z.number().int().positive(),
+  serviceId: z.number().int().positive(),
+});
+
 const rfqSchema = z.object({
   email: z.string().email(),
   fullName: z.string().min(1),
   phone: z.string().min(1),
   address: z.string().min(1),
   preferredContact: z.enum(["email", "phone", "any"]),
-  serviceSelected: z.record(z.any()),
-  startDate: z.string().transform((str) => new Date(str)),
+  serviceSelected: z.array(serviceSelectionSchema).min(1),
+  startDate: z.string().datetime().transform((str) => new Date(str)),
   durationVal: z.number().positive(),
   durationType: z.enum(["Day", "Week", "Month"]),
   selfCare: z.boolean(),

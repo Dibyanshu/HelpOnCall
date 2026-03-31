@@ -90,6 +90,11 @@ export const emailValidator = sqliteTable("email_validator", {
 
 export const EMAIL_TEMPLATE_MODULE_VALUES = ["employee", "user_registration", "rfq", "system"] as const;
 
+export type RfqServiceSelection = {
+  categoryId: number;
+  serviceId: number;
+};
+
 export const emailTemplates = sqliteTable("email_templates", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   templateKey: text("template_key").notNull().unique(),
@@ -120,7 +125,7 @@ export const rfqs = sqliteTable("rfqs", {
   phone: text("phone").notNull(),
   address: text("address").notNull(),
   preferredContact: text("preferred_contact", { enum: ["email", "phone", "any"] }).notNull(),
-  serviceSelected: text("service_selected", { mode: "json" }).notNull(),
+  serviceSelected: text("service_selected", { mode: "json" }).$type<RfqServiceSelection[]>().notNull(),
   startDate: integer("start_date", { mode: "timestamp" }).notNull(),
   durationVal: integer("duration_val").notNull(),
   durationType: text("duration_type", { enum: ["Day", "Week", "Month"] }).notNull(),
