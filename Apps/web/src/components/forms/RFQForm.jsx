@@ -6,6 +6,26 @@ import { validateEmail, validatePhone, validateRequired } from '../../utils/vali
 
 const relations = ['Spouse', 'Parent', 'Child', 'Sibling', 'Grandparent', 'Friend', 'Uncle', 'Aunt', 'Cousin', 'Niece', 'Nephew'];
 
+function isServiceSelection(item) {
+  return (
+    item &&
+    typeof item === 'object' &&
+    Number.isInteger(item.categoryId) &&
+    Number.isInteger(item.serviceId)
+  );
+}
+
+function normalizeServiceSelections(items) {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
+  return items.filter(isServiceSelection).map((item) => ({
+    categoryId: item.categoryId,
+    serviceId: item.serviceId,
+  }));
+}
+
 export default function RFQForm({ onCancel }) {
   const [formData, setFormData] = useState({
     fullName: '',
@@ -153,10 +173,16 @@ export default function RFQForm({ onCancel }) {
       setErrors(prev => ({ ...prev, email: 'Email verification is required to submit' }));
       return;
     }
+
+    const payload = {
+      ...formData,
+      serviceCategories: normalizeServiceSelections(formData.serviceCategories),
+    };
+
     setIsSubmitting(true);
     // Simulate API call for premium feel
     await new Promise(r => setTimeout(r, 1200));
-    console.log('Form submitted:', formData);
+    console.log('Form submitted:', payload);
     setIsSubmitting(false);
     setIsSubmitted(true);
   };
@@ -346,7 +372,9 @@ export default function RFQForm({ onCancel }) {
                 value={formData.serviceCategories}
                 disabled={!isEmailVerified}
                 onChange={(next) => {
-                  setFormData((prev) => ({ ...prev, serviceCategories: next }));
+                  const normalizedNext = normalizeServiceSelections(next);
+
+                  setFormData((prev) => ({ ...prev, serviceCategories: normalizedNext }));
                   if (errors.serviceCategories && next.length > 0) {
                     setErrors(prev => ({ ...prev, serviceCategories: '' }));
                   }

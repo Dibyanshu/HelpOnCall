@@ -5,11 +5,28 @@ import * as LucideIcons from 'lucide-react';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 /**
+ * @typedef {{ categoryId: number, serviceId: number }} ServiceSelection
+ */
+
+function isServiceSelection(item) {
+  return (
+    item &&
+    typeof item === 'object' &&
+    Number.isInteger(item.categoryId) &&
+    Number.isInteger(item.serviceId)
+  );
+}
+
+function getSelectionKey(categoryId, serviceId) {
+  return `${categoryId}:${serviceId}`;
+}
+
+/**
  * ServiceCategorySelect
  *
  * Props:
- *  - value: string[]          — currently selected labels
- *  - onChange: (next: string[]) => void  — called with the updated selection
+ *  - value: ServiceSelection[] — currently selected service references
+ *  - onChange: (next: ServiceSelection[]) => void — called with the updated selection
  *  - fieldStyles: string      — shared input class string from the parent form
  *  - disabled: boolean
  *  - label: string            — optional label above input fields
@@ -31,6 +48,19 @@ export default function ServiceCategorySelect({
   const [serviceGroups, setServiceGroups] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const dropdownRef = useRef(null);
+  const selectedValues = Array.isArray(value) ? value.filter(isServiceSelection) : [];
+
+  const labelBySelection = new Map();
+  for (const group of serviceGroups) {
+    if (!group || !Array.isArray(group.features)) continue;
+
+    for (const option of group.features) {
+      labelBySelection.set(
+        getSelectionKey(group.categoryId, option.serviceId),
+        option.label
+      );
+    }
+  }
 
   useEffect(() => {
     async function loadServices() {
@@ -58,10 +88,18 @@ export default function ServiceCategorySelect({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const toggleOption = (option) => {
-    const next = value.includes(option)
-      ? value.filter((item) => item !== option)
-      : [...value, option];
+  const toggleOption = (categoryId, serviceId) => {
+    const nextItem = { categoryId, serviceId };
+    const isSelected = selectedValues.some(
+      (item) => item.categoryId === categoryId && item.serviceId === serviceId
+    );
+
+    const next = isSelected
+      ? selectedValues.filter(
+        (item) => !(item.categoryId === categoryId && item.serviceId === serviceId)
+      )
+      : [...selectedValues, nextItem];
+
     onChange(next);
   };
 
@@ -82,24 +120,30 @@ export default function ServiceCategorySelect({
           className={`${fieldStyles} flex min-h-[80px] bg-white items-center justify-between text-left ${disabled ? 'opacity-50 cursor-not-allowed grayscale bg-slate-50' : 'cursor-pointer'}`}
         >
           <div className="flex flex-wrap gap-1.5">
-            {value.length === 0 ? (
+            {selectedValues.length === 0 ? (
               <span className="text-gray-400">{placeholder}</span>
             ) : (
-              value.map((val) => (
+              selectedValues.map((item) => {
+                const chipKey = getSelectionKey(item.categoryId, item.serviceId);
+                const chipLabel =
+                  labelBySelection.get(chipKey) || `Category ${item.categoryId} / Service ${item.serviceId}`;
+
+                return (
                 <span
-                  key={val}
+                  key={chipKey}
                   className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-2.5 py-1 text-xs font-bold text-teal-700 border border-teal-100/50 shadow-sm"
                 >
-                  {val}
+                  {chipLabel}
                   <X
                     className="h-3 w-3 hover:text-teal-900 cursor-pointer ml-0.5"
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleOption(val);
+                      toggleOption(item.categoryId, item.serviceId);
                     }}
                   />
                 </span>
-              ))
+                );
+              })
             )}
           </div>
           <ChevronDown
@@ -125,14 +169,16 @@ export default function ServiceCategorySelect({
                   </h3>
                   <div className="space-y-1">
                     {group.features.map((option) => {
-                      const isSelected = value.includes(option.label);
+                      const isSelected = selectedValues.some(
+                        (item) => item.categoryId === group.categoryId && item.serviceId === option.serviceId
+                      );
                       const IconComponent = LucideIcons[option.icon] || LucideIcons.HelpCircle;
 
                       return (
                         <button
                           key={option.serviceId}
                           type="button"
-                          onClick={() => toggleOption(option.label)}
+                          onClick={() => toggleOption(group.categoryId, option.serviceId)}
                           className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors cursor-pointer ${isSelected
                             ? 'bg-teal-50 text-teal-700 font-bold'
                             : 'text-gray-700 hover:bg-gray-50/80'

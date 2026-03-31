@@ -8,6 +8,26 @@ import ServiceCategorySelect from '../common/ServiceCategorySelect';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
+function isServiceSelection(item) {
+  return (
+    item &&
+    typeof item === 'object' &&
+    Number.isInteger(item.categoryId) &&
+    Number.isInteger(item.serviceId)
+  );
+}
+
+function normalizeServiceSelections(items) {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
+  return items.filter(isServiceSelection).map((item) => ({
+    categoryId: item.categoryId,
+    serviceId: item.serviceId,
+  }));
+}
+
 const initialFormData = {
   fullName: '',
   email: '',
@@ -44,6 +64,13 @@ export default function EmploymentForm() {
     e.preventDefault();
     setSubmitError('');
 
+    const normalizedSpecializations = normalizeServiceSelections(formData.specializations);
+
+    if (normalizedSpecializations.length === 0) {
+      setSubmitError('Please select at least one specialization before submitting.');
+      return;
+    }
+
     if (!formData.resume) {
       setSubmitError('Please upload your resume before submitting.');
       return;
@@ -54,7 +81,10 @@ export default function EmploymentForm() {
     try {
       await submitEmploymentApplication({
         apiBaseUrl: API_BASE_URL,
-        formData,
+        formData: {
+          ...formData,
+          specializations: normalizedSpecializations,
+        },
       });
 
       setIsSubmitted(true);
@@ -167,15 +197,16 @@ export default function EmploymentForm() {
           )}
         </div>
       </div>
-
       <ServiceCategorySelect
         label="Specializations"
         icon={Briefcase}
         placeholder="Select Specializations"
         value={formData.specializations}
-        disabled={!isEmailVerified}
         onChange={(next) => {
-          setFormData((prev) => ({ ...prev, specializations: next }));
+          setFormData((prev) => ({
+            ...prev,
+            specializations: normalizeServiceSelections(next),
+          }));
         }}
         fieldStyles={fieldStyles}
       />
