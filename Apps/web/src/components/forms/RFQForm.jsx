@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Check, ChevronDown, Calendar, Clock, MapPin, User, Mail, Phone, Navigation, UsersRound, Loader2, AlertCircle } from 'lucide-react';
+import { Check, ChevronDown, Calendar, Clock, MapPin, User, Mail, Phone, Navigation, UsersRound, Loader2, AlertCircle, Info } from 'lucide-react';
 import ServiceCategorySelect from '../common/ServiceCategorySelect';
 import EmailAddressValidation from '../common/EmailAddressValidation';
 import { validateEmail, validatePhone, validateRequired } from '../../utils/validation';
