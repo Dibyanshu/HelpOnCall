@@ -1,13 +1,32 @@
-import { useState, useRef, useEffect } from 'react';
-import { Upload, CheckCircle2, ChevronDown, X, Briefcase, Check, User, Mail, Phone, Send, KeyRound } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Upload, CheckCircle2, X, Briefcase, User, Phone } from 'lucide-react';
 import { useToast } from '../common/Toast';
-import {
-  fetchEmploymentSpecializationGroups,
-  submitEmploymentApplication,
-} from '../../appServices/employmentSubmission';
-import { validateEmail as utilValidateEmail, validatePhone as utilValidatePhone } from '../../utils/validation';
+import { submitEmploymentApplication } from '../../appServices/employmentSubmission';
+import { validatePhone as utilValidatePhone } from '../../utils/validation';
+import EmailAddressValidation from '../common/EmailAddressValidation';
+import ServiceCategorySelect from '../common/ServiceCategorySelect';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
+function isServiceSelection(item) {
+  return (
+    item &&
+    typeof item === 'object' &&
+    Number.isInteger(item.categoryId) &&
+    Number.isInteger(item.serviceId)
+  );
+}
+
+function normalizeServiceSelections(items) {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
+  return items.filter(isServiceSelection).map((item) => ({
+    categoryId: item.categoryId,
+    serviceId: item.serviceId,
+  }));
+}
 
 const initialFormData = {
   fullName: '',
@@ -22,92 +41,15 @@ export default function EmploymentForm() {
   const [formData, setFormData] = useState(initialFormData);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [submitError, setSubmitError] = useState('');
-  const [specializationGroups, setSpecializationGroups] = useState([]);
-  const [isLoadingSpecializations, setIsLoadingSpecializations] = useState(true);
-  
-  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
-  const [emailError, setEmailError] = useState('');
   const [phoneError, setPhoneError] = useState('');
-  
-  const dropdownRef = useRef(null);
+
   const toast = useToast();
-
-  const selectedSpecializationLabels = formData.specializations.map((selection) => {
-    const match = specializationGroups
-      .flatMap((group) => group.options)
-      .find((option) => (
-        option.categoryId === selection.categoryId && option.serviceId === selection.serviceId
-      ));
-
-    return match?.label || `${selection.categoryId}:${selection.serviceId}`;
-  });
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadSpecializations() {
-      setIsLoadingSpecializations(true);
-
-      try {
-        const groups = await fetchEmploymentSpecializationGroups(API_BASE_URL);
-
-        if (!isMounted) {
-          return;
-        }
-
-        setSpecializationGroups(groups);
-      } catch {
-        if (!isMounted) {
-          return;
-        }
-
-        setSpecializationGroups([]);
-      } finally {
-        if (isMounted) {
-          setIsLoadingSpecializations(false);
-        }
-      }
-    }
-
-    void loadSpecializations();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSpecToggle = (selection) => {
-    setFormData((prev) => ({
-      ...prev,
-      specializations: prev.specializations.some(
-        (item) => item.categoryId === selection.categoryId && item.serviceId === selection.serviceId,
-      )
-        ? prev.specializations.filter(
-          (item) => !(
-            item.categoryId === selection.categoryId && item.serviceId === selection.serviceId
-          ),
-        )
-        : [...prev.specializations, selection],
-    }));
   };
 
   const handleFileChange = (e) => {
@@ -122,6 +64,13 @@ export default function EmploymentForm() {
     e.preventDefault();
     setSubmitError('');
 
+    const normalizedSpecializations = normalizeServiceSelections(formData.specializations);
+
+    if (normalizedSpecializations.length === 0) {
+      setSubmitError('Please select at least one specialization before submitting.');
+      return;
+    }
+
     if (!formData.resume) {
       setSubmitError('Please upload your resume before submitting.');
       return;
@@ -132,7 +81,10 @@ export default function EmploymentForm() {
     try {
       await submitEmploymentApplication({
         apiBaseUrl: API_BASE_URL,
-        formData,
+        formData: {
+          ...formData,
+          specializations: normalizedSpecializations,
+        },
       });
 
       setIsSubmitted(true);
@@ -144,40 +96,10 @@ export default function EmploymentForm() {
     }
   };
 
-  const validateEmail = (email) => {
-    const error = utilValidateEmail(email);
-    setEmailError(error);
-    return !error;
-  };
-
   const validatePhone = (phone) => {
     const error = utilValidatePhone(phone);
     setPhoneError(error);
     return !error;
-  };
-
-  const handleSendVerification = () => {
-    if (!validateEmail(formData.email)) {
-      toast.error('Please enter a valid email address first.');
-      return;
-    }
-    setIsVerifyingEmail(true);
-    // Use a custom hook to talk to the backend
-    // Step-1: send the verification code to the user's email
-    // Step-2: user will enter the code and we will verify it on the backend
-    // The newly built custom hook will handle both steps and return the status to the component
-    // So that later we can reuse the same hook for other forms that require email verification
-    toast.success('Verification code has been sent. Check your email.', { duration: 4000 });
-  };
-
-  const handleVerifyCode = () => {
-    if (verificationCode === '123456') { // Mock logic for 123456
-      setIsVerifyingEmail(false);
-      setIsEmailVerified(true);
-      toast.success('Email verified successfully.');
-    } else {
-      toast.error('Invalid verification code.');
-    }
   };
 
   const fieldStyles = "block w-full rounded-xl border-0 py-3.5 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-100 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-700 transition-all duration-200";
@@ -221,221 +143,73 @@ export default function EmploymentForm() {
         <h3 className="text-xl font-semibold text-slate-900">Career Application</h3>
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
-        <div className={`grid gap-4 ${isVerifyingEmail ? 'sm:grid-cols-2' : 'sm:grid-cols-1'}`}> 
-          <div className="relative space-y-1.5 flex-1">
-            <label htmlFor="email" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
-              <Mail className="h-3.5 w-3.5 text-teal-700/70" />
-              Email Address
-            </label>
-            <div className="relative flex items-center">
-              <input
-                id="email"
-                name="email"
-                type="email"
-                disabled={isEmailVerified || isVerifyingEmail}
-                value={formData.email}
-                onChange={(e) => {
-                  handleChange(e);
-                  if (emailError) setEmailError('');
-                }}
-                onBlur={(e) => {
-                  if (e.target.value) validateEmail(e.target.value);
-                }}
-                required
-                className={`${fieldStyles} ${isEmailVerified || isVerifyingEmail ? 'opacity-75 bg-slate-50 cursor-not-allowed text-slate-500' : ''} ${emailError ? 'ring-rose-500 border-rose-500 focus:ring-rose-500 text-rose-900 bg-rose-50/50' : ''}`}
-                placeholder="john@example.com"
-                autoComplete="off"
-              />
-              {!isEmailVerified && !isVerifyingEmail && (
-                <button 
-                  type="button"
-                  onClick={handleSendVerification}
-                  className="absolute right-2 top-1 bottom-1 px-4 my-1 mr-1 flex items-center justify-center bg-teal-600 hover:bg-teal-700 active:scale-95 text-white rounded-lg transition-all"
-                  title="Verify Email"
-                >
-                  <Send className="h-4 w-4" />
-                </button>
-              )}
-              {isEmailVerified && (
-                <div className="absolute right-4 flex items-center gap-1.5 text-teal-600 bg-teal-50 px-3 py-1 rounded-full border border-teal-100 font-bold text-[11px] uppercase tracking-wider pointer-events-none">
-                  Verified
-                  <CheckCircle2 className="h-4 w-4" />
-                </div>
-              )}
-            </div>
-            {emailError && (
-              <p className="mt-1.5 text-[11px] font-semibold text-rose-500 animate-in fade-in slide-in-from-top-1">
-                {emailError}
-              </p>
-            )}
-          </div>
-          
-          {isVerifyingEmail && !isEmailVerified && (
-            <div className="relative space-y-1.5 flex-1 animate-in fade-in slide-in-from-right-4 duration-300">
-              <label htmlFor="verificationCode" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
-                <KeyRound className="h-3.5 w-3.5 text-teal-700/70" />
-                Code (Use 123456)
-              </label>
-              <div className="relative flex items-center">
-                <input
-                  id="verificationCode"
-                  type="text"
-                  maxLength={6}
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
-                  className={fieldStyles}
-                  placeholder="000000"
-                  autoComplete="off"
-                />
-                <button 
-                  type="button"
-                  onClick={handleVerifyCode}
-                  className="absolute right-2 top-1 bottom-1 px-4 my-1 mr-1 flex items-center justify-center bg-slate-900 hover:bg-slate-800 active:scale-95 text-white rounded-lg transition-all font-semibold text-xs"
-                >
-                  Confirm
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+      <EmailAddressValidation
+        value={formData.email}
+        onChange={(val) => setFormData(prev => ({ ...prev, email: val }))}
+        onVerifiedStatusChange={setIsEmailVerified}
+        isVerified={isEmailVerified}
+      />
 
-        <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="fullName" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
-              <User className="h-3.5 w-3.5 text-teal-700/70" />
-              Full Name
-            </label>
-            <input
-              id="fullName"
-              name="fullName"
-              type="text"
-              disabled={!isEmailVerified}
-              value={formData.fullName}
-              onChange={handleChange}
-              required
-              className={`${fieldStyles} ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : ''}`}
-              placeholder="John Doe"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="phone" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
-              <Phone className="h-3.5 w-3.5 text-teal-700/70" />
-              Phone Number
-            </label>
-            <input
-              id="phone"
-              name="phone"
-              type="tel"
-              disabled={!isEmailVerified}
-              value={formData.phone}
-              onChange={(e) => {
-                handleChange(e);
-                if (phoneError) setPhoneError('');
-              }}
-              onBlur={(e) => {
-                if (e.target.value) validatePhone(e.target.value);
-              }}
-              className={`${fieldStyles} ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : ''} ${phoneError ? 'ring-rose-500 border-rose-500 focus:ring-rose-500 text-rose-900 bg-rose-50/50' : ''}`}
-              placeholder="+1 (555) 000-0000"
-            />
-            {phoneError && (
-              <p className="mt-1.5 text-[11px] font-semibold text-rose-500 animate-in fade-in slide-in-from-top-1">
-                {phoneError}
-              </p>
-            )}
-          </div>
+      <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <label htmlFor="fullName" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+            <User className="h-3.5 w-3.5 text-teal-700/70" />
+            Full Name
+          </label>
+          <input
+            id="fullName"
+            name="fullName"
+            type="text"
+            disabled={!isEmailVerified}
+            value={formData.fullName}
+            onChange={handleChange}
+            required
+            className={`${fieldStyles} ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : ''}`}
+            placeholder="John Doe"
+          />
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="specializations" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
-            <Briefcase className="h-3.5 w-3.5 text-teal-700/70" />
-            Specializations
+          <label htmlFor="phone" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+            <Phone className="h-3.5 w-3.5 text-teal-700/70" />
+            Phone Number
           </label>
-          <div className="relative" ref={dropdownRef}>
-            <button
-              id="specializations"
-              type="button"
-              disabled={!isEmailVerified}
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className={`${fieldStyles} flex min-h-[52px] items-center justify-between text-left ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : 'cursor-pointer'}`}
-            >
-              <div className="flex flex-wrap gap-1.5 overflow-hidden">
-                {selectedSpecializationLabels.length === 0 ? (
-                  <span className="text-slate-400">Select Specializations</span>
-                ) : (
-                  formData.specializations.map((selection, index) => (
-                    <span key={`${selection.categoryId}-${selection.serviceId}`} className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2.5 py-0.5 text-[11px] font-bold text-teal-700 border border-teal-100/50 animate-in zoom-in duration-200">
-                      {selectedSpecializationLabels[index]}
-                      <X
-                        className="h-3 w-3 hover:text-teal-900 cursor-pointer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSpecToggle(selection);
-                        }}
-                      />
-                    </span>
-                  ))
-                )}
-              </div>
-              <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform duration-300 shrink-0 ml-2 ${isDropdownOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {isDropdownOpen && (
-              <div className="absolute z-20 mt-2 w-full rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-md p-2 shadow-2xl animate-in fade-in zoom-in duration-300 ring-1 ring-slate-900/5 origin-top">
-                <div className="max-h-80 overflow-y-auto p-1">
-                  {isLoadingSpecializations ? (
-                    <p className="px-3 py-3 text-sm text-slate-500">Loading specializations...</p>
-                  ) : null}
-
-                  {!isLoadingSpecializations && specializationGroups.length === 0 ? (
-                    <p className="px-3 py-3 text-sm text-slate-500">No specializations found.</p>
-                  ) : null}
-
-                  {specializationGroups.map((group) => (
-                    <div key={group.label} className="mb-4 last:mb-0 px-1">
-                      <h4 className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400/80">
-                        {group.label}
-                      </h4>
-                      <div className="space-y-1">
-                        {group.options.map((option) => {
-                          const selection = {
-                            categoryId: option.categoryId,
-                            serviceId: option.serviceId,
-                          };
-
-                          const isSelected = formData.specializations.some(
-                            (item) => (
-                              item.categoryId === selection.categoryId
-                              && item.serviceId === selection.serviceId
-                            ),
-                          );
-
-                          return (
-                            <button
-                              key={`${option.categoryId}-${option.serviceId}`}
-                              type="button"
-                              onClick={() => handleSpecToggle(selection)}
-                              className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-all duration-200 group/item ${isSelected
-                                ? 'bg-teal-50 text-teal-700 font-bold shadow-sm shadow-teal-500/5'
-                                : 'hover:bg-slate-50 text-slate-600 hover:text-slate-900'
-                                }`}
-                            >
-                              <span className="flex-1 text-left">{option.label}</span>
-                              {isSelected && <Check className="h-4 w-4 text-teal-700 animate-in zoom-in duration-200" />}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            disabled={!isEmailVerified}
+            value={formData.phone}
+            onChange={(e) => {
+              handleChange(e);
+              if (phoneError) setPhoneError('');
+            }}
+            onBlur={(e) => {
+              if (e.target.value) validatePhone(e.target.value);
+            }}
+            className={`${fieldStyles} ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : ''} ${phoneError ? 'ring-rose-500 border-rose-500 focus:ring-rose-500 text-rose-900 bg-rose-50/50' : ''}`}
+            placeholder="+1 (555) 000-0000"
+          />
+          {phoneError && (
+            <p className="mt-1.5 text-[11px] font-semibold text-rose-500 animate-in fade-in slide-in-from-top-1">
+              {phoneError}
+            </p>
+          )}
         </div>
       </div>
+      <ServiceCategorySelect
+        label="Specializations"
+        icon={Briefcase}
+        placeholder="Select Specializations"
+        value={formData.specializations}
+        onChange={(next) => {
+          setFormData((prev) => ({
+            ...prev,
+            specializations: normalizeServiceSelections(next),
+          }));
+        }}
+        fieldStyles={fieldStyles}
+      />
 
       <div className="space-y-1.5">
         <label htmlFor="coverLetter" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
@@ -472,10 +246,10 @@ export default function EmploymentForm() {
           />
           <div className={`
             flex items-center justify-center rounded-2xl border-2 border-dashed px-4 py-4 transition-all duration-300
-            ${!isEmailVerified ? 'border-slate-200 bg-slate-50/50 opacity-50' : 
+            ${!isEmailVerified ? 'border-slate-200 bg-slate-50/50 opacity-50' :
               formData.resume
-              ? 'border-teal-700 bg-teal-50/30'
-              : 'border-slate-200 bg-slate-50/50 hover:border-teal-400 hover:bg-white hover:shadow-xl hover:shadow-teal-500/5 hover:-translate-y-0.5'}
+                ? 'border-teal-700 bg-teal-50/30'
+                : 'border-slate-200 bg-slate-50/50 hover:border-teal-400 hover:bg-white hover:shadow-xl hover:shadow-teal-500/5 hover:-translate-y-0.5'}
           `}>
             {formData.resume ? (
               <div className="flex w-full items-center justify-between gap-4 animate-in fade-in duration-300">
