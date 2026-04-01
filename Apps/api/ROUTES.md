@@ -15,6 +15,11 @@ Optional variables:
 
 - `accessToken` = paste JWT from login response
 
+Last synced:
+
+- Endpoint definitions synced with README.md on 2026-04-01.
+- Timestamp: 2026-04-01 01:48:21 IST.
+
 ---
 
 ## 1) Health Check
@@ -1676,6 +1681,80 @@ curl --location '{{baseUrl}}/api/v1/testimonials'
 3. `Create User`
 4. `List Users`
 5. `Change Password`
+
+---
+
+## 22) Submit RFQ (Public)
+
+### Request
+
+- Method: `POST`
+- URL: `{{baseUrl}}/api/v1/rfqs`
+- Auth: None
+- Header: `Content-Type: application/json`
+
+Body (raw JSON):
+
+```json
+{
+  "email": "user@example.com",
+  "fullName": "John Doe",
+  "phone": "1234567890",
+  "address": "123 Main St, Toronto",
+  "preferredContact": "email",
+  "serviceSelected": [{"categoryId":1,"serviceId":2}],
+  "startDate": "2024-05-01T10:00:00Z",
+  "durationVal": 2,
+  "durationType": "Week",
+  "selfCare": true,
+  "recipientName": "Jane Doe",
+  "recipientRelation": "Mother"
+}
+```
+
+Notes:
+
+- `preferredContact` allowed values: `email`, `phone`, `any`.
+- `durationType` allowed values: `Day`, `Week`, `Month`.
+- `serviceSelected` is a JSON array of objects, e.g. `[{"categoryId":1,"serviceId":2}]`.
+- `startDate` should be an ISO 8601 date string.
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/rfqs' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "email": "user@example.com",
+  "fullName": "John Doe",
+  "phone": "1234567890",
+  "address": "123 Main St, Toronto",
+  "preferredContact": "email",
+  "serviceSelected": [{"categoryId":1,"serviceId":2}],
+  "startDate": "2024-05-01T10:00:00Z",
+  "durationVal": 2,
+  "durationType": "Week",
+  "selfCare": true,
+  "recipientName": "Jane Doe",
+  "recipientRelation": "Mother"
+}'
+```
+
+### Success Response (201)
+
+```json
+{
+  "success": true,
+  "message": "RFQ submitted successfully",
+  "data": {
+    "id": 1,
+    "rfqId": "8e4d6574-8f8f-4962-9f65-3a7c3dd67aa1",
+    "status": "new",
+    "createdAt": "2026-03-31T19:35:00.000Z",
+    "updatedAt": "2026-03-31T19:35:00.000Z"
+  }
+}
+```
 
 ---
 

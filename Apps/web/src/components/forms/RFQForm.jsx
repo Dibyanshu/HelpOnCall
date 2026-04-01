@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
-import { Check, ChevronDown, Calendar, Clock, MapPin, User, Mail, Phone, Navigation, UsersRound, Loader2, AlertCircle, Info } from 'lucide-react';
+import { Check, ChevronDown, Calendar, Clock, MapPin, User, Briefcase, Phone, Navigation, UsersRound, Loader2, AlertCircle } from 'lucide-react';
 import ServiceCategorySelect from '../common/ServiceCategorySelect';
 import EmailAddressValidation from '../common/EmailAddressValidation';
 import { validateEmail, validatePhone, validateRequired } from '../../utils/validation';
+import { useRFQS } from '../../appServices/useRFQS';
 
 const relations = ['Spouse', 'Parent', 'Child', 'Sibling', 'Grandparent', 'Friend', 'Uncle', 'Aunt', 'Cousin', 'Niece', 'Nephew'];
 
@@ -46,8 +47,13 @@ export default function RFQForm({ onCancel }) {
 
   const [errors, setErrors] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const {
+    isSubmitting,
+    errorMessage: submitErrorMessage,
+    setErrorMessage: setSubmitErrorMessage,
+    submitRFQ,
+  } = useRFQS();
 
   const validateField = (name, value, currentFormData = formData) => {
     let error = '';
@@ -134,6 +140,10 @@ export default function RFQForm({ onCancel }) {
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
+
+    if (submitErrorMessage) {
+      setSubmitErrorMessage('');
+    }
   };
 
   const handleBlur = (e) => {
@@ -179,11 +189,12 @@ export default function RFQForm({ onCancel }) {
       serviceCategories: normalizeServiceSelections(formData.serviceCategories),
     };
 
-    setIsSubmitting(true);
-    // Simulate API call for premium feel
-    await new Promise(r => setTimeout(r, 1200));
-    console.log('Form submitted:', payload);
-    setIsSubmitting(false);
+    const result = await submitRFQ(payload);
+
+    if (!result.ok) {
+      return;
+    }
+
     setIsSubmitted(true);
   };
 
@@ -194,18 +205,30 @@ export default function RFQForm({ onCancel }) {
     return postalRegex.test(text);
   };
 
+  const handleShowInMap = () => {
+    const address = formData.address.trim();
+
+    if (!address) {
+      setErrors((prev) => ({ ...prev, address: 'Street Address is required' }));
+      return;
+    }
+
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    window.open(googleMapsUrl, '_blank', 'noopener,noreferrer');
+  };
+
   if (isSubmitted) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4 text-center animate-in fade-in zoom-in duration-700">
-        <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-br from-teal-500 to-teal-700 text-white shadow-2xl shadow-teal-500/30 ring-8 ring-teal-50">
+        <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-md bg-linear-to-br from-teal-500 to-teal-700 text-white shadow-2xl shadow-teal-500/30 ring-8 ring-teal-50">
           <Check className="h-12 w-12 stroke-[3px]" />
         </div>
         <h2 className="text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">Request Received!</h2>
         <div className="space-y-6 max-w-lg mx-auto">
           <p className="text-xl text-slate-600 font-medium leading-relaxed">
-            Your application for a personal statement has been logged in our premium care system.
+            Your request for a personal service has been logged in our premium care system.
           </p>
-          <div className="bg-slate-50 border border-slate-100 p-6 rounded-2xl">
+          <div className="bg-slate-50 border border-slate-100 p-6 rounded-md">
             <p className="text-gray-700">
               A detailed confirmation and next steps have been sent to <span className="text-teal-700 font-bold">{formData.email}</span>. A care coordinator will be in touch within the next 2 hours.
             </p>
@@ -213,7 +236,7 @@ export default function RFQForm({ onCancel }) {
         </div>
         <button
           onClick={() => setIsSubmitted(false)}
-          className="mt-12 btn-secondary px-8 py-3 rounded-full text-slate-600 border-slate-200 hover:border-teal-600 hover:text-teal-700 transition-all shadow-lg shadow-black/5"
+          className="mt-12 btn-secondary px-8 py-3 rounded-md text-slate-600 border-slate-200 hover:border-teal-600 hover:text-teal-700 transition-all shadow-lg shadow-black/5"
         >
           Submit Another Request
         </button>
@@ -223,7 +246,7 @@ export default function RFQForm({ onCancel }) {
 
   const getFieldStyles = (errorName, isDisabled = false) => {
     const hasError = errors[errorName];
-    return `block w-full rounded-lg border bg-white py-2 px-3 text-slate-800 placeholder:text-gray-400 focus:outline-none transition-all duration-200 text-sm ${hasError
+    return `block w-full rounded-md border bg-white py-2 px-3 text-slate-800 placeholder:text-gray-400 focus:outline-none transition-all duration-200 text-sm ${hasError
       ? 'border-rose-400 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/10 bg-rose-50/20'
       : 'border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10'
       } ${isDisabled ? 'opacity-50 cursor-not-allowed bg-slate-50 grayscale pointer-events-none' : ''}`;
@@ -256,6 +279,7 @@ export default function RFQForm({ onCancel }) {
               }}
               onVerifiedStatusChange={setIsEmailVerified}
               isVerified={isEmailVerified}
+              verificationModule="rfq"
               className="mt-2"
             />
 
@@ -308,8 +332,9 @@ export default function RFQForm({ onCancel }) {
                 <div className="relative group flex items-center">
                   <button
                     type="button"
-                    disabled={!isEmailVerified || !hasPostalCode(formData.address)}
-                    className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-slate-200 text-slate-500 hover:border-teal-500 hover:text-teal-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all bg-white active:scale-95 shadow-sm"
+                    disabled={!isEmailVerified || !formData.address.trim() && !hasPostalCode(formData.address)}
+                    onClick={handleShowInMap}
+                    className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border border-slate-200 text-slate-500 hover:border-teal-500 hover:text-teal-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all bg-white active:scale-95 shadow-sm"
                   >
                     <MapPin className="h-3 w-3" />
                     Show In Map
@@ -345,7 +370,7 @@ export default function RFQForm({ onCancel }) {
               <label className="text-[10px] font-bold uppercase tracking-widest text-gray-700">Preferred Contact Method</label>
               <div className="grid grid-cols-3 gap-2">
                 {['email', 'phone', 'any'].map((pref) => (
-                  <label key={pref} className={`flex items-center gap-2 group bg-gray-50/50 p-2 rounded-lg border border-gray-100 transition-all ${!isEmailVerified ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'cursor-pointer hover:bg-white hover:border-teal-100'}`}>
+                  <label key={pref} className={`flex items-center gap-2 group bg-gray-50/50 p-2 rounded-md border border-gray-100 transition-all ${!isEmailVerified ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'cursor-pointer hover:bg-white hover:border-teal-100'}`}>
                     <div className="relative flex items-center justify-center shrink-0">
                       <input
                         type="radio"
@@ -356,8 +381,8 @@ export default function RFQForm({ onCancel }) {
                         onChange={handleChange}
                         className="peer sr-only"
                       />
-                      <div className="h-4 w-4 rounded-full border-2 border-slate-200 peer-checked:border-teal-600 transition-all font-bold" />
-                      <div className="absolute h-2 w-2 rounded-full bg-teal-600 opacity-0 peer-checked:opacity-100 transition-all scale-50 peer-checked:scale-100" />
+                      <div className="h-4 w-4 rounded-md border-2 border-slate-200 peer-checked:border-teal-600 transition-all font-bold" />
+                      <div className="absolute h-2 w-2 rounded-md bg-teal-600 opacity-0 peer-checked:opacity-100 transition-all scale-50 peer-checked:scale-100" />
                     </div>
                     <span className="text-[11px] font-semibold text-slate-600 group-hover:text-teal-900 capitalize transition-colors">
                       {pref}
@@ -369,6 +394,8 @@ export default function RFQForm({ onCancel }) {
 
             <div className="space-y-0">
               <ServiceCategorySelect
+                label="Desired Services"
+                icon={Briefcase}
                 value={formData.serviceCategories}
                 disabled={!isEmailVerified}
                 onChange={(next) => {
@@ -430,7 +457,7 @@ export default function RFQForm({ onCancel }) {
                 <Clock className="h-3.5 w-3.5 text-teal-600/60" />
                 Your expected length of care<span className="text-rose-500 ml-1">*</span>
               </label>
-              <div className={`flex overflow-hidden rounded-lg border bg-white focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/10 transition-all duration-200 h-[38px] items-stretch ${errors.durationValue ? 'border-rose-400 ring-2 ring-rose-500/10 bg-rose-50/20' : 'border-gray-200'} ${!isEmailVerified ? 'opacity-50 cursor-not-allowed bg-slate-50 grayscale pointer-events-none' : ''}`}>
+              <div className={`flex overflow-hidden rounded-md border bg-white focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/10 transition-all duration-200 h-[38px] items-stretch ${errors.durationValue ? 'border-rose-400 ring-2 ring-rose-500/10 bg-rose-50/20' : 'border-gray-200'} ${!isEmailVerified ? 'opacity-50 cursor-not-allowed bg-slate-50 grayscale pointer-events-none' : ''}`}>
                 <input
                   required
                   type="number"
@@ -466,7 +493,7 @@ export default function RFQForm({ onCancel }) {
           <div className="space-y-5 md:pl-12">
             <div className="flex flex-col justify-start">
               <label className={labelStyles}>Self-Care Requirement?</label>
-              <div className="bg-teal-50/60 rounded-lg px-4 py-2 border border-teal-100/60 flex items-center justify-between h-[42px]">
+              <div className="bg-teal-50/60 rounded-md px-4 py-2 border border-teal-100/60 flex items-center justify-between h-[42px]">
                 <div className="flex gap-8">
                   {[
                     { label: 'Yes', value: 'self' },
@@ -483,8 +510,8 @@ export default function RFQForm({ onCancel }) {
                           onChange={handleChange}
                           className="peer sr-only"
                         />
-                        <div className="h-4 w-4 rounded-full border-2 border-teal-200 peer-checked:border-teal-600 transition-all" />
-                        <div className="absolute h-2 w-2 rounded-full bg-teal-600 opacity-0 peer-checked:opacity-100 transition-all scale-50 peer-checked:scale-100" />
+                        <div className="h-4 w-4 rounded-md border-2 border-teal-200 peer-checked:border-teal-600 transition-all" />
+                        <div className="absolute h-2 w-2 rounded-md bg-teal-600 opacity-0 peer-checked:opacity-100 transition-all scale-50 peer-checked:scale-100" />
                       </div>
                       <span className="text-xs font-bold text-teal-900/80 group-hover:text-teal-900 capitalize transition-colors">
                         {option.label}
@@ -497,13 +524,13 @@ export default function RFQForm({ onCancel }) {
 
             {/* Conditional Patient Details */}
             {formData.careType === 'someone_else' && (
-              <div className="space-y-4 p-4 rounded-xl border border-teal-100 bg-teal-50/30 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="space-y-4 p-4 rounded-md border border-teal-100 bg-teal-50/30 animate-in fade-in slide-in-from-top-2 duration-300">
                 <div className="space-y-0">
                   <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-700 mb-1.5 ml-1">
                     <UsersRound className="h-3.5 w-3.5 text-teal-600/60" />
                     Recipient Information<span className="text-rose-500 ml-1">*</span>
                   </label>
-                  <div className={`flex overflow-hidden rounded-lg border bg-white focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/10 transition-all duration-200 h-[38px] items-stretch ${errors.personName || errors.personRelation ? 'border-rose-400 ring-2 ring-rose-500/10 bg-rose-50/20' : 'border-gray-200'} ${!isEmailVerified ? 'opacity-50 cursor-not-allowed bg-slate-50 grayscale pointer-events-none' : ''}`}>
+                  <div className={`flex overflow-hidden rounded-md border bg-white focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/10 transition-all duration-200 h-[38px] items-stretch ${errors.personName || errors.personRelation ? 'border-rose-400 ring-2 ring-rose-500/10 bg-rose-50/20' : 'border-gray-200'} ${!isEmailVerified ? 'opacity-50 cursor-not-allowed bg-slate-50 grayscale pointer-events-none' : ''}`}>
                     <input
                       required
                       type="text"
@@ -542,7 +569,7 @@ export default function RFQForm({ onCancel }) {
 
             {/* Consent Checkbox Section */}
             <div className="space-y-3">
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+              <div className="p-3 bg-slate-50 rounded-md border border-slate-100">
                 <p className="text-sm leading-relaxed text-slate-500 text text-justify">
                   By submitting this form, you provide your consent for Help On Call to collect and use the information provided, strictly for the purpose of assessing your needs and delivering the requested care services.
                   <span className="font-bold"> Your information will not be disclosed for any other purpose beyond service delivery.</span>
@@ -558,7 +585,7 @@ export default function RFQForm({ onCancel }) {
                     disabled={!isEmailVerified}
                     checked={formData.consent}
                     onChange={handleChange}
-                    className={`h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 ${!isEmailVerified ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                    className={`h-4 w-4 rounded-md border-slate-300 text-teal-600 focus:ring-teal-500 ${!isEmailVerified ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                   />
                 </div>
                 <label htmlFor="consent" className="text-[11px] font-medium text-slate-700 cursor-pointer select-none">
@@ -571,6 +598,12 @@ export default function RFQForm({ onCancel }) {
         </div>
 
         {/* Global Action Terminal */}
+        {submitErrorMessage && (
+          <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+            {submitErrorMessage}
+          </div>
+        )}
+
         <div className="flex items-center justify-end gap-4 pt-3 border-t border-gray-100">
           <button
             type="button"

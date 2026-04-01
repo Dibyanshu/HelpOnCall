@@ -119,6 +119,32 @@ const EMAIL_VALIDATOR_TABLE_DDL = sql`
   )
 `;
 
+const RFQS_TABLE_DDL = sql`
+  CREATE TABLE IF NOT EXISTS rfqs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    rfq_id TEXT NOT NULL UNIQUE DEFAULT (
+      lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))), 2) || '-' || substr('89ab', abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))), 2) || '-' || lower(hex(randomblob(6)))
+    ),
+    email TEXT NOT NULL,
+    full_name TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    address TEXT NOT NULL,
+    preferred_contact TEXT NOT NULL CHECK (preferred_contact IN ('email', 'phone', 'any')),
+    service_selected TEXT NOT NULL CHECK (json_valid(service_selected) AND json_type(service_selected) = 'array'),
+    start_date INTEGER NOT NULL, -- Timestamp
+    duration_val INTEGER NOT NULL,
+    duration_type TEXT NOT NULL CHECK (duration_type IN ('Day', 'Week', 'Month')),
+    self_care INTEGER NOT NULL DEFAULT 0, -- Boolean
+    recipient_name TEXT NOT NULL,
+    recipient_relation TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'approve', 'reject')),
+    created_by TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL DEFAULT 0,
+    updated_at INTEGER NOT NULL DEFAULT 0
+  )
+`;
+
+
 async function migrateUsersRoleConstraintForAdmin(): Promise<void> {
   const tableMeta = await db.get<{ sql: string | null }>(
     sql`SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'users'`
@@ -311,6 +337,7 @@ export async function ensureTables(): Promise<void> {
   await db.run(CUSTOMER_TESTIMONIALS_TABLE_DDL);
   await db.run(EMAIL_VALIDATOR_TABLE_DDL);
   await db.run(EMAIL_TEMPLATES_TABLE_DDL);
+  await db.run(RFQS_TABLE_DDL);
 
   // These migration helpers depend on better-sqlite3 specific db.get/db.all APIs.
   // Turso/libsql uses a different driver shape, so skip introspection-based migrations there.
