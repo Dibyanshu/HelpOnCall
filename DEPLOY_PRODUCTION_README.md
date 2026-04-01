@@ -1,70 +1,107 @@
-# Help On Call - Production CI/CD and Deployment (Cloudways)
+# Help On Call - Production CI/CD and Deployment (Cloudways DigitalOcean)
 
-This document describes the production deployment setup for the Help On Call monorepo on Cloudways.
+This document is the implementation runbook for production deployment of the Help On Call monorepo using GitHub Actions and Cloudways (DigitalOcean provider).
 
 - Frontend: React app in Apps/web
 - Backend: Fastify + Drizzle API in Apps/api
-- Hosting: Cloudways managed server
-- Production database: Cloudways-managed database service
+- Staging strategy: unchanged Vercel pipeline with manual approval gate
+- Production strategy: same promotion pattern as staging (build/validate -> approval -> deploy)
 
-## Architecture Flow
+## Implementation Status
 
-1. Push changes to the production branch (for example: main).
-2. Cloudways Git deployment (or your CI job) pulls the latest commit onto the server.
-3. Backend dependencies are installed and API is rebuilt.
-4. Frontend dependencies are installed and static files are rebuilt.
-5. PM2 restarts the API process.
-6. Nginx serves frontend static files and proxies /api requests to the Node API.
+- Added production workflow: .github/workflows/deploy-production.yml
+- Added remote preflight script: scripts/cloudways-preflight.sh
+- Added remote deploy script: scripts/deploy-production-cloudways.sh
+- Staging workflow remains unchanged: .github/workflows/deploy-staging.yml
+- Added operator checklist: PRODUCTION_CLOUDWAYS_CHECKLIST.md
 
-## Production Topology on Cloudways
+## Production CI/CD Flow (Parity With Staging)
 
-Recommended topology on one Cloudways server:
+1. Push to production branch.
+2. GitHub Actions job Build and Validate runs:
+   - API install + typecheck + build
+   - Web install + build
+3. Workflow waits at manual approval gate (GitHub Environment: production).
+4. After approval, workflow runs remote preflight checks on Cloudways via SSH.
+5. Workflow runs remote deployment script on Cloudways via SSH.
+6. Remote deploy script updates branch, builds API/web, restarts PM2 API, publishes web dist.
+7. Workflow runs production health checks against /api/v1/health.
 
-- Frontend static files served by Nginx from Apps/web/dist
-- Backend Fastify process managed by PM2 from Apps/api/dist/server.js
-- Reverse proxy routing:
-  - /api/* -> http://127.0.0.1:3000
-  - all other routes -> frontend index.html (SPA fallback)
+## Branch and Workflow Files
 
-## Dynamic Database Routing
+- Production branch trigger: production
+- Workflow file: .github/workflows/deploy-production.yml
+- Remote script: scripts/deploy-production-cloudways.sh
 
-The API switches database drivers using APP_ENV:
+## GitHub Configuration
 
-- development: better-sqlite3 local file
-- production: Cloudways database (non-Turso)
+### Required GitHub Environment
 
-Current implementation files:
+Create environment production and set Required reviewers to enforce manual Go/No-Go approval before deploy.
 
-- Apps/api/src/config/env.ts
-- Apps/api/src/db/index.ts
+### Required GitHub Secrets
 
-Production adjustment note:
+Repository or environment secrets required by deploy-production.yml:
 
-- The current API codebase is still wired for Turso when APP_ENV is staging/production.
-- To use Cloudways database in production, update the Drizzle driver and database client in Apps/api/src/db/index.ts.
-- Update Apps/api/src/config/env.ts to validate the new production database variables.
+- CLOUDWAYS_SSH_PRIVATE_KEY
+- CLOUDWAYS_SSH_HOST
+- CLOUDWAYS_SSH_PORT
+- CLOUDWAYS_SSH_USER
+- CLOUDWAYS_APP_PATH
+- CLOUDWAYS_PUBLIC_HTML_PATH
+- CLOUDWAYS_PM2_PROCESS_NAME
+- PRODUCTION_WEB_API_BASE_URL
+- PRODUCTION_HEALTHCHECK_URL
 
-## Required Environment Variables
+Recommended values:
 
-### Backend (.env on Cloudways)
+- CLOUDWAYS_PM2_PROCESS_NAME=help-on-call-api
+- PRODUCTION_HEALTHCHECK_URL=https://<your-domain>/api/v1/health
+- PRODUCTION_WEB_API_BASE_URL=https://<your-domain>
 
-Create or update Apps/api/.env in the server deployment path.
+## Cloudways DigitalOcean Setup (Step-by-Step)
 
-Required:
+1. Provision a Cloudways server on DigitalOcean.
+2. Create/attach the production application.
+3. Map the production domain to the Cloudways app.
+4. Enable SSL certificate (Let's Encrypt) in Cloudways.
+5. Ensure server has Node.js and PM2 available for API runtime.
+6. Set application path (repo root path containing Apps/) and store it for CLOUDWAYS_APP_PATH.
+7. Configure web root path (Cloudways public_html path) and store it for CLOUDWAYS_PUBLIC_HTML_PATH.
+8. Add a deploy user SSH key:
+   - Generate a deploy keypair for GitHub Actions.
+   - Add the public key in Cloudways SSH Public Keys.
+   - Store the private key in CLOUDWAYS_SSH_PRIVATE_KEY.
+9. Configure Git access from Cloudways server to your repository:
+   - Ensure origin remote is set to your Git provider repository.
+   - Add repository deploy key or machine-user key on the Cloudways server.
+   - Verify git fetch origin production works on server before enabling pipeline deploy.
+10. Ensure API uploads path exists and is writable:
+   - default: Apps/api/uploads/resumes
+   - or set EMPLOYMENT_RESUME_UPLOAD_DIR to a persistent writable path.
+11. Configure API environment variables on server (see section below).
+
+## API Environment Variables on Cloudways
+
+Create/update Apps/api/.env on the server deployment path.
+
+Required baseline:
 
 - APP_ENV=production
 - HOST=0.0.0.0
 - PORT=3000
-- JWT_SECRET=<strong random secret>
-- DB_HOST=<cloudways database host>
-- DB_PORT=<cloudways database port>
-- DB_NAME=<cloudways database name>
-- DB_USER=<cloudways database user>
-- DB_PASSWORD=<cloudways database password>
+- JWT_SECRET=<strong-random-secret-min-16-chars>
 
-Optional but commonly needed:
+Current runtime requirement note:
 
-- MAIL_ENABLED=true|false
+- Existing API code currently requires TURSO_DATABASE_URL and TURSO_AUTH_TOKEN when APP_ENV=production.
+- Cloudways non-Turso DB cutover is an in-progress migration and must be completed in API code before disabling Turso vars.
+
+Additional commonly required variables:
+
+- SUPER_ADMIN_EMAIL
+- SUPER_ADMIN_PASSWORD
+- MAIL_ENABLED
 - SMTP_HOST
 - SMTP_PORT
 - SMTP_SECURE
@@ -72,81 +109,37 @@ Optional but commonly needed:
 - SMTP_PASS
 - MAIL_FROM
 - MAIL_REPLY_TO
-- SUPER_ADMIN_EMAIL
-- SUPER_ADMIN_PASSWORD
+- SMTP_CONNECTION_TIMEOUT_MS
+- SMTP_GREETING_TIMEOUT_MS
 - EMPLOYMENT_RESUME_UPLOAD_DIR
 - EMPLOYMENT_RESUME_MAX_FILE_SIZE_MB
 
-### Frontend build variables
+## Frontend Build Variables
 
-Set frontend build variables before running build in Apps/web:
+Set via GitHub secret PRODUCTION_WEB_API_BASE_URL used during Apps/web build.
 
-- VITE_API_BASE_URL=https://<your-domain>
-- VITE_GOOGLE_MAPS_API_KEY=<your maps key, if used>
+- PRODUCTION_WEB_API_BASE_URL=https://<your-domain>
 
 Important:
 
-- Use domain root for VITE_API_BASE_URL because frontend calls /api/v1/... paths.
+- Use domain root value so web calls /api/v1/... correctly through Nginx proxy.
 
-## Cloudways Application Setup
+## Nginx Routing (Cloudways)
 
-1. Create a Cloudways server and attach your production domain.
-2. Configure SSL (Let's Encrypt) in Cloudways.
-3. Enable Git deployment in Cloudways and connect your repository/branch.
-4. Set your deployment path for the monorepo (root containing Apps/).
-5. Ensure Node.js is available on the server for API build and runtime.
+Configure Nginx so:
 
-## Build and Start Commands (Current Repo)
-
-### Backend (Apps/api)
-
-- Install: npm install
-- Build: npm run build
-- Start: npm run start
-
-### Frontend (Apps/web)
-
-- Install: npm install
-- Build: npm run build
-- Output: Apps/web/dist
-
-## Process Management with PM2
-
-Use PM2 to keep the API alive across restarts.
-
-Example commands (run from Apps/api):
-
-```bash
-npm install
-npm run build
-pm2 start dist/server.js --name help-on-call-api
-pm2 save
-pm2 startup
-```
-
-For updates:
-
-```bash
-npm install
-npm run build
-pm2 restart help-on-call-api
-```
-
-## Nginx Routing (Concept)
-
-Configure Cloudways/Nginx so:
-
-- /api passes through to http://127.0.0.1:3000
-- / serves Apps/web/dist
+- /api/* proxies to local API at http://127.0.0.1:3000
+- / serves frontend static files from public_html
 - SPA fallback rewrites unknown frontend routes to /index.html
 
-Example Nginx snippet (adapt to Cloudways UI/templates):
+Reference snippet:
 
 ```nginx
 location /api/ {
   proxy_pass http://127.0.0.1:3000;
   proxy_http_version 1.1;
   proxy_set_header Host $host;
+  proxy_set_header Authorization $http_authorization;
   proxy_set_header X-Real-IP $remote_addr;
   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
   proxy_set_header X-Forwarded-Proto $scheme;
@@ -158,63 +151,52 @@ location / {
 }
 ```
 
-If Apps/web/dist is not your public_html folder, copy the dist contents to the active web root during deploy.
+## PM2 Process Management
 
-## Suggested Deployment Script (Server-side)
-
-Run from your monorepo root on Cloudways:
+The deploy script restarts existing PM2 process, or starts one if absent:
 
 ```bash
-# Backend
-cd Apps/api
-npm install
-npm run build
 pm2 restart help-on-call-api || pm2 start dist/server.js --name help-on-call-api
-
-# Frontend
-cd ../web
-npm install
-npm run build
-
-# Publish frontend build to web root (adjust destination path)
-rsync -av --delete dist/ /home/master/applications/<app-id>/public_html/
+pm2 save
 ```
 
-## Health and Verification
+Adjust process name through CLOUDWAYS_PM2_PROCESS_NAME.
 
-After each production deployment:
+## Deployment Checklist
 
-1. Verify API health endpoint:
-   - GET https://<your-domain>/api/v1/health
-2. Verify admin login and key read/write API operations.
-3. Verify frontend pages load directly (deep-link test).
-4. Verify file uploads (employment resume flow).
-5. Verify mail test endpoint if mail is enabled.
+Use PRODUCTION_CLOUDWAYS_CHECKLIST.md as the execution checklist.
 
-## Deployment Steps Checklist
+1. Confirm branch protection and reviewers on production branch and production environment.
+2. Configure all required GitHub secrets listed above.
+3. Verify Cloudways SSH key access from GitHub Actions.
+4. Verify Cloudways app and public_html paths.
+5. Push to production branch.
+6. Confirm Build and Validate job succeeds.
+7. Approve production environment gate.
+8. Confirm deploy step finishes and health check passes.
+9. Perform smoke tests:
+   - admin login
+   - one protected admin read endpoint
+   - public API endpoint
+   - employment upload flow
+   - SPA deep-link refresh in frontend
 
-1. Configure Cloudways server, domain, and SSL.
-2. Configure Git deployment for production branch.
-3. Set backend .env variables for production.
-4. Set frontend build env variables.
-5. Configure PM2 process for API.
-6. Configure Nginx routing for /api and SPA fallback.
-7. Run deployment script.
-8. Run post-deploy health checks.
+## Rollback Procedure
 
-## Notes
+If deployment fails after approval:
 
-- Local development can keep using SQLite.
-- Production should use Cloudways database credentials.
-- Keep JWT_SECRET and SMTP credentials outside source control.
-- Use Cloudways scheduled jobs or CI to automate repeatable deployments.
-- Consider blue/green or maintenance windows for zero-downtime updates.
+1. Re-run pipeline on last known good commit in production branch.
+2. Or SSH to server and manually checkout known good commit, rebuild, and PM2 restart.
+3. Re-run health endpoint and smoke tests.
 
-## Database Migration Checklist (Turso -> Cloudways)
+## Cloudways DB Migration Track (Production)
 
-1. Choose your Cloudways database engine and version.
-2. Add a compatible runtime DB driver package to Apps/api.
-3. Refactor Apps/api/src/db/index.ts to initialize Cloudways DB client for APP_ENV=production.
-4. Update schema migration strategy for the new engine.
-5. Replace Turso variables in production secrets with Cloudways DB credentials.
-6. Run migration and smoke-test all admin/public API flows.
+Production pipeline is implemented first without changing staging behavior.
+
+For full Cloudways managed DB cutover, complete these API changes in a controlled follow-up:
+
+1. Refactor Apps/api/src/config/env.ts to validate production DB vars for selected engine.
+2. Refactor Apps/api/src/db/index.ts to use Cloudways DB driver for APP_ENV=production.
+3. Align Drizzle schema/dialect and migration workflow with chosen engine.
+4. Migrate data from Turso and validate all API flows.
+5. Remove production dependence on TURSO_DATABASE_URL and TURSO_AUTH_TOKEN only after successful cutover.
