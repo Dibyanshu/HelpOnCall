@@ -205,6 +205,18 @@ export default function RFQForm({ onCancel }) {
     return postalRegex.test(text);
   };
 
+  const handleShowInMap = () => {
+    const address = formData.address.trim();
+
+    if (!address) {
+      setErrors((prev) => ({ ...prev, address: 'Street Address is required' }));
+      return;
+    }
+
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    window.open(googleMapsUrl, '_blank', 'noopener,noreferrer');
+  };
+
   if (isSubmitted) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4 text-center animate-in fade-in zoom-in duration-700">
@@ -320,7 +332,8 @@ export default function RFQForm({ onCancel }) {
                 <div className="relative group flex items-center">
                   <button
                     type="button"
-                    disabled={!isEmailVerified || !hasPostalCode(formData.address)}
+                    disabled={!isEmailVerified || !formData.address.trim() && !hasPostalCode(formData.address)}
+                    onClick={handleShowInMap}
                     className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border border-slate-200 text-slate-500 hover:border-teal-500 hover:text-teal-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all bg-white active:scale-95 shadow-sm"
                   >
                     <MapPin className="h-3 w-3" />
