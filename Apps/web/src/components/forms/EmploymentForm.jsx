@@ -64,6 +64,31 @@ export default function EmploymentForm() {
     e.preventDefault();
     setSubmitError('');
 
+    if (!isEmailVerified) {
+      setSubmitError('Please verify your email address before submitting.');
+      return;
+    }
+
+    if (!formData.fullName.trim()) {
+      setSubmitError('Full Name is required.');
+      return;
+    }
+
+    if (!formData.phone.trim()) {
+      setSubmitError('Phone Number is required.');
+      return;
+    }
+
+    if (!validatePhone(formData.phone.trim())) {
+      setSubmitError('Please enter a valid phone number.');
+      return;
+    }
+
+    if (!formData.coverLetter.trim()) {
+      setSubmitError('Cover Letter is required.');
+      return;
+    }
+
     const normalizedSpecializations = normalizeServiceSelections(formData.specializations);
 
     if (normalizedSpecializations.length === 0) {
@@ -156,7 +181,7 @@ export default function EmploymentForm() {
         <div className="space-y-1.5">
           <label htmlFor="fullName" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
             <User className="h-3.5 w-3.5 text-teal-700/70" />
-            Full Name
+            Full Name<span className="text-rose-500">*</span>
           </label>
           <input
             id="fullName"
@@ -174,7 +199,7 @@ export default function EmploymentForm() {
         <div className="space-y-1.5">
           <label htmlFor="phone" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
             <Phone className="h-3.5 w-3.5 text-teal-700/70" />
-            Phone Number
+            Phone Number<span className="text-rose-500">*</span>
           </label>
           <input
             id="phone"
@@ -204,6 +229,7 @@ export default function EmploymentForm() {
         icon={Briefcase}
         placeholder="Select Specializations"
         value={formData.specializations}
+        required
         disabled={!isEmailVerified}
         onChange={(next) => {
           setFormData((prev) => ({
@@ -217,7 +243,7 @@ export default function EmploymentForm() {
       <div className="space-y-1.5">
         <label htmlFor="coverLetter" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
           <Briefcase className="h-3.5 w-3.5 text-teal-700/70" />
-          Why are you a good fit for this position at Help On Call ?
+          Why are you a good fit for this position at Help On Call ?<span className="text-rose-500">*</span>
         </label>
         <textarea
           id="coverLetter"
@@ -235,7 +261,7 @@ export default function EmploymentForm() {
       <div className="space-y-1.5">
         <label htmlFor="resume" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
           <Upload className="h-3.5 w-3.5 text-teal-700/70" />
-          Upload Resume
+          Upload Resume<span className="text-rose-500">*</span>
         </label>
         <div className="relative group">
           <input
