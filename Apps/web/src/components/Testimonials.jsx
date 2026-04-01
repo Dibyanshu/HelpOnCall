@@ -20,7 +20,7 @@ export default function Testimonials() {
   if (isLoading && testimonials.length === 0) {
     return (
       <div className="bg-gray-50 py-16 flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-600 border-t-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-md border-4 border-teal-600 border-t-transparent"></div>
       </div>
     );
   }
@@ -67,7 +67,7 @@ export default function Testimonials() {
               {duplicatedTestimonials.map((testimonial, index) => (
                 <div
                   key={`${testimonial.id || index}-${index}`}
-                  className="flex-shrink-0 w-80 h-80 overflow-hidden rounded-xl bg-white p-8 shadow-md flex flex-col justify-between relative"
+                  className="flex-shrink-0 w-80 h-80 overflow-hidden rounded-md bg-white p-8 shadow-md flex flex-col justify-between relative"
                 >
                   {/* Star Rating */}
                   <div className="flex gap-0.5">
@@ -116,7 +116,7 @@ export default function Testimonials() {
                     <img
                       src={testimonial.profilePic}
                       alt={`Photo of ${testimonial.customerName}`}
-                      className="h-12 w-12 rounded-full object-cover flex-shrink-0"
+                      className="h-12 w-12 rounded-md object-cover flex-shrink-0"
                       loading="lazy"
                     />
                     <div>

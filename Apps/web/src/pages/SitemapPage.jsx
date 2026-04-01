@@ -17,14 +17,14 @@ export default function SitemapPage() {
         </p>
       </div>
 
-      <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+      <div className="rounded-md bg-white p-8 shadow-sm ring-1 ring-slate-200">
         <h2 className="mb-6 text-xl font-semibold text-slate-900 border-b border-slate-100 pb-4">Main Pages</h2>
         <ul className="space-y-4">
           {publicLinks.map((link) => (
             <li key={link.href}>
               <Link
                 to={link.href}
-                className="group flex flex-col sm:flex-row sm:items-center justify-between rounded-lg p-4 transition-colors hover:bg-slate-50 border border-transparent hover:border-slate-100"
+                className="group flex flex-col sm:flex-row sm:items-center justify-between rounded-md p-4 transition-colors hover:bg-slate-50 border border-transparent hover:border-slate-100"
               >
                 <div>
                   <h3 className="font-medium text-slate-900 group-hover:text-teal-600">{link.label}</h3>

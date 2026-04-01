@@ -275,9 +275,6 @@ export default function AdminServicePage() {
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-900 tracking-tight">Service Manager Dashboard</h2>
-              <p className="text-sm text-slate-500 font-sans">
-                Signed in as <span className="font-semibold text-teal-700">{user?.name || user?.email}</span> ({user?.role})
-              </p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-4">
@@ -329,7 +326,7 @@ export default function AdminServicePage() {
       <div className="grid max-w-full gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
         {/* Left container forced to grid row height via lg:h-0 lg:min-h-full trick */}
         <div className="lg:h-0 lg:min-h-full flex flex-col">
-          <aside className="relative flex min-h-[400px] flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:min-h-0 lg:flex-1">
+          <aside className="relative flex min-h-[400px] flex-col rounded-md border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:min-h-0 lg:flex-1">
             <div className="flex shrink-0 items-start justify-between gap-3">
               <div>
                 <h1 className="mt-2 flex items-center gap-2 text-xl font-bold text-slate-900">
@@ -363,7 +360,7 @@ export default function AdminServicePage() {
                               e.stopPropagation();
                               toggleCategory(category.id);
                             }}
-                            className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded hover:bg-slate-200 cursor-pointer"
+                            className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-md hover:bg-slate-200 cursor-pointer"
                             aria-label={isExpanded ? "Collapse" : "Expand"}
                           >
                             {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
@@ -386,7 +383,7 @@ export default function AdminServicePage() {
                               void handleMoveCategory(serviceTree, categoryIndex, 'up');
                             }}
                             disabled={isSaving || categoryIndex === 0}
-                            className="inline-flex h-6 w-6 items-center justify-center rounded border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
+                            className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
                             title="Move Up"
                           >
                             <ChevronUp size={14} />
@@ -399,7 +396,7 @@ export default function AdminServicePage() {
                               void handleMoveCategory(serviceTree, categoryIndex, 'down');
                             }}
                             disabled={isSaving || categoryIndex === serviceTree.length - 1}
-                            className="inline-flex h-6 w-6 items-center justify-center rounded border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
+                            className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
                             title="Move Down"
                           >
                             <ChevronDown size={14} />
@@ -434,7 +431,7 @@ export default function AdminServicePage() {
                                         void handleMoveService(category.services, serviceIndex, 'up');
                                       }}
                                       disabled={isSaving || serviceIndex === 0}
-                                      className="inline-flex h-5 w-5 items-center justify-center rounded border border-slate-200 bg-white text-slate-400 shadow-sm hover:bg-slate-50 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
+                                      className="inline-flex h-5 w-5 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-400 shadow-sm hover:bg-slate-50 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
                                       title="Move Up"
                                     >
                                       <ChevronUp size={12} />
@@ -447,7 +444,7 @@ export default function AdminServicePage() {
                                         void handleMoveService(category.services, serviceIndex, 'down');
                                       }}
                                       disabled={isSaving || serviceIndex === category.services.length - 1}
-                                      className="inline-flex h-5 w-5 items-center justify-center rounded border border-slate-200 bg-white text-slate-400 shadow-sm hover:bg-slate-50 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
+                                      className="inline-flex h-5 w-5 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-400 shadow-sm hover:bg-slate-50 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
                                       title="Move Down"
                                     >
                                       <ChevronDown size={12} />
@@ -470,7 +467,7 @@ export default function AdminServicePage() {
         </div>
 
         {/* Right card which defines the intrinsic content height of the grid row */}
-        <main className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 shrink-0">
+        <main className="rounded-md border border-slate-200 bg-white p-6 shadow-sm sm:p-8 shrink-0">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-2xl font-bold text-slate-900">{buildFormModeTitle(mode)}</h2>
             <div className="flex flex-wrap gap-2">
@@ -502,7 +499,7 @@ export default function AdminServicePage() {
 
 
 
-          <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-6">
+          <div className="mt-6 rounded-md border border-slate-200 bg-slate-50/50 p-4 sm:p-6">
             {mode === 'create-category' || mode === 'edit-category' ? (
               <>
                 <div className="mb-4 flex items-center justify-between">
@@ -511,7 +508,7 @@ export default function AdminServicePage() {
                     Category Details
                   </div>
                   {selectedCategory && (
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 ring-1 ring-inset ring-slate-200">
+                    <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 ring-1 ring-inset ring-slate-200">
                       #{toDisplayNumber(selectedCategory.displayOrder ?? 0)}
                     </span>
                   )}
@@ -532,7 +529,7 @@ export default function AdminServicePage() {
                     Service Details
                   </div>
                   {selectedService && (
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 ring-1 ring-inset ring-slate-200">
+                    <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 ring-1 ring-inset ring-slate-200">
                       #{toDisplayNumber(selectedService.displayOrder ?? 0)}
                     </span>
                   )}

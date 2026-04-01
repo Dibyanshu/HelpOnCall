@@ -80,7 +80,7 @@ export default function ServiceCard() {
                   variants={cardVariants}
                 >
                   {/* Icon Background */}
-                  <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-lg bg-gray-50 border border-[#004D40] group-hover:bg-[#004D40] group-hover:border-transparent transition-colors duration-300 mb-3 sm:mb-4">
+                  <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-md bg-gray-50 border border-[#004D40] group-hover:bg-[#004D40] group-hover:border-transparent transition-colors duration-300 mb-3 sm:mb-4">
                     <service.icon className="h-8 w-8 sm:h-10 sm:w-10 text-[#004D40] group-hover:text-white transition-colors duration-300" />
                   </div>
 
@@ -102,7 +102,7 @@ export default function ServiceCard() {
           > 
 
             {/* Top right images */}
-            <div className="overflow-hidden rounded-lg shadow-md">
+            <div className="overflow-hidden rounded-md shadow-md">
               <img
                 src={services[1]?.image}
                 alt="Service showcase"
@@ -110,7 +110,7 @@ export default function ServiceCard() {
               />
             </div>
 
-            <div className="overflow-hidden rounded-lg shadow-md">
+            <div className="overflow-hidden rounded-md shadow-md">
               <img
                 src={services[2]?.image}
                 alt="Service showcase"
@@ -118,7 +118,7 @@ export default function ServiceCard() {
               />
             </div>
 
-            <div className="overflow-hidden rounded-lg shadow-md">
+            <div className="overflow-hidden rounded-md shadow-md">
               <img
                 src={services[3]?.image}
                 alt="Service showcase"
@@ -126,7 +126,7 @@ export default function ServiceCard() {
               />
             </div>
 
-            <div className="overflow-hidden rounded-lg shadow-md">
+            <div className="overflow-hidden rounded-md shadow-md">
               <img
                 src={services[8]?.image}
                 alt="Service showcase"
@@ -134,7 +134,7 @@ export default function ServiceCard() {
               />
             </div>
 
-            <div className="overflow-hidden rounded-lg shadow-md">
+            <div className="overflow-hidden rounded-md shadow-md">
               <img
                 src={services[5]?.image}
                 alt="Service showcase"
@@ -142,7 +142,7 @@ export default function ServiceCard() {
               />
             </div>
             
-            <div className="overflow-hidden rounded-lg shadow-md">
+            <div className="overflow-hidden rounded-md shadow-md">
               <img
                 src={services[6]?.image}
                 alt="Service showcase"

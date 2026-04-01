@@ -30,19 +30,19 @@ export default function AboutUsPage() {
           </p>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
-          <article className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <article className="rounded-md border border-gray-200 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-semibold text-gray-900">Compassion First</h2>
             <p className="mt-2 text-sm leading-relaxed text-gray-600">
               Every service plan starts with empathy, dignity, and personalized communication for clients and families.
             </p>
           </article>
-          <article className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <article className="rounded-md border border-gray-200 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-semibold text-gray-900">Clinical Excellence</h2>
             <p className="mt-2 text-sm leading-relaxed text-gray-600">
               Our professionals follow evidence-based practices and maintain high standards for safety and quality outcomes.
             </p>
           </article>
-          <article className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <article className="rounded-md border border-gray-200 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-semibold text-gray-900">GTA Coverage</h2>
             <p className="mt-2 text-sm leading-relaxed text-gray-600">
               We provide coordinated support across Toronto, North York, Scarborough, and Etobicoke with responsive scheduling.
