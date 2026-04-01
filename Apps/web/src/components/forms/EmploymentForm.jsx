@@ -148,6 +148,7 @@ export default function EmploymentForm() {
         onChange={(val) => setFormData(prev => ({ ...prev, email: val }))}
         onVerifiedStatusChange={setIsEmailVerified}
         isVerified={isEmailVerified}
+        verificationModule="employee"
       />
 
       <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">

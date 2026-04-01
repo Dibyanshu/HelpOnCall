@@ -267,6 +267,7 @@ export default function RFQForm({ onCancel }) {
               }}
               onVerifiedStatusChange={setIsEmailVerified}
               isVerified={isEmailVerified}
+              verificationModule="rfq"
               className="mt-2"
             />
 
