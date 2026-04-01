@@ -17,16 +17,16 @@ export default function AdminLoginPage() {
   const [fieldErrors, setFieldErrors] = useState(initialFieldErrors);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [dashboardDesign, setDashboardDesign] = useState('new');
+  const [dashboardDesign, setDashboardDesign] = useState('old');
   const { isAuthenticated, signIn } = useAdminAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const redirectTo = location.state?.from?.pathname || (dashboardDesign === 'new' ? '/admin/dashboard' : '/admin/dashboard-old');
+  const redirectTo = location.state?.from?.pathname || (dashboardDesign === 'new' ? '/admin/dashboard-lite' : '/admin/dashboard');
 
   useEffect(() => {
     if (isAuthenticated) {
-      const destination = dashboardDesign === 'new' ? '/admin/dashboard' : '/admin/dashboard-old';
+      const destination = dashboardDesign === 'new' ? '/admin/dashboard-lite' : '/admin/dashboard';
       navigate(destination, { replace: true });
     }
   }, [isAuthenticated, navigate, dashboardDesign]);
@@ -72,7 +72,7 @@ export default function AdminLoginPage() {
       }
 
       signIn(data.token, data.user);
-      const destination = dashboardDesign === 'new' ? '/admin/dashboard' : '/admin/dashboard-old';
+      const destination = dashboardDesign === 'new' ? '/admin/dashboard-lite' : '/admin/dashboard';
       navigate(destination, { replace: true });
     } catch (error) {
       setErrorMessage(error.message || 'Unable to sign in.');
@@ -105,8 +105,8 @@ export default function AdminLoginPage() {
         </section>
 
         <div className="mx-auto w-full max-w-md px-4 py-20 relative z-10">
-          <form 
-            onSubmit={handleSubmit} 
+          <form
+            onSubmit={handleSubmit}
             className="rounded-3xl border border-slate-200 bg-white p-8 shadow-2xl space-y-5"
             aria-label="Admin login form"
           >
@@ -170,8 +170,8 @@ export default function AdminLoginPage() {
                 <button
                   type="button"
                   onClick={() => setDashboardDesign('old')}
-                  className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${dashboardDesign === 'old' 
-                    ? 'bg-teal-700 text-white border-teal-700 shadow-md ring-2 ring-teal-100' 
+                  className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${dashboardDesign === 'old'
+                    ? 'bg-teal-700 text-white border-teal-700 shadow-md ring-2 ring-teal-100'
                     : 'bg-white text-slate-500 border-slate-200 hover:border-teal-400'}`}
                 >
                   Classic
@@ -179,8 +179,8 @@ export default function AdminLoginPage() {
                 <button
                   type="button"
                   onClick={() => setDashboardDesign('new')}
-                  className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${dashboardDesign === 'new' 
-                    ? 'bg-teal-700 text-white border-teal-700 shadow-md ring-2 ring-teal-100' 
+                  className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${dashboardDesign === 'new'
+                    ? 'bg-teal-700 text-white border-teal-700 shadow-md ring-2 ring-teal-100'
                     : 'bg-white text-slate-500 border-slate-200 hover:border-teal-400'}`}
                 >
                   Modern
@@ -201,7 +201,7 @@ export default function AdminLoginPage() {
             >
               {isSubmitting ? 'Authenticating...' : 'Secure Sign In'}
             </button>
-            
+
             <div className="pt-4 text-center border-t border-slate-100 mt-6">
               <Link
                 to="/"
