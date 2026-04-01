@@ -5,6 +5,8 @@ import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
 import { users } from "../db/schema.js";
 import { hashPassword, verifyPassword } from "../utils/crypto.js";
+import { sendTemplatedEmail } from "../utils/email-template/email-template.service.js";
+import { TEMPLATE_KEYS } from "../utils/email-template/template-registry.js";
 
 const loginBodySchema = z.object({
   email: z.string().email(),
@@ -29,7 +31,7 @@ const changePasswordSchema = z.object({
   newPassword: z.string().min(8)
 });
 
-function buildRegistrationEmail(name: string) {
+function buildRegistrationEmailFallback(name: string) {
   const subject = "HelpOnCall registration received";
   const text = [
     `Hi ${name},`,
@@ -92,18 +94,19 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         createdAt: users.createdAt
       });
 
-    const emailContent = buildRegistrationEmail(name);
-
-    void fastify.mail
-      .send({
+    void sendTemplatedEmail(
+      {
         to: email,
-        subject: emailContent.subject,
-        text: emailContent.text,
-        html: emailContent.html
-      })
-      .catch((error) => {
-        fastify.log.error({ error, email }, "Failed to send registration acknowledgment email");
-      });
+        templateKey: TEMPLATE_KEYS.USER_REGISTRATION_ACK,
+        data: { name },
+        fallback: () => buildRegistrationEmailFallback(name),
+        strict: false
+      },
+      fastify.mail,
+      fastify.log
+    ).catch((error) => {
+      fastify.log.error({ error, email }, "Failed to send registration acknowledgment email");
+    });
 
     return reply.code(201).send({
       message: "Registration submitted successfully. Your account will be activated by an admin.",

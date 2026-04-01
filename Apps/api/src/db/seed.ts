@@ -1,9 +1,9 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { env } from "../config/env.js";
 import { buildAuditCreateFields } from "./audit.js";
 import { hashPassword } from "../utils/crypto.js";
 import { db } from "./index.js";
-import { customerTestimonials, serviceCategories, services, users } from "./schema.js";
+import { customerTestimonials, emailTemplates, serviceCategories, services, users } from "./schema.js";
 
 interface SeedServiceItem {
   label: string;
@@ -26,6 +26,56 @@ interface SeedTestimonial {
   profilePic: string;
   rating: number;
 }
+
+interface SeedEmailTemplate {
+  templateKey: string;
+  module: "employee" | "user_registration" | "rfq" | "system";
+  subjectTemplate: string;
+  textTemplate: string;
+  htmlTemplate: string;
+  variablesSchema: string;
+  description: string;
+}
+
+const INITIAL_EMAIL_TEMPLATES: SeedEmailTemplate[] = [
+  {
+    templateKey: "user_registration_ack",
+    module: "user_registration",
+    subjectTemplate: "HelpOnCall registration received",
+    textTemplate: [
+      "Hi {{name}},",
+      "",
+      "Your registration has been received successfully.",
+      "An administrator will review and activate your account soon.",
+      "",
+      "Thanks,",
+      "HelpOnCall Team"
+    ].join("\n"),
+    htmlTemplate: `<p>Hi {{name}},</p>
+    <p>Your registration has been received successfully.</p>
+    <p>An administrator will review and activate your account soon.</p>
+    <p>Thanks,<br/>HelpOnCall Team</p>`,
+    variablesSchema: JSON.stringify({ required: ["name"] }),
+    description: "Sent to users after public registration"
+  },
+  {
+    templateKey: "email_verification_code",
+    module: "system",
+    subjectTemplate: "HelpOnCall {{moduleLabel}} email verification code",
+    textTemplate: [
+      "Your HelpOnCall verification code is: {{code}}",
+      "",
+      "This code expires in 15 minutes.",
+      "If you did not request this, you can ignore this email."
+    ].join("\n"),
+    htmlTemplate: `<p>Your HelpOnCall verification code is:</p>
+    <p style="font-size: 22px; font-weight: 700; letter-spacing: 1px;">{{code}}</p>
+    <p>This code expires in 15 minutes.</p>
+    <p>If you did not request this, you can ignore this email.</p>`,
+    variablesSchema: JSON.stringify({ required: ["code", "moduleLabel"] }),
+    description: "Sent when a user requests an email verification code"
+  }
+];
 
 const INITIAL_SERVICE_CATEGORIES: SeedServiceCategory[] = [
   {
@@ -201,6 +251,44 @@ export async function seedSuperAdmin(): Promise<void> {
   });
 
   console.log(`Seeded super admin: ${env.SUPER_ADMIN_EMAIL}`);
+}
+
+async function ensureEmailTemplateSeed(item: SeedEmailTemplate): Promise<void> {
+  const existing = await db
+    .select({ id: emailTemplates.id })
+    .from(emailTemplates)
+    .where(eq(emailTemplates.templateKey, item.templateKey))
+    .limit(1);
+
+  if (existing.length > 0) {
+    return;
+  }
+
+  await db.insert(emailTemplates).values({
+    templateKey: item.templateKey,
+    module: item.module,
+    channel: "email",
+    subjectTemplate: item.subjectTemplate,
+    textTemplate: item.textTemplate,
+    htmlTemplate: item.htmlTemplate,
+    variablesSchema: item.variablesSchema,
+    description: item.description,
+    isActive: true,
+    version: 1,
+    ...buildAuditCreateFields("system_seed")
+  });
+}
+
+export async function seedInitialEmailTemplates(): Promise<void> {
+  for (let templateIndex = 0; templateIndex < INITIAL_EMAIL_TEMPLATES.length; templateIndex += 1) {
+    await ensureEmailTemplateSeed(INITIAL_EMAIL_TEMPLATES[templateIndex]);
+  }
+
+  const counts = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(emailTemplates);
+
+  console.log(`Seeded initial email templates (total: ${counts[0]?.count ?? 0})`);
 }
 
 async function ensureServiceCategorySeed(title: string, displayOrder: number): Promise<number> {

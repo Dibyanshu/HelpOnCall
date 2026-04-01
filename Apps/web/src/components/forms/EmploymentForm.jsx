@@ -1,11 +1,32 @@
-import { useState, useRef, useEffect } from 'react';
-import { Upload, CheckCircle2, ChevronDown, X, Briefcase, Check, User, Mail, Phone } from 'lucide-react';
-import {
-  fetchEmploymentSpecializationGroups,
-  submitEmploymentApplication,
-} from '../../appServices/employmentSubmission';
+import { useState, useRef } from 'react';
+import { Upload, CheckCircle2, X, Briefcase, User, Phone } from 'lucide-react';
+import { useToast } from '../common/Toast';
+import { submitEmploymentApplication } from '../../appServices/employmentSubmission';
+import { validatePhone as utilValidatePhone } from '../../utils/validation';
+import EmailAddressValidation from '../common/EmailAddressValidation';
+import ServiceCategorySelect from '../common/ServiceCategorySelect';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
+function isServiceSelection(item) {
+  return (
+    item &&
+    typeof item === 'object' &&
+    Number.isInteger(item.categoryId) &&
+    Number.isInteger(item.serviceId)
+  );
+}
+
+function normalizeServiceSelections(items) {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
+  return items.filter(isServiceSelection).map((item) => ({
+    categoryId: item.categoryId,
+    serviceId: item.serviceId,
+  }));
+}
 
 const initialFormData = {
   fullName: '',
@@ -20,84 +41,15 @@ export default function EmploymentForm() {
   const [formData, setFormData] = useState(initialFormData);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [submitError, setSubmitError] = useState('');
-  const [specializationGroups, setSpecializationGroups] = useState([]);
-  const [isLoadingSpecializations, setIsLoadingSpecializations] = useState(true);
-  const dropdownRef = useRef(null);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
 
-  const selectedSpecializationLabels = formData.specializations.map((selection) => {
-    const match = specializationGroups
-      .flatMap((group) => group.options)
-      .find((option) => (
-        option.categoryId === selection.categoryId && option.serviceId === selection.serviceId
-      ));
-
-    return match?.label || `${selection.categoryId}:${selection.serviceId}`;
-  });
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadSpecializations() {
-      setIsLoadingSpecializations(true);
-
-      try {
-        const groups = await fetchEmploymentSpecializationGroups(API_BASE_URL);
-
-        if (!isMounted) {
-          return;
-        }
-
-        setSpecializationGroups(groups);
-      } catch {
-        if (!isMounted) {
-          return;
-        }
-
-        setSpecializationGroups([]);
-      } finally {
-        if (isMounted) {
-          setIsLoadingSpecializations(false);
-        }
-      }
-    }
-
-    void loadSpecializations();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const toast = useToast();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSpecToggle = (selection) => {
-    setFormData((prev) => ({
-      ...prev,
-      specializations: prev.specializations.some(
-        (item) => item.categoryId === selection.categoryId && item.serviceId === selection.serviceId,
-      )
-        ? prev.specializations.filter(
-          (item) => !(
-            item.categoryId === selection.categoryId && item.serviceId === selection.serviceId
-          ),
-        )
-        : [...prev.specializations, selection],
-    }));
   };
 
   const handleFileChange = (e) => {
@@ -112,6 +64,13 @@ export default function EmploymentForm() {
     e.preventDefault();
     setSubmitError('');
 
+    const normalizedSpecializations = normalizeServiceSelections(formData.specializations);
+
+    if (normalizedSpecializations.length === 0) {
+      setSubmitError('Please select at least one specialization before submitting.');
+      return;
+    }
+
     if (!formData.resume) {
       setSubmitError('Please upload your resume before submitting.');
       return;
@@ -122,7 +81,10 @@ export default function EmploymentForm() {
     try {
       await submitEmploymentApplication({
         apiBaseUrl: API_BASE_URL,
-        formData,
+        formData: {
+          ...formData,
+          specializations: normalizedSpecializations,
+        },
       });
 
       setIsSubmitted(true);
@@ -132,6 +94,12 @@ export default function EmploymentForm() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const validatePhone = (phone) => {
+    const error = utilValidatePhone(phone);
+    setPhoneError(error);
+    return !error;
   };
 
   const fieldStyles = "block w-full rounded-xl border-0 py-3.5 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-100 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-700 transition-all duration-200";
@@ -175,6 +143,13 @@ export default function EmploymentForm() {
         <h3 className="text-xl font-semibold text-slate-900">Career Application</h3>
       </div>
 
+      <EmailAddressValidation
+        value={formData.email}
+        onChange={(val) => setFormData(prev => ({ ...prev, email: val }))}
+        onVerifiedStatusChange={setIsEmailVerified}
+        isVerified={isEmailVerified}
+      />
+
       <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
         <div className="space-y-1.5">
           <label htmlFor="fullName" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
@@ -185,33 +160,15 @@ export default function EmploymentForm() {
             id="fullName"
             name="fullName"
             type="text"
+            disabled={!isEmailVerified}
             value={formData.fullName}
             onChange={handleChange}
             required
-            className={fieldStyles}
+            className={`${fieldStyles} ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : ''}`}
             placeholder="John Doe"
           />
         </div>
 
-        <div className="space-y-1.5">
-          <label htmlFor="email" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
-            <Mail className="h-3.5 w-3.5 text-teal-700/70" />
-            Email Address
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className={fieldStyles}
-            placeholder="john@example.com"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
         <div className="space-y-1.5">
           <label htmlFor="phone" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
             <Phone className="h-3.5 w-3.5 text-teal-700/70" />
@@ -221,100 +178,38 @@ export default function EmploymentForm() {
             id="phone"
             name="phone"
             type="tel"
+            disabled={!isEmailVerified}
             value={formData.phone}
-            onChange={handleChange}
-            className={fieldStyles}
+            onChange={(e) => {
+              handleChange(e);
+              if (phoneError) setPhoneError('');
+            }}
+            onBlur={(e) => {
+              if (e.target.value) validatePhone(e.target.value);
+            }}
+            className={`${fieldStyles} ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : ''} ${phoneError ? 'ring-rose-500 border-rose-500 focus:ring-rose-500 text-rose-900 bg-rose-50/50' : ''}`}
             placeholder="+1 (555) 000-0000"
           />
-        </div>
-
-        <div className="space-y-1.5">
-          <label htmlFor="specializations" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
-            <Briefcase className="h-3.5 w-3.5 text-teal-700/70" />
-            Specializations
-          </label>
-          <div className="relative" ref={dropdownRef}>
-            <button
-              id="specializations"
-              type="button"
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className={`${fieldStyles} flex min-h-[52px] items-center justify-between text-left cursor-pointer`}
-            >
-              <div className="flex flex-wrap gap-1.5 overflow-hidden">
-                {selectedSpecializationLabels.length === 0 ? (
-                  <span className="text-slate-400">Select Specializations</span>
-                ) : (
-                  formData.specializations.map((selection, index) => (
-                    <span key={`${selection.categoryId}-${selection.serviceId}`} className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2.5 py-0.5 text-[11px] font-bold text-teal-700 border border-teal-100/50 animate-in zoom-in duration-200">
-                      {selectedSpecializationLabels[index]}
-                      <X
-                        className="h-3 w-3 hover:text-teal-900 cursor-pointer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSpecToggle(selection);
-                        }}
-                      />
-                    </span>
-                  ))
-                )}
-              </div>
-              <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform duration-300 shrink-0 ml-2 ${isDropdownOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {isDropdownOpen && (
-              <div className="absolute z-20 mt-2 w-full rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-md p-2 shadow-2xl animate-in fade-in zoom-in duration-300 ring-1 ring-slate-900/5 origin-top">
-                <div className="max-h-80 overflow-y-auto p-1">
-                  {isLoadingSpecializations ? (
-                    <p className="px-3 py-3 text-sm text-slate-500">Loading specializations...</p>
-                  ) : null}
-
-                  {!isLoadingSpecializations && specializationGroups.length === 0 ? (
-                    <p className="px-3 py-3 text-sm text-slate-500">No specializations found.</p>
-                  ) : null}
-
-                  {specializationGroups.map((group) => (
-                    <div key={group.label} className="mb-4 last:mb-0 px-1">
-                      <h4 className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400/80">
-                        {group.label}
-                      </h4>
-                      <div className="space-y-1">
-                        {group.options.map((option) => {
-                          const selection = {
-                            categoryId: option.categoryId,
-                            serviceId: option.serviceId,
-                          };
-
-                          const isSelected = formData.specializations.some(
-                            (item) => (
-                              item.categoryId === selection.categoryId
-                              && item.serviceId === selection.serviceId
-                            ),
-                          );
-
-                          return (
-                            <button
-                              key={`${option.categoryId}-${option.serviceId}`}
-                              type="button"
-                              onClick={() => handleSpecToggle(selection)}
-                              className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-all duration-200 group/item ${isSelected
-                                ? 'bg-teal-50 text-teal-700 font-bold shadow-sm shadow-teal-500/5'
-                                : 'hover:bg-slate-50 text-slate-600 hover:text-slate-900'
-                                }`}
-                            >
-                              <span className="flex-1 text-left">{option.label}</span>
-                              {isSelected && <Check className="h-4 w-4 text-teal-700 animate-in zoom-in duration-200" />}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          {phoneError && (
+            <p className="mt-1.5 text-[11px] font-semibold text-rose-500 animate-in fade-in slide-in-from-top-1">
+              {phoneError}
+            </p>
+          )}
         </div>
       </div>
+      <ServiceCategorySelect
+        label="Specializations"
+        icon={Briefcase}
+        placeholder="Select Specializations"
+        value={formData.specializations}
+        onChange={(next) => {
+          setFormData((prev) => ({
+            ...prev,
+            specializations: normalizeServiceSelections(next),
+          }));
+        }}
+        fieldStyles={fieldStyles}
+      />
 
       <div className="space-y-1.5">
         <label htmlFor="coverLetter" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
@@ -324,11 +219,12 @@ export default function EmploymentForm() {
         <textarea
           id="coverLetter"
           name="coverLetter"
+          disabled={!isEmailVerified}
           value={formData.coverLetter}
           onChange={handleChange}
           rows={4}
           required
-          className={`${fieldStyles} resize-none`}
+          className={`${fieldStyles} resize-none ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : ''}`}
           placeholder="Why are you a good fit for Help On Call?"
         />
       </div>
@@ -342,16 +238,18 @@ export default function EmploymentForm() {
           <input
             type="file"
             id="resume"
+            disabled={!isEmailVerified}
             onChange={handleFileChange}
-            className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+            className={`absolute inset-0 z-10 h-full w-full opacity-0 ${!isEmailVerified ? 'pointer-events-none' : 'cursor-pointer'}`}
             accept=".pdf,.doc,.docx"
             required={!formData.resume}
           />
           <div className={`
             flex items-center justify-center rounded-2xl border-2 border-dashed px-4 py-4 transition-all duration-300
-            ${formData.resume
-              ? 'border-teal-700 bg-teal-50/30'
-              : 'border-slate-200 bg-slate-50/50 hover:border-teal-400 hover:bg-white hover:shadow-xl hover:shadow-teal-500/5 hover:-translate-y-0.5'}
+            ${!isEmailVerified ? 'border-slate-200 bg-slate-50/50 opacity-50' :
+              formData.resume
+                ? 'border-teal-700 bg-teal-50/30'
+                : 'border-slate-200 bg-slate-50/50 hover:border-teal-400 hover:bg-white hover:shadow-xl hover:shadow-teal-500/5 hover:-translate-y-0.5'}
           `}>
             {formData.resume ? (
               <div className="flex w-full items-center justify-between gap-4 animate-in fade-in duration-300">
@@ -409,8 +307,8 @@ export default function EmploymentForm() {
 
       <button
         type="submit"
-        disabled={isSubmitting}
-        className="btn-primary w-full"
+        disabled={isSubmitting || !isEmailVerified}
+        className={`btn-primary w-full ${!isEmailVerified ? 'opacity-50 pointer-events-none' : ''}`}
       >
         {isSubmitting ? 'Sending Application...' : 'Submit Application'}
       </button>

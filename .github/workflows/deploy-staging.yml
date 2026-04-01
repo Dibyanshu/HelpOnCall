@@ -1,0 +1,152 @@
+name: Vercel CI/CD (Staging)
+
+on:
+  push:
+    branches:
+      - staging
+
+concurrency:
+  group: vercel-staging-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  build-and-preview:
+    name: Build and Deploy Preview
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel preview env
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build project with Vercel
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy preview build
+        id: deploy_preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEPLOY_OUTPUT="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
+          echo "$DEPLOY_OUTPUT"
+
+          DEPLOY_URL="$(echo "$DEPLOY_OUTPUT" | grep -Eo 'https://[^[:space:]]+\.vercel\.app' | tail -n 1)"
+          if [ -z "$DEPLOY_URL" ]; then
+            echo "Unable to detect deployment URL from Vercel output" >&2
+            exit 1
+          fi
+
+          echo "url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Preview Deployment URL::$DEPLOY_URL"
+
+      - name: Publish preview URL
+        run: |
+          echo "### Preview Deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.deploy_preview.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Health check preview API
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="${{ steps.deploy_preview.outputs.url }}/api/v1/health"
+          echo "Checking $URL"
+
+          ATTEMPTS=10
+          SLEEP_SECONDS=6
+          for i in $(seq 1 "$ATTEMPTS"); do
+            HTTP_CODE="$(curl -sS -o /tmp/preview-health.json -w "%{http_code}" "$URL" || true)"
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "Preview health check passed"
+              cat /tmp/preview-health.json
+              exit 0
+            fi
+
+            echo "Attempt $i/$ATTEMPTS failed with HTTP $HTTP_CODE"
+            if [ "$i" -lt "$ATTEMPTS" ]; then
+              sleep "$SLEEP_SECONDS"
+            fi
+          done
+
+          echo "Preview health check failed"
+          cat /tmp/preview-health.json || true
+          exit 1
+
+  deploy-staging:
+    name: Approval and Deploy
+    needs: build-and-preview
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel production env
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build project for production target
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy production target
+        id: deploy_staging
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEPLOY_OUTPUT="$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})"
+          echo "$DEPLOY_OUTPUT"
+
+          DEPLOY_URL="$(echo "$DEPLOY_OUTPUT" | grep -Eo 'https://[^[:space:]]+\.vercel\.app' | tail -n 1)"
+          if [ -z "$DEPLOY_URL" ]; then
+            echo "Unable to detect deployment URL from Vercel output" >&2
+            exit 1
+          fi
+
+          echo "url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Staging Deployment URL::$DEPLOY_URL"
+
+      - name: Publish staging URL
+        run: |
+          echo "### Staging Deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.deploy_staging.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Health check staging API
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="${{ steps.deploy_staging.outputs.url }}/api/v1/health"
+          echo "Checking $URL"
+
+          ATTEMPTS=10
+          SLEEP_SECONDS=6
+          for i in $(seq 1 "$ATTEMPTS"); do
+            HTTP_CODE="$(curl -sS -o /tmp/staging-health.json -w "%{http_code}" "$URL" || true)"
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "Staging health check passed"
+              cat /tmp/staging-health.json
+              exit 0
+            fi
+
+            echo "Attempt $i/$ATTEMPTS failed with HTTP $HTTP_CODE"
+            if [ "$i" -lt "$ATTEMPTS" ]; then
+              sleep "$SLEEP_SECONDS"
+            fi
+          done
+
+          echo "Staging health check failed"
+          cat /tmp/staging-health.json || true
+          exit 1

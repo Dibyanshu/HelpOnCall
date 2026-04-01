@@ -1,0 +1,123 @@
+name: Cloudways CI/CD (Production)
+
+on:
+  push:
+    branches:
+      - production
+
+concurrency:
+  group: cloudways-production-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-validate:
+    name: Build and Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install and build API
+        working-directory: Apps/api
+        run: |
+          npm install
+          npm run typecheck
+          npm run build
+
+      - name: Install and build Web
+        working-directory: Apps/web
+        env:
+          VITE_API_BASE_URL: ${{ secrets.PRODUCTION_WEB_API_BASE_URL }}
+        run: |
+          npm install
+          npm run build
+
+  deploy-production:
+    name: Approval and Deploy to Cloudways
+    needs: build-and-validate
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.CLOUDWAYS_SSH_PRIVATE_KEY }}
+
+      - name: Add Cloudways host to known_hosts
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh-keyscan -p "${{ secrets.CLOUDWAYS_SSH_PORT }}" "${{ secrets.CLOUDWAYS_SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Run remote preflight checks
+        shell: bash
+        env:
+          SSH_PORT: ${{ secrets.CLOUDWAYS_SSH_PORT }}
+          SSH_HOST: ${{ secrets.CLOUDWAYS_SSH_HOST }}
+          SSH_USER: ${{ secrets.CLOUDWAYS_SSH_USER }}
+          APP_PATH: ${{ secrets.CLOUDWAYS_APP_PATH }}
+          DEPLOY_BRANCH: production
+          API_PROCESS_NAME: ${{ secrets.CLOUDWAYS_PM2_PROCESS_NAME }}
+          PUBLIC_HTML_PATH: ${{ secrets.CLOUDWAYS_PUBLIC_HTML_PATH }}
+          HEALTH_URL: ${{ secrets.PRODUCTION_HEALTHCHECK_URL }}
+        run: |
+          set -euo pipefail
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "APP_PATH='$APP_PATH' DEPLOY_BRANCH='$DEPLOY_BRANCH' API_PROCESS_NAME='$API_PROCESS_NAME' PUBLIC_HTML_PATH='$PUBLIC_HTML_PATH' HEALTH_URL='$HEALTH_URL' bash -s" \
+            < scripts/cloudways-preflight.sh
+
+      - name: Run remote deployment script
+        shell: bash
+        env:
+          SSH_PORT: ${{ secrets.CLOUDWAYS_SSH_PORT }}
+          SSH_HOST: ${{ secrets.CLOUDWAYS_SSH_HOST }}
+          SSH_USER: ${{ secrets.CLOUDWAYS_SSH_USER }}
+          APP_PATH: ${{ secrets.CLOUDWAYS_APP_PATH }}
+          DEPLOY_BRANCH: production
+          API_PROCESS_NAME: ${{ secrets.CLOUDWAYS_PM2_PROCESS_NAME }}
+          PUBLIC_HTML_PATH: ${{ secrets.CLOUDWAYS_PUBLIC_HTML_PATH }}
+        run: |
+          set -euo pipefail
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "APP_PATH='$APP_PATH' DEPLOY_BRANCH='$DEPLOY_BRANCH' API_PROCESS_NAME='$API_PROCESS_NAME' PUBLIC_HTML_PATH='$PUBLIC_HTML_PATH' bash -s" \
+            < scripts/deploy-production-cloudways.sh
+
+      - name: Health check production API
+        shell: bash
+        env:
+          HEALTH_URL: ${{ secrets.PRODUCTION_HEALTHCHECK_URL }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$HEALTH_URL" ]]; then
+            echo "PRODUCTION_HEALTHCHECK_URL is required" >&2
+            exit 1
+          fi
+
+          ATTEMPTS=12
+          SLEEP_SECONDS=10
+
+          for i in $(seq 1 "$ATTEMPTS"); do
+            HTTP_CODE="$(curl -sS -o /tmp/production-health.json -w "%{http_code}" "$HEALTH_URL" || true)"
+            if [[ "$HTTP_CODE" == "200" ]] && grep -q '"status":"ok"' /tmp/production-health.json; then
+              echo "Production health check passed"
+              cat /tmp/production-health.json
+              exit 0
+            fi
+
+            echo "Attempt $i/$ATTEMPTS failed with HTTP $HTTP_CODE"
+            if [[ "$i" -lt "$ATTEMPTS" ]]; then
+              sleep "$SLEEP_SECONDS"
+            fi
+          done
+
+          echo "Production health check failed"
+          cat /tmp/production-health.json || true
+          exit 1

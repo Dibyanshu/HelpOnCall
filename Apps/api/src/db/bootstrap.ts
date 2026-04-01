@@ -1,6 +1,11 @@
 import { sql } from "drizzle-orm";
 import { db } from "./index.js";
 
+function supportsSqliteIntrospection(): boolean {
+  const candidate = db as unknown as { get?: unknown; all?: unknown };
+  return typeof candidate.get === "function" && typeof candidate.all === "function";
+}
+
 const USERS_TABLE_DDL = sql`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -74,6 +79,40 @@ const CUSTOMER_TESTIMONIALS_TABLE_DDL = sql`
     rating REAL NOT NULL,
     profile_pic TEXT,
     status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+    created_by TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL DEFAULT 0,
+    updated_at INTEGER NOT NULL DEFAULT 0
+  )
+`;
+
+const EMAIL_TEMPLATES_TABLE_DDL = sql`
+  CREATE TABLE IF NOT EXISTS email_templates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    template_key TEXT NOT NULL UNIQUE,
+    module TEXT NOT NULL CHECK (module IN ('employee', 'user_registration', 'rfq', 'system')),
+    channel TEXT NOT NULL DEFAULT 'email',
+    subject_template TEXT NOT NULL,
+    text_template TEXT NOT NULL,
+    html_template TEXT,
+    variables_schema TEXT,
+    description TEXT,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    version INTEGER NOT NULL DEFAULT 1,
+    created_by TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL DEFAULT 0,
+    updated_at INTEGER NOT NULL DEFAULT 0
+  )
+`;
+
+const EMAIL_VALIDATOR_TABLE_DDL = sql`
+  CREATE TABLE IF NOT EXISTS email_validator (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL,
+    data TEXT NOT NULL,
+    code TEXT NOT NULL UNIQUE DEFAULT (
+      lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))), 2) || '-' || substr('89ab', abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))), 2) || '-' || lower(hex(randomblob(6)))
+    ),
+    module TEXT NOT NULL CHECK (module IN ('employee', 'user_registration', 'rfq')),
     created_by TEXT NOT NULL DEFAULT '',
     created_at INTEGER NOT NULL DEFAULT 0,
     updated_at INTEGER NOT NULL DEFAULT 0
@@ -252,6 +291,17 @@ async function migrateEmploymentToAddIdAndAuditColumns(): Promise<void> {
   }
 }
 
+async function migrateEmailValidatorAddCreatedByColumn(): Promise<void> {
+  const columns = await db.all<{ name: string }>(sql`PRAGMA table_info(email_validator)`);
+  const hasCreatedBy = columns.some((column) => column.name === "created_by");
+
+  if (hasCreatedBy) {
+    return;
+  }
+
+  await db.run(sql`ALTER TABLE email_validator ADD COLUMN created_by TEXT NOT NULL DEFAULT ''`);
+}
+
 export async function ensureTables(): Promise<void> {
   await db.run(USERS_TABLE_DDL);
   await db.run(SERVICE_CATEGORIES_TABLE_DDL);
@@ -259,9 +309,19 @@ export async function ensureTables(): Promise<void> {
   await db.run(EMPLOYMENT_TABLE_DDL);
   await db.run(SERVICES_CATEGORY_ID_INDEX_DDL);
   await db.run(CUSTOMER_TESTIMONIALS_TABLE_DDL);
+  await db.run(EMAIL_VALIDATOR_TABLE_DDL);
+  await db.run(EMAIL_TEMPLATES_TABLE_DDL);
+
+  // These migration helpers depend on better-sqlite3 specific db.get/db.all APIs.
+  // Turso/libsql uses a different driver shape, so skip introspection-based migrations there.
+  if (!supportsSqliteIntrospection()) {
+    return;
+  }
+
   await migrateUsersRoleConstraintForAdmin();
   await migrateUsersAddCreatedByColumn();
   await migrateServiceCategoriesAddStandardColumns();
   await migrateServicesAddStandardColumns();
   await migrateEmploymentToAddIdAndAuditColumns();
+  await migrateEmailValidatorAddCreatedByColumn();
 }

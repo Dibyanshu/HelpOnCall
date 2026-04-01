@@ -3,14 +3,14 @@ import nodemailer, { type Transporter } from "nodemailer";
 import type { FastifyInstance } from "fastify";
 import { env } from "../config/env.js";
 
-type SendMailInput = {
+export type SendMailInput = {
   to: string | string[];
   subject: string;
   text: string;
   html?: string;
 };
 
-type MailService = {
+export type MailService = {
   enabled: boolean;
   send(input: SendMailInput): Promise<void>;
   verify(): Promise<boolean>;
@@ -18,8 +18,9 @@ type MailService = {
 
 async function mailPlugin(fastify: FastifyInstance) {
   let transporter: Transporter | null = null;
+  let mailEnabled = env.MAIL_ENABLED;
 
-  if (env.MAIL_ENABLED) {
+  if (mailEnabled) {
     transporter = nodemailer.createTransport({
       host: env.SMTP_HOST,
       port: env.SMTP_PORT,
@@ -36,13 +37,14 @@ async function mailPlugin(fastify: FastifyInstance) {
       await transporter.verify();
       fastify.log.info("SMTP transporter initialized successfully");
     } catch (error) {
-      fastify.log.error({ error }, "SMTP verification failed");
-      throw error;
+      fastify.log.error({ error }, "SMTP verification failed - continuing with mail disabled");
+      transporter = null;
+      mailEnabled = false;
     }
   }
 
   const mailService: MailService = {
-    enabled: env.MAIL_ENABLED,
+    enabled: mailEnabled,
     async verify() {
       if (!transporter) {
         return false;

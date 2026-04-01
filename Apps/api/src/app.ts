@@ -5,6 +5,8 @@ import { env } from "./config/env.js";
 import authPlugin from "./plugins/auth.js";
 import mailPlugin from "./plugins/mail.js";
 import adminUserRoutes from "./routes/admin-users.js";
+import emailValidatorRoutes from "./routes/emailValidator.js";
+import emailTemplateRoutes from "./routes/emailTemplates.js";
 import authRoutes from "./routes/auth.js";
 import employmentRoutes from "./routes/employment.js";
 import healthRoutes from "./routes/health.js";
@@ -33,6 +35,8 @@ export function buildApp() {
   app.register(healthRoutes, { prefix: "/api/v1" });
   app.register(authRoutes, { prefix: "/api/v1" });
   app.register(adminUserRoutes, { prefix: "/api/v1" });
+  app.register(emailValidatorRoutes, { prefix: "/api/v1" });
+  app.register(emailTemplateRoutes, { prefix: "/api/v1" });
   app.register(servicesRoutes, { prefix: "/api/v1" });
   app.register(employmentRoutes, { prefix: "/api/v1" });
   app.register(testimonialsRoutes, { prefix: "/api/v1" });
