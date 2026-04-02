@@ -106,3 +106,30 @@ Optional operational settings:
 1. Re-run workflow from last known good production commit.
 2. If needed, SSH and manually checkout known good commit, rebuild API/web, restart PM2.
 3. Re-run health and smoke checks.
+
+
+
+Key Gen Command
+$ ssh-keygen -t ed25519 -C "cloudways-access-help-on-call" -f ~/.ssh/cloudways_help_on_call -N ""
+
+Then go to folder: 
+/c/Users/dibyanshu/.ssh/cloudways_help_on_call.pub
+
+CLOUDWAYS_PUBLIC_HTML_PATH = /public_html
+
+ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "mkdir -p ~/helponcall-repo && cd ~/helponcall-repo && if [ ! -d .git ]; then git clone -b production git@github.com:Dibyanshu/HelpOnCall.git .; else git fetch origin production; fi && ls Apps/api Apps/web"
+
+ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 \
+"mkdir -p ~/helponcall-repo && cd ~/helponcall-repo && if [ ! -d .git ]; then git clone -b production git@github.com:Dibyanshu/HelpOnCall.git .; else git fetch origin production; fi && ls Apps/api Apps/web"
+
+Add GitHub host key on Cloudways server
+
+ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && ssh-keyscan -H github.com >> ~/.ssh/known_hosts && chmod 600 ~/.ssh/known_hosts && tail -n 3 ~/.ssh/known_hosts"
+
+Generate a GitHub deploy key on Cloudways server
+
+ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "ssh-keygen -t ed25519 -C 'cloudways-github-deploy' -f ~/.ssh/github_deploy -N '' && cat ~/.ssh/github_deploy.pub"
+
+ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "ls -la /home/master/applications/6323970/public_html"
+
+ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "for d in \$(find /home/master/applications -maxdepth 4 -type d -name public_html 2>/dev/null); do echo '---'; echo \$d; ls -la \$d | head; done"
