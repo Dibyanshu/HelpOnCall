@@ -55,6 +55,12 @@ npm install
 npm run build
 
 mkdir -p "$PUBLIC_HTML_PATH"
-rsync -av --delete dist/ "$PUBLIC_HTML_PATH/"
+# Cloudways public_html may not allow preserving ownership/perms/timestamps.
+rsync -rltvz --delete \
+  --omit-dir-times \
+  --no-perms \
+  --no-owner \
+  --no-group \
+  dist/ "$PUBLIC_HTML_PATH/"
 
 echo "[deploy] deployment completed successfully"
