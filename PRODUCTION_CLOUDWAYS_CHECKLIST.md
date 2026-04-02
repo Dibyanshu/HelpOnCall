@@ -138,3 +138,7 @@ cat ~/.ssh/cloudways_help_on_call | clip
 
 # fallback: install with user prefix and expose PATH
 ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "mkdir -p ~/.npm-global && npm config set prefix '~/.npm-global' && echo 'export PATH=\$HOME/.npm-global/bin:\$PATH' >> ~/.profile && export PATH=\$HOME/.npm-global/bin:\$PATH && npm install -g pm2 && command -v pm2 && pm2 --version"
+
+
+Verify values exist:
+ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "grep -E '^(APP_ENV|DB_PROVIDER|TURSO_DATABASE_URL|TURSO_AUTH_TOKEN|JWT_SECRET)=' /home/master/helponcall-repo/Apps/api/.env"
