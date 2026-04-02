@@ -4,6 +4,8 @@ import ServiceCategorySelect from '../common/ServiceCategorySelect';
 import EmailAddressValidation from '../common/EmailAddressValidation';
 import { validateEmail, validatePhone, validateRequired } from '../../utils/validation';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 const relations = ['Spouse', 'Parent', 'Child', 'Sibling', 'Grandparent', 'Friend', 'Uncle', 'Aunt', 'Cousin', 'Niece', 'Nephew'];
 
 function isServiceSelection(item) {
@@ -180,11 +182,30 @@ export default function RFQForm({ onCancel }) {
     };
 
     setIsSubmitting(true);
-    // Simulate API call for premium feel
-    await new Promise(r => setTimeout(r, 1200));
-    console.log('Form submitted:', payload);
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/rfq`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data?.message || 'Unable to submit quotation request. Please try again.');
+      }
+
+      setIsSubmitted(true);
+    } catch (error) {
+      setErrors(prev => ({
+        ...prev,
+        submit: error?.message || 'Unable to submit quotation request. Please try again.'
+      }));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const hasPostalCode = (text) => {
@@ -211,12 +232,21 @@ export default function RFQForm({ onCancel }) {
             </p>
           </div>
         </div>
-        <button
-          onClick={() => setIsSubmitted(false)}
-          className="mt-12 btn-secondary px-8 py-3 rounded-full text-slate-600 border-slate-200 hover:border-teal-600 hover:text-teal-700 transition-all shadow-lg shadow-black/5"
-        >
-          Submit Another Request
-        </button>
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
+          <button
+            onClick={() => setIsSubmitted(false)}
+            className="btn-secondary px-8 py-3 rounded-full text-slate-600 border-slate-200 hover:border-teal-600 hover:text-teal-700 transition-all shadow-lg shadow-black/5"
+          >
+            Submit Another Request
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="btn-primary text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest disabled:opacity-50"
+          >
+            Close
+          </button>
+        </div>
       </div>
     );
   }
@@ -572,6 +602,7 @@ export default function RFQForm({ onCancel }) {
 
         {/* Global Action Terminal */}
         <div className="flex items-center justify-end gap-4 pt-3 border-t border-gray-100">
+          <ErrorMessage className="mr-auto" error={errors.submit} />
           <button
             type="button"
             onClick={onCancel}
