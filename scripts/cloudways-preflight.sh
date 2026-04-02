@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Ensure user-global npm binaries are available in non-login shells.
+export PATH="$HOME/.npm-global/bin:$PATH"
+
 required_vars=(
   APP_PATH
   DEPLOY_BRANCH

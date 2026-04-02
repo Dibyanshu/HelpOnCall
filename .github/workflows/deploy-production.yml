@@ -81,9 +81,31 @@ jobs:
           fi
 
       - name: Setup SSH key
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.CLOUDWAYS_SSH_PRIVATE_KEY }}
+        shell: bash
+        env:
+          CLOUDWAYS_SSH_PRIVATE_KEY: ${{ secrets.CLOUDWAYS_SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          # Write secret as-is first.
+          printf '%s' "$CLOUDWAYS_SSH_PRIVATE_KEY" > ~/.ssh/cloudways_deploy_key
+
+          # Normalize common secret formatting issues from copy/paste.
+          sed -i 's/\r$//' ~/.ssh/cloudways_deploy_key
+          if grep -q '\\n' ~/.ssh/cloudways_deploy_key; then
+            perl -0777 -pe 's/\\n/\n/g' ~/.ssh/cloudways_deploy_key > ~/.ssh/cloudways_deploy_key.tmp
+            mv ~/.ssh/cloudways_deploy_key.tmp ~/.ssh/cloudways_deploy_key
+          fi
+
+          chmod 600 ~/.ssh/cloudways_deploy_key
+
+          # Fail early if the private key is malformed.
+          ssh-keygen -y -f ~/.ssh/cloudways_deploy_key >/dev/null
+
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/cloudways_deploy_key
 
       - name: Add Cloudways host to known_hosts
         shell: bash
