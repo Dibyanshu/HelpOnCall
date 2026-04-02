@@ -104,9 +104,6 @@ jobs:
           # Fail early if the private key is malformed.
           ssh-keygen -y -f ~/.ssh/cloudways_deploy_key >/dev/null
 
-          eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/cloudways_deploy_key
-
       - name: Add Cloudways host to known_hosts
         shell: bash
         run: |
@@ -126,7 +123,7 @@ jobs:
           HEALTH_URL: ${{ secrets.PRODUCTION_HEALTHCHECK_URL }}
         run: |
           set -euo pipefail
-          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+          ssh -i ~/.ssh/cloudways_deploy_key -o IdentitiesOnly=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
             "APP_PATH='$APP_PATH' DEPLOY_BRANCH='$DEPLOY_BRANCH' API_PROCESS_NAME='$API_PROCESS_NAME' PUBLIC_HTML_PATH='$PUBLIC_HTML_PATH' HEALTH_URL='$HEALTH_URL' bash -s" \
             < scripts/cloudways-preflight.sh
 
@@ -142,7 +139,7 @@ jobs:
           PUBLIC_HTML_PATH: ${{ secrets.CLOUDWAYS_PUBLIC_HTML_PATH }}
         run: |
           set -euo pipefail
-          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+          ssh -i ~/.ssh/cloudways_deploy_key -o IdentitiesOnly=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
             "APP_PATH='$APP_PATH' DEPLOY_BRANCH='$DEPLOY_BRANCH' API_PROCESS_NAME='$API_PROCESS_NAME' PUBLIC_HTML_PATH='$PUBLIC_HTML_PATH' bash -s" \
             < scripts/deploy-production-cloudways.sh
 
