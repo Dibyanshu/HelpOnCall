@@ -1,4 +1,4 @@
-import RFQForm from '../components/forms/RFQForm';
+import RFQForm from '../components/forms/RFQSForm';
 import { useNavigate } from 'react-router-dom';
 
 export default function RequestForQuote() {

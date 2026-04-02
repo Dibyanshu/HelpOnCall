@@ -90,6 +90,11 @@ export const emailValidator = sqliteTable("email_validator", {
 
 export const EMAIL_TEMPLATE_MODULE_VALUES = ["employee", "user_registration", "rfq", "system"] as const;
 
+export type RfqServiceSelection = {
+  categoryId: number;
+  serviceId: number;
+};
+
 export const emailTemplates = sqliteTable("email_templates", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   templateKey: text("template_key").notNull().unique(),
@@ -102,6 +107,32 @@ export const emailTemplates = sqliteTable("email_templates", {
   description: text("description"),
   isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
   version: integer("version").notNull().default(1),
+  createdBy: text("created_by").notNull().default(""),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(new Date(0)),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(new Date(0))
+});
+
+export const rfqs = sqliteTable("rfqs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  rfqId: text("rfq_id")
+    .notNull()
+    .unique()
+    .default(
+      sql`(lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))), 2) || '-' || substr('89ab', abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))), 2) || '-' || lower(hex(randomblob(6))))`
+    ),
+  email: text("email").notNull(),
+  fullName: text("full_name").notNull(),
+  phone: text("phone").notNull(),
+  address: text("address").notNull(),
+  preferredContact: text("preferred_contact", { enum: ["email", "phone", "any"] }).notNull(),
+  serviceSelected: text("service_selected", { mode: "json" }).$type<RfqServiceSelection[]>().notNull(),
+  startDate: integer("start_date", { mode: "timestamp" }).notNull(),
+  durationVal: integer("duration_val").notNull(),
+  durationType: text("duration_type", { enum: ["Day", "Week", "Month"] }).notNull(),
+  selfCare: integer("self_care", { mode: "boolean" }).notNull().default(false),
+  recipientName: text("recipient_name").notNull(),
+  recipientRelation: text("recipient_relation").notNull(),
+  status: text("status", { enum: ["new", "approve", "reject"] }).notNull().default("new"),
   createdBy: text("created_by").notNull().default(""),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(new Date(0)),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(new Date(0))
@@ -122,3 +153,5 @@ export type EmailValidator = typeof emailValidator.$inferSelect;
 export type NewEmailValidator = typeof emailValidator.$inferInsert;
 export type EmailTemplate = typeof emailTemplates.$inferSelect;
 export type NewEmailTemplate = typeof emailTemplates.$inferInsert;
+export type Rfq = typeof rfqs.$inferSelect;
+export type NewRfq = typeof rfqs.$inferInsert;

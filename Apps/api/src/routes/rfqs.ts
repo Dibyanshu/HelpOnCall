@@ -96,7 +96,7 @@ function buildRfqConfirmationEmail(input: z.infer<typeof createRfqSchema>) {
 }
 
 const rfqRoutes: FastifyPluginAsync = async (fastify) => {
-  fastify.post("/rfq", async (request, reply) => {
+  fastify.post("/rfqs", async (request, reply) => {
     const bodyParse = createRfqSchema.safeParse(request.body);
 
     if (!bodyParse.success) {
