@@ -170,6 +170,52 @@ function buildAdminSubmissionNotificationEmail(input: {
   return { subject, text, html };
 }
 
+function escapeHtml(input: string): string {
+  return input
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function buildApplicantSubmissionConfirmationEmail(input: {
+  fullName: string;
+  emailAddress: string;
+}): { subject: string; text: string; html: string } {
+  const subject = "HelpOnCall employment application received";
+
+  const text = [
+    `Hi ${input.fullName},`,
+    "",
+    "Application Sent!",
+    "",
+    "Your profile has entered our orbit. Our recruitment team will review your application and reach out shortly.",
+    `A confirmation has been sent to ${input.emailAddress}.`,
+    "",
+    "HelpOnCall Team"
+  ].join("\n");
+
+  const html = `
+    <div style="display:flex;align-items:center;justify-content:center;padding:16px;background:#f8fafc;font-family:Arial,sans-serif;">
+      <div style="width:100%;max-width:448px;display:flex;flex-direction:column;align-items:center;background:#ffffff;border-radius:40px;padding:48px;box-shadow:0 25px 50px rgba(148,163,184,0.25);text-align:center;">
+        <div style="position:relative;margin-bottom:32px;">
+          <div style="position:absolute;inset:0;border-radius:9999px;background:#ccfbf1;opacity:0.75;"></div>
+          <div style="position:relative;display:flex;height:96px;width:96px;align-items:center;justify-content:center;border-radius:9999px;background:#f0fdfa;color:#0f766e;font-size:48px;line-height:1;">
+            ✓
+          </div>
+        </div>
+        <h2 style="margin:0 0 16px;font-size:30px;font-weight:700;color:#0f172a;">Application Sent!</h2>
+        <p style="margin:0 0 32px;color:#475569;line-height:1.7;">
+          Your profile has entered our orbit. Our recruitment team will review your application and reach out shortly.
+        </p>
+      </div>
+    </div>
+  `;
+
+  return { subject, text, html };
+}
+
 function buildApplicantStatusEmail(input: {
   fullName: string;
   empId: string;
@@ -394,6 +440,22 @@ const employmentRoutes: FastifyPluginAsync = async (fastify) => {
         .catch((error) => {
           fastify.log.error({ error }, "Failed to send employment submission email to admins");
         });
+
+      void (async () => {
+        const emailContent = buildApplicantSubmissionConfirmationEmail({
+          fullName: createdSubmission.fullName,
+          emailAddress: createdSubmission.emailAddress
+        });
+
+        await fastify.mail.send({
+          to: createdSubmission.emailAddress,
+          subject: emailContent.subject,
+          text: emailContent.text,
+          html: emailContent.html
+        });
+      })().catch((error) => {
+        fastify.log.error({ error }, "Failed to send employment submission confirmation email to applicant");
+      });
 
       return reply.code(201).send({
         message: "Employment application submitted successfully",

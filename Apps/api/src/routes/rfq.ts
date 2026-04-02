@@ -69,7 +69,12 @@ function buildRfqConfirmationEmail(input: z.infer<typeof createRfqSchema>) {
   const html = `
     <div style="font-family:Arial,sans-serif;background:#f8fafc;padding:32px 16px;text-align:center;">
       <div style="max-width:640px;margin:0 auto;">
-        <div style="margin:0 auto 24px;display:flex;height:96px;width:96px;align-items:center;justify-content:center;border-radius:9999px;background:linear-gradient(135deg,#14b8a6,#0f766e);color:#ffffff;box-shadow:0 20px 32px rgba(20,184,166,0.3);font-size:44px;font-weight:700;">✓</div>
+        <div style="position:relative;margin-bottom:32px;">
+          <div style="position:absolute;inset:0;border-radius:9999px;background:#ccfbf1;opacity:0.75;"></div>
+          <div style="position:relative;display:flex;height:96px;width:96px;align-items:center;justify-content:center;border-radius:9999px;background:#f0fdfa;color:#0f766e;font-size:48px;line-height:1;">
+            ✓
+          </div>
+        </div>
         <h2 style="font-size:36px;line-height:1.2;color:#0f172a;margin:0 0 16px;font-weight:800;">Request Received!</h2>
         <div style="max-width:560px;margin:0 auto 16px;">
           <p style="font-size:20px;line-height:1.6;color:#475569;margin:0 0 20px;font-weight:500;">

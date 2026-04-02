@@ -242,7 +242,7 @@ export default function RFQForm({ onCancel }) {
           <button
             type="button"
             onClick={onCancel}
-            className="btn-primary text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest disabled:opacity-50"
+            className="btn-primary text-xs font-semibold text-slate-400 transition-colors uppercase tracking-widest disabled:opacity-50"
           >
             Close
           </button>
