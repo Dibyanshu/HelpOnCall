@@ -33,6 +33,7 @@ jobs:
         working-directory: Apps/web
         env:
           VITE_API_BASE_URL: ${{ secrets.PRODUCTION_WEB_API_BASE_URL }}
+          VITE_BASE_PATH: /
         run: |
           npm install
           npm run build
@@ -137,10 +138,12 @@ jobs:
           DEPLOY_BRANCH: production
           API_PROCESS_NAME: ${{ secrets.CLOUDWAYS_PM2_PROCESS_NAME }}
           PUBLIC_HTML_PATH: ${{ secrets.CLOUDWAYS_PUBLIC_HTML_PATH }}
+          WEB_API_BASE_URL: ${{ secrets.PRODUCTION_WEB_API_BASE_URL }}
+          WEB_BASE_PATH: /
         run: |
           set -euo pipefail
           ssh -i ~/.ssh/cloudways_deploy_key -o IdentitiesOnly=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
-            "APP_PATH='$APP_PATH' DEPLOY_BRANCH='$DEPLOY_BRANCH' API_PROCESS_NAME='$API_PROCESS_NAME' PUBLIC_HTML_PATH='$PUBLIC_HTML_PATH' bash -s" \
+            "APP_PATH='$APP_PATH' DEPLOY_BRANCH='$DEPLOY_BRANCH' API_PROCESS_NAME='$API_PROCESS_NAME' PUBLIC_HTML_PATH='$PUBLIC_HTML_PATH' WEB_API_BASE_URL='$WEB_API_BASE_URL' WEB_BASE_PATH='$WEB_BASE_PATH' bash -s" \
             < scripts/deploy-production-cloudways.sh
 
       - name: Health check production API

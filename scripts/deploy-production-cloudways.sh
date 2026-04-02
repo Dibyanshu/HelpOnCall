@@ -52,7 +52,7 @@ pm2 save
 # Frontend build and publish
 cd ../web
 npm install
-npm run build
+VITE_API_BASE_URL="${WEB_API_BASE_URL:-}" VITE_BASE_PATH="${WEB_BASE_PATH:-/}" npm run build
 
 mkdir -p "$PUBLIC_HTML_PATH"
 # Cloudways public_html may not allow preserving ownership/perms/timestamps.
