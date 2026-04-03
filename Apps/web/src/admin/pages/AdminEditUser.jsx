@@ -9,7 +9,7 @@ const ROLE_OPTIONS = [
   { value: 'super_admin', label: 'Super Admin' },
 ];
 
-export default function AdminUserEditPage({
+export default function AdminEditUser({
   isOpen,
   formData,
   fieldErrors,

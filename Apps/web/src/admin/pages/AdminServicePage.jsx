@@ -503,17 +503,6 @@ export default function AdminServicePage() {
           <div className="mt-6 rounded-md border border-slate-200 bg-slate-50/50 p-4 sm:p-6">
             {mode === 'create-category' || mode === 'edit-category' ? (
               <>
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                    <Settings2 className="h-4 w-4 text-teal-700" />
-                    Category Details
-                  </div>
-                  {selectedCategory && (
-                    <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 ring-1 ring-inset ring-slate-200">
-                      #{toDisplayNumber(selectedCategory.displayOrder ?? 0)}
-                    </span>
-                  )}
-                </div>
                 <CategoryForm
                   key={`category-${selectedCategory?.id || 'new'}`}
                   initialData={selectedCategory}

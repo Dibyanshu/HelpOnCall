@@ -252,7 +252,7 @@ function buildApplicantStatusEmail(input: {
 
 async function findAdminRecipientEmails(): Promise<string[]> {
   const rows = await db
-    .select({ email: users.email })
+    .select({ email: users.personalEmail })
     .from(users)
     .where(
       and(

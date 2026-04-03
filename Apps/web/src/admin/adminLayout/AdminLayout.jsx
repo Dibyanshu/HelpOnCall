@@ -10,7 +10,6 @@ import {
   BriefcaseBusiness,
   Megaphone,
   Headset,
-  ChevronRight,
   Lock,
   LogOut,
   Bell,
@@ -21,11 +20,12 @@ import {
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAdminAuth } from '../auth/AdminAuthContext.jsx';
+import helpOnCallLogo from '../../assets/helpOnCallLogo.png';
 
 const SIDEBAR_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
   { label: 'Manage Services', icon: Database, path: '/admin/services' },
-  { label: 'Manage Employees', icon: UsersRound, path: '/admin/users' },
+  { label: 'Manage Staffs', icon: UsersRound, path: '/admin/users' },
   { label: 'Job Applications', icon: ClipboardList, path: '#', isLocked: true },
   { label: 'Manage Customers', icon: Users, path: '#', isLocked: true },
   { label: 'Manage Blogs', icon: Building2, path: '#', isLocked: true },
@@ -75,7 +75,7 @@ export default function AdminLayout() {
                 {user?.name?.charAt(0) || '!'}
               </div>
               <div className="text-left hidden sm:block">
-                <p className="text-sm font-bold text-slate-800 leading-none mb-0.5 group-hover:text-teal-700 transition-colors uppercase tracking-tight">{user?.name}</p>
+                <p className="text-sm font-bold text-slate-800 leading-none mb-0.5 group-hover:text-teal-700 transition-colors uppercase">{user?.name}</p>
               </div>
               <ChevronDown size={14} className={`text-slate-300 transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -94,7 +94,7 @@ export default function AdminLayout() {
                       <ShieldCheck size={16} className="text-teal-600" />
                       <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">My Role</span>
                     </div>
-                    <p className="text-xs font-bold text-slate-800 mt-1.5 lowercase ml-7">{user?.role || 'Administrator'}</p>
+                    <p className="text-xs font-bold text-slate-800 mt-1.5 lowercase ml-7 capitalize">{user?.role || 'Administrator'}</p>
                   </div>
                   {/* Sign Out Button */}
                   <button
@@ -114,11 +114,19 @@ export default function AdminLayout() {
       </header>
       {/* SIDEBAR */}
       <aside className="fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-200 z-50 hidden xl:flex flex-col">
-        <div className="p-6 h-20 flex items-center gap-3 border-b border-slate-50">
-          <div className="h-9 w-9 bg-gradient-to-br from-[#0f766e] to-[#14b8a6] rounded-md flex items-center justify-center shadow-md shadow-teal-500/10">
-            <span className="text-white text-lg italic tracking-tighter">H</span>
+        <div className="p-4 h-20 flex items-center gap-3 border-b border-slate-50 bg-white">
+          <div className="h-11 w-11 rounded-md border border-slate-200 bg-white shadow-sm flex items-center justify-center overflow-hidden shrink-0">
+            <img
+              src={helpOnCallLogo}
+              alt="Help On Call"
+              className="h-8 w-auto object-contain"
+              loading="eager"
+            />
           </div>
-          <span className="text-lg font-primary text-slate-800 tracking-tight">HELP ON CALL</span>
+          <div className="min-w-0 leading-tight">
+            <p className="text-[15px] font-semibold tracking-tight text-slate-900 truncate">Help On Call (Admin)</p>
+            <p className="text-[10px] uppercase tracking-[0.1em] text-teal-700/90 truncate mt-1">Manage The Helping hands</p>
+          </div>
         </div>
         <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto custom-scrollbar pt-6">
           {SIDEBAR_ITEMS.map((item) => {
@@ -149,7 +157,7 @@ export default function AdminLayout() {
       </aside>
       {/* MAIN CONTENT (Outlet) */}
       <main className="flex-1 xl:ml-64 min-h-screen overflow-y-auto custom-scrollbar pt-20">
-        <div className="mx-auto space-y-6 p-10">
+        <div className="mx-auto space-y-6 p-6">
           <Outlet />
         </div>
       </main>

@@ -49,8 +49,12 @@ export function useAdminUserEditForm({
   }, [isSubmittingEdit]);
 
   const openEditPanel = useCallback((targetUser) => {
-    setStatusMessage('');
-    setErrorMessage('');
+    if (typeof setStatusMessage === 'function') {
+      setStatusMessage('');
+    }
+    if (typeof setErrorMessage === 'function') {
+      setErrorMessage('');
+    }
     setEditErrorMessage('');
     setEditFieldErrors(initialEditFieldErrors);
     setEditingUserId(targetUser.id);
@@ -168,7 +172,9 @@ export function useAdminUserEditForm({
         setUsers((prev) => prev.map((item) => (item.id === updatedUser.id ? { ...item, ...updatedUser } : item)));
       }
 
-      setStatusMessage(data?.message || 'User updated successfully.');
+      if (typeof setStatusMessage === 'function') {
+        setStatusMessage(data?.message || 'User updated successfully.');
+      }
       closeEditPanel();
     } catch (error) {
       setEditErrorMessage(error.message || 'Failed to update user.');

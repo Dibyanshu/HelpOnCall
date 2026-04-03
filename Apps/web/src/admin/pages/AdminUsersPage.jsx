@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { RotateCw, Plus, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAdminAuth } from '../../admin/auth/AdminAuthContext.jsx';
 import { useToast } from '../../components/common/Toast.jsx';
 import { useConfirm } from '../../components/common/ConfirmDialog.jsx';
-import AdminUserEditPage from './AdminUserEditPage.jsx';
+import AdminEditUser from './AdminEditUser.jsx';
 import { useAdminUserEditForm } from '../../appServices/useAdminUserEditForm.js';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
@@ -24,6 +24,7 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [updatingUserId, setUpdatingUserId] = useState(null);
+  const hasShownNavigationToastRef = useRef(false);
   const toast = useToast();
   const confirm = useConfirm();
 
@@ -32,9 +33,11 @@ export default function AdminUsersPage() {
   const navigate = useNavigate();
   const successMessage = location.state?.message || '';
   const canManageStatus = user?.role === 'super_admin' || user?.role === 'admin';
+  const canCreateUsers = user?.role === 'super_admin' || user?.role === 'admin';
 
   useEffect(() => {
-    if (successMessage) {
+    if (successMessage && !hasShownNavigationToastRef.current) {
+      hasShownNavigationToastRef.current = true;
       toast.success(successMessage);
       // Clear state to avoid toast on refresh
       navigate(location.pathname, { replace: true, state: {} });
@@ -166,10 +169,7 @@ export default function AdminUsersPage() {
               <Users size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Manage Our Employees</h2>
-              <p className="text-sm text-slate-500">
-                Signed in as <span className="font-semibold text-teal-700">{user?.name || user?.email}</span> ({user?.role})
-              </p>
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Manage Help On Call Staffs</h2>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-4">
@@ -180,22 +180,22 @@ export default function AdminUsersPage() {
               className="btn-secondary gap-2 px-6 transition-all"
             >
               <RotateCw size={16} className={isLoading ? 'animate-spin' : ''} />
-              Refresh
+              Refresh Staff List
             </button>
-            {canManageStatus ? (
+            {canCreateUsers ? (
               <Link
-                to="/admin/users/new"
+                to="/admin/users/create-new-staff-record"
                 className="btn-primary gap-2 px-6 transition-all"
               >
                 <Plus size={16} />
-                New User
+                Add New Staff
               </Link>
             ) : null}
           </div>
         </div>
       </motion.div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-md sm:p-6 overflow-hidden">
+      <div className="rounded-md border border-slate-200 bg-white p-4 shadow-md sm:p-6 overflow-hidden">
 
 
         {isLoading ? (
@@ -212,9 +212,9 @@ export default function AdminUsersPage() {
                   <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Full Name</th>
                   <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Email Address</th>
                   <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">System Role</th>
-                  <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Added By</th>
                   <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Status</th>
-                  <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Created At</th>
+                  {/* <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Created By</th>
+                  <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Created At</th> */}
                   {canEditUsers ? (
                     <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Action</th>
                   ) : null}
@@ -227,19 +227,19 @@ export default function AdminUsersPage() {
                       <td className="whitespace-nowrap px-3 py-4 text-slate-800 font-medium">{item.name}</td>
                       <td className="whitespace-nowrap px-3 py-4 text-slate-600 tracking-tight">{item.email}</td>
                       <td className="whitespace-nowrap px-3 py-4">
-                        <span className={`px-2 py-1 rounded text-[10px] uppercase font-black tracking-widest ${item.role === 'super_admin' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>
+                        <span className={`px-2 py-1 rounded-md text-[10px] uppercase font-black tracking-widest ${item.role === 'super_admin' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>
                           {item.role.replace('_', ' ')}
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-slate-500 italic text-xs">{item.createdBy || 'System'}</td>
                       <td className="whitespace-nowrap px-3 py-4">
                         <span
-                          className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold shadow-sm ${item.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}`}
+                          className={`inline-flex rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-sm ${item.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}`}
                         >
                           {item.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-slate-500 text-xs">{formatDateTime(item.createdAt)}</td>
+                      {/* <td className="whitespace-nowrap px-3 py-4 text-slate-500 italic text-xs">{item.createdBy || 'System'}</td>
+                      <td className="whitespace-nowrap px-3 py-4 text-slate-500 text-xs">{formatDateTime(item.createdAt)}</td> */}
                       {canEditUsers ? (
                         <td className="whitespace-nowrap px-3 py-4">
                           <div className="flex items-center gap-2">
@@ -286,7 +286,7 @@ export default function AdminUsersPage() {
           </div>
         ) : null}
       </div>
-      <AdminUserEditPage
+      <AdminEditUser
         isOpen={isEditOpen}
         formData={editFormData}
         fieldErrors={editFieldErrors}
