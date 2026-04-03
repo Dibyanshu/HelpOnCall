@@ -3,8 +3,12 @@ import { integer, sqliteTable, text, real } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  email: text("email").notNull().unique(),
-  name: text("name").notNull(),
+  personalEmail: text("personal_email").notNull().unique(),
+  fullName: text("full_name").notNull(),
+  gender: text("gender"),
+  dateOfBirth: integer("date_of_birth", { mode: "timestamp" }),
+  dateOfJoining: integer("date_of_joining", { mode: "timestamp" }),
+  staffId: text("staff_id").unique(),
   passwordHash: text("password_hash").notNull(),
   role: text("role", {
     enum: ["content_publisher", "resume_reviewer", "job_poster", "admin", "super_admin"]

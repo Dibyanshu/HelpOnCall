@@ -540,7 +540,7 @@ curl --location '{{baseUrl}}/api/v1/email-validator/verify-code' \
 
 ---
 
-## 5) Create User (Super Admin)
+## 5) Create User (Admin or Super Admin)
 
 ### Request
 
@@ -553,8 +553,12 @@ Body (raw JSON):
 
 ```json
 {
-  "email": "publisher@helponcall.local",
-  "name": "Content Publisher User",
+  "personalEmail": "publisher@helponcall.local",
+  "fullName": "Content Publisher User",
+  "gender": "other",
+  "dateOfBirth": "1990-01-15",
+  "dateOfJoining": "2026-04-01",
+  "staffId": "publisher0426",
   "password": "UserPass123!",
   "role": "content_publisher",
   "isActive": true
@@ -566,7 +570,13 @@ Allowed role values:
 - `content_publisher`
 - `resume_reviewer`
 - `job_poster`
+- `admin`
 - `super_admin`
+
+Notes:
+
+- `admin` callers cannot assign the `super_admin` role.
+- The API also accepts legacy aliases `email` and `name`, but `personalEmail` and `fullName` are the canonical fields.
 
 ### cURL
 
@@ -575,8 +585,12 @@ curl --location '{{baseUrl}}/api/v1/admin/users' \
 --header 'Authorization: Bearer {{accessToken}}' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-  "email": "publisher@helponcall.local",
-  "name": "Content Publisher User",
+  "personalEmail": "publisher@helponcall.local",
+  "fullName": "Content Publisher User",
+  "gender": "other",
+  "dateOfBirth": "1990-01-15",
+  "dateOfJoining": "2026-04-01",
+  "staffId": "publisher0426",
   "password": "UserPass123!",
   "role": "content_publisher",
   "isActive": true
@@ -590,8 +604,12 @@ curl --location '{{baseUrl}}/api/v1/admin/users' \
   "message": "User created successfully",
   "user": {
     "id": 2,
-    "email": "publisher@helponcall.local",
-    "name": "Content Publisher User",
+    "personalEmail": "publisher@helponcall.local",
+    "fullName": "Content Publisher User",
+    "gender": "other",
+    "dateOfBirth": "1990-01-15T00:00:00.000Z",
+    "dateOfJoining": "2026-04-01T00:00:00.000Z",
+    "staffId": "publisher0426",
     "role": "content_publisher",
     "isActive": true,
     "createdAt": "2026-03-12T10:00:00.000Z"
@@ -601,7 +619,7 @@ curl --location '{{baseUrl}}/api/v1/admin/users' \
 
 ---
 
-## 6) List Users (Super Admin)
+## 6) List Users (Admin or Super Admin)
 
 ### Request
 
@@ -623,8 +641,12 @@ curl --location '{{baseUrl}}/api/v1/admin/users' \
   "data": [
     {
       "id": 2,
-      "email": "publisher@helponcall.local",
-      "name": "Content Publisher User",
+      "personalEmail": "publisher@helponcall.local",
+      "fullName": "Content Publisher User",
+      "gender": "other",
+      "dateOfBirth": "1990-01-15T00:00:00.000Z",
+      "dateOfJoining": "2026-04-01T00:00:00.000Z",
+      "staffId": "publisher0426",
       "role": "content_publisher",
       "isActive": true,
       "createdAt": "2026-03-12T10:00:00.000Z",
@@ -636,7 +658,7 @@ curl --location '{{baseUrl}}/api/v1/admin/users' \
 
 ---
 
-## 6.1) List Roles (Super Admin)
+## 6.1) List Roles (Admin or Super Admin)
 
 ### Request
 
@@ -682,7 +704,7 @@ curl --location '{{baseUrl}}/api/v1/admin/roles' \
 
 ---
 
-## 7) Update User Status (Super Admin)
+## 7) Update User Status (Admin or Super Admin)
 
 ### Request
 
@@ -719,8 +741,8 @@ curl --location '{{baseUrl}}/api/v1/admin/users/status' \
   "message": "User status updated successfully",
   "user": {
     "id": 2,
-    "email": "publisher@helponcall.local",
-    "name": "Content Publisher User",
+    "personalEmail": "publisher@helponcall.local",
+    "fullName": "Content Publisher User",
     "role": "content_publisher",
     "createdBy": "super_admin",
     "isActive": false,
@@ -745,7 +767,9 @@ Body (raw JSON, any editable fields):
 
 ```json
 {
-  "name": "Updated User Name",
+  "fullName": "Updated User Name",
+  "gender": "female",
+  "staffId": "publisher0926",
   "role": "job_poster",
   "isActive": true
 }
@@ -758,7 +782,9 @@ curl --location --request PATCH '{{baseUrl}}/api/v1/admin/users/2' \
 --header 'Authorization: Bearer {{accessToken}}' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-  "name": "Updated User Name",
+  "fullName": "Updated User Name",
+  "gender": "female",
+  "staffId": "publisher0926",
   "role": "job_poster",
   "isActive": true
 }'
@@ -771,8 +797,10 @@ curl --location --request PATCH '{{baseUrl}}/api/v1/admin/users/2' \
   "message": "User updated successfully",
   "user": {
     "id": 2,
-    "email": "publisher@helponcall.local",
-    "name": "Updated User Name",
+    "personalEmail": "publisher@helponcall.local",
+    "fullName": "Updated User Name",
+    "gender": "female",
+    "staffId": "publisher0926",
     "role": "job_poster",
     "createdBy": "super_admin",
     "isActive": true,

@@ -15,6 +15,13 @@
       "when": 1774985042395,
       "tag": "0001_deep_phantom_reporter",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1775443200000,
+      "tag": "0002_add_user_details",
+      "breakpoints": true
     }
   ]
 }

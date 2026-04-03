@@ -66,7 +66,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
     const { email, name, password, role } = bodyParse.data;
 
-    const exists = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);
+    const exists = await db.select({ id: users.id }).from(users).where(eq(users.personalEmail, email)).limit(1);
 
     if (exists.length > 0) {
       return reply.code(409).send({ message: "User with this email already exists" });
@@ -78,8 +78,8 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
     const inserted = await db
       .insert(users)
       .values({
-        email,
-        name,
+        personalEmail: email,
+        fullName: name,
         passwordHash,
         role,
         ...auditCreateFields,
@@ -87,8 +87,10 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       })
       .returning({
         id: users.id,
-        email: users.email,
-        name: users.name,
+        personalEmail: users.personalEmail,
+        fullName: users.fullName,
+        email: users.personalEmail,
+        name: users.fullName,
         role: users.role,
         isActive: users.isActive,
         createdAt: users.createdAt
@@ -126,7 +128,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
     const { email, password } = bodyParse.data;
 
-    const found = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    const found = await db.select().from(users).where(eq(users.personalEmail, email)).limit(1);
     console.log("Login attempt for email:", email, "Found user:", found.length > 0);
     const user = found[0];
 
@@ -142,7 +144,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
     const token = await reply.jwtSign({
       userId: user.id,
-      email: user.email,
+      email: user.personalEmail,
       role: user.role
     });
 
@@ -150,8 +152,8 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       token,
       user: {
         id: user.id,
-        email: user.email,
-        name: user.name,
+        email: user.personalEmail,
+        name: user.fullName,
         role: user.role
       }
     };

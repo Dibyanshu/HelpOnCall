@@ -74,6 +74,36 @@ const INITIAL_EMAIL_TEMPLATES: SeedEmailTemplate[] = [
     <p>If you did not request this, you can ignore this email.</p>`,
     variablesSchema: JSON.stringify({ required: ["code", "moduleLabel"] }),
     description: "Sent when a user requests an email verification code"
+  },
+  {
+    templateKey: "new_staff_account_created",
+    module: "system",
+    subjectTemplate: "Your HelpOnCall staff account is ready",
+    textTemplate: [
+      "Hi {{fullName}},",
+      "",
+      "Your HelpOnCall staff id has been created successfully.",
+      "You can now log in using the credentials below:",
+      "",
+      "Staff Email: {{staffEmail}}",
+      "Password: {{password}}",
+      "",
+      "Please change your password after first login.",
+      "",
+      "Regards,",
+      "HelpOnCall Team"
+    ].join("\n"),
+    htmlTemplate: `<p>Hi {{fullName}},</p>
+    <p>Your staff record has been created successfully.</p>
+    <p>You can now log in using the credentials below:</p>
+    <ul>
+      <li><strong>Staff Email:</strong> {{staffEmail}}</li>
+      <li><strong>Password:</strong> {{password}}</li>
+    </ul>
+    <p>Please change your password after first login.</p>
+    <p>Regards,<br/>HelpOnCall Team</p>`,
+    variablesSchema: JSON.stringify({ required: ["fullName", "personalEmail", "staffEmail", "password"] }),
+    description: "Sent after admin creates a new staff account"
   }
 ];
 
@@ -230,7 +260,7 @@ export async function seedSuperAdmin(): Promise<void> {
   const existing = await db
     .select({ id: users.id })
     .from(users)
-    .where(eq(users.email, env.SUPER_ADMIN_EMAIL))
+    .where(eq(users.personalEmail, env.SUPER_ADMIN_EMAIL))
     .limit(1);
 
   if (existing.length > 0) {
@@ -241,8 +271,8 @@ export async function seedSuperAdmin(): Promise<void> {
   const passwordHash = await hashPassword(env.SUPER_ADMIN_PASSWORD);
 
   await db.insert(users).values({
-    email: env.SUPER_ADMIN_EMAIL,
-    name: "Super Admin",
+    personalEmail: env.SUPER_ADMIN_EMAIL,
+    fullName: "Super Admin",
     passwordHash,
     role: "super_admin",
     isActive: true,

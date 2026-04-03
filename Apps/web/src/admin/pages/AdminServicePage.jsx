@@ -274,10 +274,7 @@ export default function AdminServicePage() {
               <Database size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Service Manager Dashboard</h2>
-              <p className="text-sm text-slate-500 font-sans">
-                Signed in as <span className="font-semibold text-teal-700">{user?.name || user?.email}</span> ({user?.role})
-              </p>
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Manage Services</h2>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-4">
@@ -297,14 +294,6 @@ export default function AdminServicePage() {
             >
               <ExternalLink size={16} />
               Preview Changes
-            </button>
-            <button
-              type="button"
-              onClick={refresh}
-              className="btn-secondary gap-2 px-6 transition-all"
-            >
-              <RefreshCcw size={16} />
-              Refresh
             </button>
             <button
               type="button"
@@ -329,14 +318,23 @@ export default function AdminServicePage() {
       <div className="grid max-w-full gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
         {/* Left container forced to grid row height via lg:h-0 lg:min-h-full trick */}
         <div className="lg:h-0 lg:min-h-full flex flex-col">
-          <aside className="relative flex min-h-[400px] flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:min-h-0 lg:flex-1">
+          <aside className="relative flex min-h-[400px] flex-col rounded-md border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:min-h-0 lg:flex-1">
             <div className="flex shrink-0 items-start justify-between gap-3">
               <div>
-                <h1 className="mt-2 flex items-center gap-2 text-xl font-bold text-slate-900">
+                <h1 className="flex items-center gap-2 text-xl font-bold text-slate-900">
                   <FolderTree className="h-5 w-5 text-teal-700" />
                   Services Tree
                 </h1>
               </div>
+              <button
+                type="button"
+                onClick={refresh}
+                className="h-8 w-8 flex items-center justify-center bg-slate-100 border border-slate-300 rounded-md text-slate-400 hover:text-teal-600 hover:bg-white hover:shadow-sm transition-all"
+                title="Refresh"
+                aria-label="Refresh services tree"
+              >
+                <RefreshCcw size={18} />
+              </button>
             </div>
 
             <div className="mt-5 flex-1 overflow-y-auto pr-2 pb-2">
@@ -363,7 +361,7 @@ export default function AdminServicePage() {
                               e.stopPropagation();
                               toggleCategory(category.id);
                             }}
-                            className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded hover:bg-slate-200 cursor-pointer"
+                            className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-md hover:bg-slate-200 cursor-pointer"
                             aria-label={isExpanded ? "Collapse" : "Expand"}
                           >
                             {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
@@ -386,7 +384,7 @@ export default function AdminServicePage() {
                               void handleMoveCategory(serviceTree, categoryIndex, 'up');
                             }}
                             disabled={isSaving || categoryIndex === 0}
-                            className="inline-flex h-6 w-6 items-center justify-center rounded border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
+                            className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
                             title="Move Up"
                           >
                             <ChevronUp size={14} />
@@ -399,7 +397,7 @@ export default function AdminServicePage() {
                               void handleMoveCategory(serviceTree, categoryIndex, 'down');
                             }}
                             disabled={isSaving || categoryIndex === serviceTree.length - 1}
-                            className="inline-flex h-6 w-6 items-center justify-center rounded border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
+                            className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
                             title="Move Down"
                           >
                             <ChevronDown size={14} />
@@ -434,7 +432,7 @@ export default function AdminServicePage() {
                                         void handleMoveService(category.services, serviceIndex, 'up');
                                       }}
                                       disabled={isSaving || serviceIndex === 0}
-                                      className="inline-flex h-5 w-5 items-center justify-center rounded border border-slate-200 bg-white text-slate-400 shadow-sm hover:bg-slate-50 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
+                                      className="inline-flex h-5 w-5 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-400 shadow-sm hover:bg-slate-50 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
                                       title="Move Up"
                                     >
                                       <ChevronUp size={12} />
@@ -447,7 +445,7 @@ export default function AdminServicePage() {
                                         void handleMoveService(category.services, serviceIndex, 'down');
                                       }}
                                       disabled={isSaving || serviceIndex === category.services.length - 1}
-                                      className="inline-flex h-5 w-5 items-center justify-center rounded border border-slate-200 bg-white text-slate-400 shadow-sm hover:bg-slate-50 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
+                                      className="inline-flex h-5 w-5 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-400 shadow-sm hover:bg-slate-50 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
                                       title="Move Down"
                                     >
                                       <ChevronDown size={12} />
@@ -470,7 +468,7 @@ export default function AdminServicePage() {
         </div>
 
         {/* Right card which defines the intrinsic content height of the grid row */}
-        <main className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 shrink-0">
+        <main className="rounded-md border border-slate-200 bg-white p-6 shadow-sm sm:p-5 shrink-0">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-2xl font-bold text-slate-900">{buildFormModeTitle(mode)}</h2>
             <div className="flex flex-wrap gap-2">
@@ -502,20 +500,9 @@ export default function AdminServicePage() {
 
 
 
-          <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-6">
+          <div className="mt-6 rounded-md border border-slate-200 bg-slate-50/50 p-4 sm:p-6">
             {mode === 'create-category' || mode === 'edit-category' ? (
               <>
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                    <Settings2 className="h-4 w-4 text-teal-700" />
-                    Category Details
-                  </div>
-                  {selectedCategory && (
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 ring-1 ring-inset ring-slate-200">
-                      #{toDisplayNumber(selectedCategory.displayOrder ?? 0)}
-                    </span>
-                  )}
-                </div>
                 <CategoryForm
                   key={`category-${selectedCategory?.id || 'new'}`}
                   initialData={selectedCategory}
@@ -526,17 +513,6 @@ export default function AdminServicePage() {
 
             {mode === 'create-service' || mode === 'edit-service' ? (
               <>
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                    <Wrench className="h-4 w-4 text-teal-700" />
-                    Service Details
-                  </div>
-                  {selectedService && (
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 ring-1 ring-inset ring-slate-200">
-                      #{toDisplayNumber(selectedService.displayOrder ?? 0)}
-                    </span>
-                  )}
-                </div>
                 <ServiceForm
                   key={`service-${selectedService?.id || 'new'}`}
                   initialData={selectedService}

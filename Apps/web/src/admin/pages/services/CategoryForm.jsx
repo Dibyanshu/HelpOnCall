@@ -98,7 +98,7 @@ export default function CategoryForm({ initialData, onClose, onSubmit }) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="btn-primary"
+          className="btn-primary gap-2 px-6 transition-all"
         >
           <Save className="h-4 w-4" />
           {isSubmitting ? 'Saving...' : 'Save Category'}

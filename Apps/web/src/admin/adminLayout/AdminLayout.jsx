@@ -1,143 +1,167 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
-  Users,
-  UserCheck,
-  Briefcase,
   LayoutDashboard,
   Database,
-  Mail,
+  UsersRound,
+  ClipboardList,
+  Users,
+  Building2,
+  BriefcaseBusiness,
+  Megaphone,
+  Headset,
+  Lock,
   LogOut,
-  ChevronLeft,
-  ChevronRight,
+  Bell,
+  Download,
+  ChevronDown,
+  ShieldCheck
 } from 'lucide-react';
-import { useState } from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useAdminAuth } from '../auth/AdminAuthContext.jsx';
-import adminHero from '../../assets/admin/admin_hero.jpg';
+import helpOnCallLogo from '../../assets/helpOnCallLogo.png';
 
-const sidebarItems = [
+const SIDEBAR_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
-  { label: 'Services', icon: Database, path: '/admin/services' },
-  { label: 'Quotations', icon: UserCheck, path: '/admin/quotations' },
-  { label: 'Our Team', icon: Users, path: '/admin/users' },
-  { label: 'Careers', icon: Briefcase, path: '/admin/employment' },
-  { label: 'Email Templates', icon: Mail, path: '/admin/email-templates', roles: ['super_admin'] },
+  { label: 'Manage Services', icon: Database, path: '/admin/services' },
+  { label: 'Manage Staffs', icon: UsersRound, path: '/admin/users' },
+  { label: 'Job Applications', icon: ClipboardList, path: '#', isLocked: true },
+  { label: 'Manage Customers', icon: Users, path: '#', isLocked: true },
+  { label: 'Manage Blogs', icon: Building2, path: '#', isLocked: true },
+  { label: 'Manage Partners', icon: BriefcaseBusiness, path: '#', isLocked: true },
+  { label: 'Manage Locations', icon: Megaphone, path: '#', isLocked: true },
+  { label: 'Customer Support', icon: Headset, path: '#', isLocked: true },
 ];
+
 
 export default function AdminLayout() {
   const { user, signOut } = useAdminAuth();
-  const [collapsed, setCollapsed] = useState(true);
   const navigate = useNavigate();
+  const [activeItem, setActiveItem] = useState('Dashboard');
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
-  const handleSignOut = () => {
-    signOut();
-    navigate('/admin/login');
-  };
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
-    <>
-      <div className="bg-slate-50 min-h-screen flex flex-col">
-        {/* Top Area: Sidebar + Main Content */}
-        <div className="flex flex-1 items-stretch">
-          {/* Sidebar Area - The aside stretches to touch footer, inner div stays sticky */}
-          <aside
-            className={`flex-shrink-0 bg-white border-r border-slate-200 shadow-sm transition-all duration-300 ease-in-out z-30 ${collapsed ? 'w-[68px]' : 'w-[240px]'
-              }`}
-          >
-            <div className="sticky top-0 h-[calc(100vh-76px)] flex flex-col">
-              {/* Collapse Toggle */}
-              <div className="flex items-center justify-end px-3 py-3 border-b border-teal-900 bg-teal-900">
-                <button
-                  onClick={() => setCollapsed(!collapsed)}
-                  className="h-7 w-7 rounded-md flex items-center justify-center text-slate-400 hover:text-teal-700 hover:bg-teal-50 transition-all cursor-pointer"
-                  title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                >
-                  {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-                </button>
+    <div className="flex min-h-screen bg-[#F4F7F6] font-secondary overflow-hidden">
+      {/* FIXED HEADER */}
+      <header className="fixed top-0 right-0 left-0 xl:left-64 h-20 bg-white border-b border-slate-100 z-40 px-10 flex items-center justify-between shadow-sm/5">
+        <h1 className="text-xl font-primary text-slate-800 tracking-tight">Overview</h1>
+        <div className="flex items-center gap-2">
+          <button className="h-10 w-10 flex items-center justify-center bg-slate-100 border border-slate-300 rounded-md text-slate-400 hover:text-teal-600 hover:bg-white hover:shadow-sm transition-all relative" title='Export Reports'>
+            <Download size={18} />
+          </button>
+          <button className="h-10 w-10 flex items-center justify-center bg-slate-100 border border-slate-300 rounded-md text-slate-400 hover:text-teal-600 hover:bg-white hover:shadow-sm transition-all relative" title='Notifications'>
+            <Bell size={18} />
+            <span className="absolute top-2.5 right-2.5 h-2 w-2 bg-rose-500 rounded-md border-2 border-white"></span>
+          </button>
+          {/* Profile Dropdown Section */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              className="flex items-center gap-3 bg-white hover:bg-slate-50 border border-slate-100/50 p-1.5 pr-4 rounded-md transition-all group active:scale-95"
+            >
+              <div className="h-10 w-10 rounded-md bg-teal-600 border border-teal-500 flex items-center justify-center text-white font-bold text-lg shadow-md overflow-hidden uppercase">
+                {user?.name?.charAt(0) || '!'}
               </div>
-
-              {/* Nav Items */}
-              <nav className="flex-1 flex flex-col gap-1 px-2 py-4 overflow-y-auto custom-scrollbar">
-                {sidebarItems.filter((item) => !item.roles || item.roles.includes(user?.role)).map((item) => (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    end={item.path === '/admin/dashboard'}
-                    className={({ isActive }) =>
-                      `group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold transition-all duration-200 ${isActive
-                        ? 'bg-teal-50 text-teal-800 shadow-sm border border-teal-100'
-                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800 border border-transparent'
-                      } ${collapsed ? 'justify-center' : ''}`
-                    }
-                    title={collapsed ? item.label : undefined}
+              <div className="text-left hidden sm:block">
+                <p className="text-sm font-bold text-slate-800 leading-none mb-0.5 group-hover:text-teal-700 transition-colors uppercase">{user?.name}</p>
+              </div>
+              <ChevronDown size={14} className={`text-slate-300 transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`} />
+            </button>
+            <AnimatePresence>
+              {isProfileOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="absolute right-0 mt-3 w-56 bg-white border border-slate-100 rounded-md shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden z-50 p-2"
+                >
+                  {/* Role Label */}
+                  <div className="px-4 py-3 border-b border-slate-50 mx-1 mb-1">
+                    <div className="flex items-center gap-3 text-slate-400">
+                      <ShieldCheck size={16} className="text-teal-600" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">My Role</span>
+                    </div>
+                    <p className="text-xs font-bold text-slate-800 mt-1.5 lowercase ml-7 capitalize">{user?.role || 'Administrator'}</p>
+                  </div>
+                  {/* Sign Out Button */}
+                  <button
+                    onClick={() => { signOut(); navigate('/admin/login'); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-md text-slate-600 hover:text-rose-600 hover:bg-rose-50 transition-all group"
                   >
-                    <item.icon
-                      size={18}
-                      className="shrink-0 transition-colors"
-                    />
-                    {!collapsed && (
-                      <span className="truncate tracking-wide">{item.label}</span>
-                    )}
-                  </NavLink>
-                ))}
-              </nav>
-            </div>
-          </aside>
-
-          {/* Main Wrapper */}
-          <div className="flex flex-col flex-1 min-w-0">
-            {/* Hero Section */}
-            <header className="relative px-4 py-8 sm:px-6 sm:py-4 lg:px-8 lg:py-2 shrink-0 overflow-hidden">
-              <img
-                src={adminHero}
-                alt="Admin Portal Background"
-                className="absolute inset-0 h-full w-full object-cover grayscale opacity-80 mix-blend-multiply"
-                loading="eager"
-              />
-              <div className="absolute inset-0 bg-teal-900/75" aria-hidden="true" />
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-                className="relative flex items-center justify-between gap-6"
-              >
-                <div className="flex flex-col md:flex-row md:items-baseline gap-2 md:gap-5">
-                  <h3 className="text-xl font-bold leading-tight text-white sm:text-2xl lg:text-xl shrink-0">
-                    Welcome {user?.name || user?.email?.split('@')[0] || 'Admin'}
-                  </h3>
-                  <p className="text-xs leading-relaxed text-teal-100/80 sm:text-sm italic border-l border-teal-500/30 pl-4 py-1">
-                    Monitor metrics, manage users, and optimize service performance across the network.
-                  </p>
-                </div>
-
-                <button
-                  onClick={handleSignOut}
-                  className="group flex items-center gap-2 px-4 py-2 rounded-full btn-secondary hover:bg-rose-500/20 text-rose-900 border border-white/20 hover:border-rose-500/30 transition-all duration-200 text-sm font-bold cursor-pointer backdrop-blur-sm"
-                >
-                  <LogOut size={16} className="group-hover:-translate-x-0.5 transition-transform" />
-                  <span className="hidden sm:inline">Sign Out</span>
-                </button>
-              </motion.div>
-            </header>
-
-            {/* Main Content (Outlet) */}
-            <main className="flex-1 min-w-0 bg-slate-50">
-              <div className="px-4 sm:px-6 lg:px-8 py-8">
-                <Outlet />
-              </div>
-            </main>
+                    <div className="h-8 w-8 rounded-md bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-rose-100 group-hover:text-rose-600 transition-colors">
+                      <LogOut size={16} />
+                    </div>
+                    <span className="text-[13px] font-bold tracking-tight">Sign Out</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
-
-        {/* Full-width Footer */}
-        <footer className="bg-gray-900 py-6 px-4 sm:px-6 lg:px-8 border-t border-gray-800 shrink-0 w-full relative z-40">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-xs font-medium text-gray-500">
-            <p>&copy; {new Date().getFullYear()} Help On Call. All rights reserved.</p>
+      </header>
+      {/* SIDEBAR */}
+      <aside className="fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-200 z-50 hidden xl:flex flex-col">
+        <div className="p-4 h-20 flex items-center gap-3 border-b border-slate-50 bg-white">
+          <div className="h-11 w-11 rounded-md border border-slate-200 bg-white shadow-sm flex items-center justify-center overflow-hidden shrink-0">
+            <img
+              src={helpOnCallLogo}
+              alt="Help On Call"
+              className="h-8 w-auto object-contain"
+              loading="eager"
+            />
           </div>
-        </footer>
-      </div>
-    </>
+          <div className="min-w-0 leading-tight">
+            <p className="text-[15px] font-semibold tracking-tight text-slate-900 truncate">Help On Call (Admin)</p>
+            <p className="text-[10px] uppercase tracking-[0.1em] text-teal-700/90 truncate mt-1">Manage The Helping hands</p>
+          </div>
+        </div>
+        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto custom-scrollbar pt-6">
+          {SIDEBAR_ITEMS.map((item) => {
+            const isActive = window.location.pathname === item.path;
+            return (
+              <button
+                key={item.label}
+                onClick={() => {
+                  if (item.isLocked) return;
+                  setActiveItem(item.label);
+                  if (item.path !== '#') navigate(item.path);
+                }}
+                disabled={item.isLocked}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-md text-[13px] font-bold transition-all duration-200 ${isActive
+                  ? 'bg-teal-50 text-teal-700'
+                  : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+                  } ${item.isLocked ? 'cursor-not-allowed' : ''}`}
+              >
+                <div className="flex items-center gap-3">
+                  <item.icon size={18} className={isActive ? 'stroke-[2.5px]' : 'stroke-[2px] opacity-70'} />
+                  {item.label}
+                </div>
+                {item.isLocked && <Lock size={12} className="text-yellow-600" />}
+              </button>
+            );
+          })}
+        </nav>
+      </aside>
+      {/* MAIN CONTENT (Outlet) */}
+      <main className="flex-1 xl:ml-64 min-h-screen overflow-y-auto custom-scrollbar pt-20">
+        <div className="mx-auto space-y-6 p-6">
+          <Outlet />
+        </div>
+      </main>
+    </div>
   );
 }
 

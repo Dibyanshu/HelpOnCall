@@ -101,7 +101,7 @@ export default function UserRegistrationPage() {
   return (
     <section className="bg-slate-50 px-4 py-14 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl space-y-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="rounded-md border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Help On Call</p>
           <h1 className="mt-2 text-2xl font-bold text-slate-900">User Registration</h1>
           <p className="mt-2 text-sm text-slate-600">
@@ -111,7 +111,7 @@ export default function UserRegistrationPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
+          className="rounded-md border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
           aria-label="Public user registration form"
         >
           <div className="grid gap-4 sm:grid-cols-2">

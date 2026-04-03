@@ -149,7 +149,7 @@ export default function EmploymentForm() {
               setIsSubmitted(false);
               setFormData(initialFormData);
             }}
-            className="w-full rounded-md bg-slate-900 px-6 py-4 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:-translate-y-1 active:scale-95 shadow-lg shadow-slate-200"
+            className="btn-primary w-full"
           >
             Back to Application
           </button>
@@ -171,7 +171,10 @@ export default function EmploymentForm() {
 
       <EmailAddressValidation
         value={formData.email}
-        onChange={(val) => setFormData(prev => ({ ...prev, email: val }))}
+        onChange={(val) => {
+                setFormData(prev => ({ ...prev, email: val }));
+                if (errors.email) setErrors(prev => ({ ...prev, email: '' }));
+              }}
         onVerifiedStatusChange={setIsEmailVerified}
         isVerified={isEmailVerified}
         verificationModule="employee"

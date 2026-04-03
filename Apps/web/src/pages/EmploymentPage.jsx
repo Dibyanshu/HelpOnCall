@@ -47,7 +47,7 @@ export default function EmploymentPage() {
           <div className="grid lg:grid-cols-2 items-stretch">
 
             {/* Left Column: Why join us? */}
-            <div className="h-full flex flex-col justify-start gap-6 xl:px-4 lg:pr-8 lg:border-r lg:border-slate-200 animate-in fade-in slide-in-from-left-8 duration-700">
+            <div className="flex flex-col justify-start lg:pt-8 xl:pr-12 animate-in fade-in slide-in-from-left-8 duration-700">
               <div className="rounded-md bg-white p-8 shadow-sm ring-1 ring-slate-200">
                 <h3 className="text-xl font-semibold text-slate-900">Why join us?</h3>
                 <ul className="mt-6 space-y-5">

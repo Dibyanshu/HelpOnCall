@@ -10,9 +10,8 @@ import UserRegistrationPage from './pages/UserRegistrationPage';
 import AdminLoginPage from './admin/pages/AdminLoginPage';
 import AdminLayout from './admin/adminLayout/AdminLayout';
 import AdminDashboard from './admin/pages/AdminDashboard';
-import AdminDashboardLite from './admin/pages/AdminDashboardLite';
 import AdminUsersPage from './admin/pages/AdminUsersPage';
-import AdminUserNewPage from './admin/pages/AdminUserNewPage';
+import AdminNewUser from './admin/pages/AdminNewUser';
 import AdminQuotationManagementPage from './admin/pages/AdminQuotationManagementPage';
 import AdminServicePage from './admin/pages/AdminServicePage';
 import AdminEmailTemplatesPage from './admin/pages/email-templates/AdminEmailTemplatesPage';
@@ -41,9 +40,9 @@ function App() {
               <AdminUsersPage />
             </RequireAdminAuth>
           } />
-          <Route path="/admin/users/new" element={
-            <RequireAdminAuth allowedRoles={['super_admin']}>
-              <AdminUserNewPage />
+          <Route path="/admin/users/create-new-staff-record" element={
+            <RequireAdminAuth allowedRoles={['super_admin', 'admin']}>
+              <AdminNewUser />
             </RequireAdminAuth>
           } />
           <Route path="/admin/quotations" element={
@@ -67,13 +66,6 @@ function App() {
             </RequireAdminAuth>
           } />
         </Route>
-
-        {/* Standalone Dashboard Lite */}
-        <Route path="/admin/dashboard-lite" element={
-          <RequireAdminAuth>
-            <AdminDashboardLite />
-          </RequireAdminAuth>
-        } />
 
         <Route path="/" element={<Layout><Home /></Layout>} />
         <Route path="/about" element={<Layout><AboutUsPage /></Layout>} />
