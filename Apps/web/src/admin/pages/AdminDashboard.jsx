@@ -434,7 +434,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Footer Grid Row */}
-      <div className="grid lg:grid-cols-3 gap-6 pb-8">
+      <div className="grid lg:grid-cols-3 gap-6">
         <div className="bg-white rounded-md border border-slate-100/50 shadow-sm p-8 relative overflow-hidden flex flex-col min-h-[400px]">
           <AnimatePresence mode="wait">
             {!selectedUser ? (

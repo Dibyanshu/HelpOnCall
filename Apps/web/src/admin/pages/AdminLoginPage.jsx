@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { useAdminAuth } from '../../admin/auth/AdminAuthContext.jsx';
 import {
   createInitialFieldErrors,
@@ -160,13 +161,22 @@ export default function AdminLoginPage() {
                 {errorMessage}
               </p>
             ) : null}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="btn-primary w-full py-3.5 rounded-md shadow-lg shadow-teal-700/20 active:scale-[0.98] transition-transform"
-            >
-              {isSubmitting ? 'Authenticating...' : 'Secure Sign In'}
-            </button>
+            <div className="flex items-center gap-3">
+              <Link
+                to="/"
+                className="btn-secondary inline-flex items-center gap-2 px-4 py-3.5 text-xs sm:text-sm whitespace-nowrap"
+              >
+                <ArrowLeft size={16} />
+                Back to Public Site
+              </Link>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="btn-primary flex-1 py-3.5 rounded-md shadow-lg shadow-teal-700/20 active:scale-[0.98] transition-transform"
+              >
+                {isSubmitting ? 'Authenticating...' : 'Secure Sign In'}
+              </button>
+            </div>
           </form>
           <div className="mt-8 text-center text-xs text-slate-500">
             Got any feedback to share with HelpOnCall team ?<br />

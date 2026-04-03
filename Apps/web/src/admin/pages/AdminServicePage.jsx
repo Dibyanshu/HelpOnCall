@@ -274,7 +274,7 @@ export default function AdminServicePage() {
               <Database size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Service Manager Dashboard</h2>
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Manage Services</h2>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-4">
@@ -294,14 +294,6 @@ export default function AdminServicePage() {
             >
               <ExternalLink size={16} />
               Preview Changes
-            </button>
-            <button
-              type="button"
-              onClick={refresh}
-              className="btn-secondary gap-2 px-6 transition-all"
-            >
-              <RefreshCcw size={16} />
-              Refresh
             </button>
             <button
               type="button"
@@ -329,11 +321,20 @@ export default function AdminServicePage() {
           <aside className="relative flex min-h-[400px] flex-col rounded-md border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:min-h-0 lg:flex-1">
             <div className="flex shrink-0 items-start justify-between gap-3">
               <div>
-                <h1 className="mt-2 flex items-center gap-2 text-xl font-bold text-slate-900">
+                <h1 className="flex items-center gap-2 text-xl font-bold text-slate-900">
                   <FolderTree className="h-5 w-5 text-teal-700" />
                   Services Tree
                 </h1>
               </div>
+              <button
+                type="button"
+                onClick={refresh}
+                className="h-8 w-8 flex items-center justify-center bg-slate-100 border border-slate-300 rounded-md text-slate-400 hover:text-teal-600 hover:bg-white hover:shadow-sm transition-all"
+                title="Refresh"
+                aria-label="Refresh services tree"
+              >
+                <RefreshCcw size={18} />
+              </button>
             </div>
 
             <div className="mt-5 flex-1 overflow-y-auto pr-2 pb-2">
@@ -467,7 +468,7 @@ export default function AdminServicePage() {
         </div>
 
         {/* Right card which defines the intrinsic content height of the grid row */}
-        <main className="rounded-md border border-slate-200 bg-white p-6 shadow-sm sm:p-8 shrink-0">
+        <main className="rounded-md border border-slate-200 bg-white p-6 shadow-sm sm:p-5 shrink-0">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-2xl font-bold text-slate-900">{buildFormModeTitle(mode)}</h2>
             <div className="flex flex-wrap gap-2">
@@ -523,17 +524,6 @@ export default function AdminServicePage() {
 
             {mode === 'create-service' || mode === 'edit-service' ? (
               <>
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                    <Wrench className="h-4 w-4 text-teal-700" />
-                    Service Details
-                  </div>
-                  {selectedService && (
-                    <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 ring-1 ring-inset ring-slate-200">
-                      #{toDisplayNumber(selectedService.displayOrder ?? 0)}
-                    </span>
-                  )}
-                </div>
                 <ServiceForm
                   key={`service-${selectedService?.id || 'new'}`}
                   initialData={selectedService}
