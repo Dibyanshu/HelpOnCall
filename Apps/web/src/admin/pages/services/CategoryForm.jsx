@@ -103,13 +103,6 @@ export default function CategoryForm({ initialData, onClose, onSubmit }) {
           <Save className="h-4 w-4" />
           {isSubmitting ? 'Saving...' : 'Save Category'}
         </button>
-        <button
-          type="button"
-          onClick={onClose}
-          className="btn-secondary"
-        >
-          Cancel
-        </button>
       </div>
     </form>
   );
