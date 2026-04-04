@@ -30,7 +30,7 @@ import helpOnCallLogo from '../../assets/helpOnCallLogo.png';
 const SIDEBAR_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard', isLocked: false },
   { label: 'Manage Services', icon: Database, path: '/admin/services', isLocked: false },
-  { label: 'Manage Staffs', icon: UsersRound, path: '/admin/users', isLocked: false },
+  { label: 'Manage Staffs', icon: UsersRound, path: '/admin/users', isLocked: false,  isChildAvailable: true },
   { label: 'Job Applications', icon: ClipboardList, path: '/admin/employment', isLocked: false },
   { label: 'Manage Quotations', icon: TextQuote, path: '/admin/quotations', isLocked: false },
   { label: 'Manage Customers', icon: Users, path: '#', isLocked: true },
@@ -200,7 +200,7 @@ export default function AdminLayout() {
       <aside className={`fixed top-20 bottom-0 left-0 ${isSidebarCollapsed ? 'w-20' : 'w-64'} bg-white border-r border-slate-200 z-30 hidden xl:flex flex-col transition-all duration-300`}>
         <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto custom-scrollbar pt-4">
           {SIDEBAR_ITEMS.map((item) => {
-            const isActive = window.location.pathname === item.path;
+            const isActive = window.location.pathname === item.path || (item.isChildAvailable && window.location.pathname.startsWith(item.path));
             return (
               <button
                 key={item.label}
