@@ -5,6 +5,7 @@ import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
 import { emailValidator, employment } from "../db/schema.js";
 import type { Role } from "../types/auth.js";
+import { buildVerificationCodeEmail } from "../utils/email-template/email-builders.js";
 import { sendTemplatedEmail } from "../utils/email-template/email-template.service.js";
 import { TEMPLATE_KEYS } from "../utils/email-template/template-registry.js";
 
@@ -33,25 +34,6 @@ const moduleLabelMap: Record<(typeof MODULE_VALUES)[number], string> = {
   rfq: "Request for Quote"
 };
 
-function buildVerificationEmailFallback(input: { module: (typeof MODULE_VALUES)[number]; code: string }) {
-  const moduleLabel = moduleLabelMap[input.module];
-  const subject = `HelpOnCall ${moduleLabel} email verification code`;
-  const text = [
-    `Your HelpOnCall verification code is: ${input.code}`,
-    "",
-    "This code expires in 15 minutes.",
-    "If you did not request this, you can ignore this email."
-  ].join("\n");
-
-  const html = `
-    <p>Your HelpOnCall verification code is:</p>
-    <p style="font-size: 22px; font-weight: 700; letter-spacing: 1px;">${input.code}</p>
-    <p>This code expires in 15 minutes.</p>
-    <p>If you did not request this, you can ignore this email.</p>
-  `;
-
-  return { subject, text, html };
-}
 
 const createPublicVerificationSchema = z.object({
   email: z.string().email(),
@@ -143,7 +125,7 @@ const emailValidatorRoutes: FastifyPluginAsync = async (fastify) => {
           to: email,
           templateKey: TEMPLATE_KEYS.EMAIL_VERIFICATION_CODE,
           data: { code: verificationCode, moduleLabel: moduleLabelMap[module] },
-          fallback: () => buildVerificationEmailFallback({ module, code: verificationCode }),
+          fallback: () => buildVerificationCodeEmail({ moduleLabel: moduleLabelMap[module], code: verificationCode }),
           strict: false
         },
         fastify.mail,
