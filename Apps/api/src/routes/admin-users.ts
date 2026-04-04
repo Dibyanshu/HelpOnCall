@@ -6,6 +6,7 @@ import { db } from "../db/index.js";
 import { users } from "../db/schema.js";
 import type { Role } from "../types/auth.js";
 import { hashPassword } from "../utils/crypto.js";
+import { buildNewStaffAccountEmail } from "../utils/email-template/email-builders.js";
 import { sendTemplatedEmail } from "../utils/email-template/email-template.service.js";
 import { TEMPLATE_KEYS } from "../utils/email-template/template-registry.js";
 
@@ -98,42 +99,6 @@ function roleLabel(role: (typeof USER_ROLE_VALUES)[number]): string {
     .join(" ");
 }
 
-function buildStaffWelcomeFallback(input: {
-  fullName: string;
-  personalEmail: string;
-  staffEmail: string;
-  password: string;
-}) {
-  const subject = "Your HelpOnCall staff account is ready";
-  const text = [
-    `Hi ${input.fullName},`,
-    "",
-    "Your HelpOnCall staff id has been created successfully.",
-    "You can now log in using the credentials below:",
-    "",
-    `Staff Email: ${input.staffEmail}`,
-    `Password: ${input.password}`,
-    "",
-    "Please change your password after first login.",
-    "",
-    "Regards,",
-    "HelpOnCall Team"
-  ].join("\n");
-
-  const html = `
-    <p>Hi ${input.fullName},</p>
-    <p>Your HelpOnCall staff id has been created successfully.</p>
-    <p>You can now log in using the credentials below:</p>
-    <ul>
-      <li><strong>Staff Email:</strong> ${input.staffEmail}</li>
-      <li><strong>Password:</strong> ${input.password}</li>
-    </ul>
-    <p>Please change your password after first login.</p>
-    <p>Regards,<br/>HelpOnCall Team</p>
-  `;
-
-  return { subject, text, html };
-}
 
 const adminRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get(
@@ -438,7 +403,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
                 staffEmail,
                 password,
               },
-              fallback: () => newStaffTemplate ?? buildStaffWelcomeFallback({
+              fallback: () => newStaffTemplate ?? buildNewStaffAccountEmail({
                 fullName,
                 personalEmail,
                 staffEmail,
