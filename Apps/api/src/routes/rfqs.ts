@@ -1,5 +1,8 @@
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
+import { buildAuditCreateFields } from "../db/audit.js";
+import { db } from "../db/index.js";
+import { rfqs } from "../db/schema.js";
 import { buildRfqConfirmationEmail } from "../utils/email-template/email-builders.js";
 import { sendTemplatedEmail } from "../utils/email-template/email-template.service.js";
 import { TEMPLATE_KEYS } from "../utils/email-template/template-registry.js";
@@ -45,6 +48,42 @@ const createRfqSchema = z
     }
   });
 
+function parseRfqStartDate(input: string): Date | null {
+  const match = input.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+
+  if (!match) {
+    return null;
+  }
+
+  const month = Number(match[1]);
+  const day = Number(match[2]);
+  const year = Number(match[3]);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+
+  const isValid =
+    parsed.getUTCFullYear() === year &&
+    parsed.getUTCMonth() === month - 1 &&
+    parsed.getUTCDate() === day;
+
+  if (!isValid) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function mapDurationUnitToType(value: "days" | "weeks" | "months"): "Day" | "Week" | "Month" {
+  if (value === "days") {
+    return "Day";
+  }
+
+  if (value === "weeks") {
+    return "Week";
+  }
+
+  return "Month";
+}
+
 const rfqRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.post("/rfqs", async (request, reply) => {
     const bodyParse = createRfqSchema.safeParse(request.body);
@@ -57,6 +96,36 @@ const rfqRoutes: FastifyPluginAsync = async (fastify) => {
     }
 
     const payload = bodyParse.data;
+
+    const parsedStartDate = parseRfqStartDate(payload.startDate);
+
+    if (!parsedStartDate) {
+      return reply.code(400).send({
+        message: "Invalid request body",
+        errors: {
+          fieldErrors: {
+            startDate: ["Start date must be a valid date in MM/DD/YYYY format"]
+          },
+          formErrors: []
+        }
+      });
+    }
+
+    await db.insert(rfqs).values({
+      email: payload.email,
+      fullName: payload.fullName,
+      phone: payload.phone,
+      address: payload.address,
+      preferredContact: payload.contactPreference,
+      serviceSelected: payload.serviceCategories,
+      startDate: parsedStartDate,
+      durationVal: payload.durationValue,
+      durationType: mapDurationUnitToType(payload.durationUnit),
+      selfCare: payload.careType === "self",
+      recipientName: payload.careType === "someone_else" ? payload.personName!.trim() : payload.fullName.trim(),
+      recipientRelation: payload.careType === "someone_else" ? payload.personRelation!.trim() : "Self",
+      ...buildAuditCreateFields("")
+    });
 
     await sendTemplatedEmail(
       {
