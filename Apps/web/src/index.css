@@ -101,6 +101,237 @@ body {
   .btn-activate {
     @apply inline-flex items-center shadow-xs justify-center rounded-md border border-emerald-300 px-4 py-2 text-sm font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-all cursor-pointer;
   }
+
+  .icon-btn {
+    @apply inline-flex h-8 w-8 items-center justify-center rounded-md border shadow-xs transition-all cursor-pointer;
+  }
+
+  .icon-btn-neutral {
+    @apply bg-white text-slate-700 border-slate-400 hover:bg-white hover:text-teal-600 hover:border-slate-500;
+  }
+
+  .icon-btn-rose {
+    @apply bg-rose-50 text-rose-700 border-rose-700 hover:bg-rose-200 hover:text-rose-600 hover:border-rose-700;
+  }
+
+  .icon-btn-teal {
+    @apply bg-teal-50 text-teal-700 border-teal-700 hover:bg-teal-200 hover:text-teal-600 hover:border-teal-700;
+  }
+
+  .btn-toggle {
+    @apply inline-flex h-8 items-center justify-center gap-1.5 rounded-full border px-3 text-[11px] font-semibold leading-none transition-all cursor-pointer;
+  }
+
+  .btn-toggle-activate {
+    @apply bg-teal-50 text-teal-700 border-teal-700 hover:bg-teal-200 hover:text-teal-600 hover:border-teal-700;
+  }
+
+  .btn-toggle-deactivate {
+    @apply bg-rose-50 text-rose-700 border-rose-700 hover:bg-rose-200 hover:text-rose-600 hover:border-rose-700;
+  }
+
+  .status-switch {
+    @apply inline-flex h-8 items-center gap-2 rounded-md border px-2.5 text-[11px] font-semibold leading-none transition-all cursor-pointer;
+  }
+
+  .status-switch-track {
+    @apply relative h-5 w-9 rounded-full;
+  }
+
+  .status-switch-thumb {
+    @apply absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-xs transition-transform;
+  }
+
+  .status-switch-label {
+    @apply min-w-[46px] text-center;
+  }
+
+  .status-switch-on {
+    @apply border-teal-700 bg-teal-50 text-teal-700 hover:bg-teal-100;
+  }
+
+  .status-switch-on .status-switch-track {
+    @apply bg-teal-600;
+  }
+
+  .status-switch-on .status-switch-thumb {
+    @apply translate-x-4;
+  }
+
+  .status-switch-off {
+    @apply border-rose-700 bg-rose-50 text-rose-700 hover:bg-rose-100;
+  }
+
+  .status-switch-off .status-switch-track {
+    @apply bg-rose-600;
+  }
+
+  .confirm-backdrop {
+    @apply absolute inset-0 bg-slate-900/45 backdrop-blur-sm;
+  }
+
+  .confirm-modal {
+    @apply relative w-full max-w-md overflow-hidden rounded-md border border-slate-200 bg-white shadow-2xl;
+  }
+
+  .confirm-close {
+    @apply absolute right-4 top-4 p-2 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all;
+  }
+
+  .confirm-body {
+    @apply p-8 pt-10;
+  }
+
+  .confirm-content {
+    @apply flex flex-col items-center text-center;
+  }
+
+  .confirm-icon-wrap {
+    @apply mb-6 p-5 rounded-md shadow-xs;
+  }
+
+  .confirm-title {
+    @apply text-2xl font-bold tracking-tight mb-3;
+  }
+
+  .confirm-message {
+    @apply text-slate-600 leading-relaxed font-medium mb-8;
+  }
+
+  .confirm-actions {
+    @apply flex w-full flex-col gap-3 sm:flex-row sm:gap-4;
+  }
+
+  .confirm-confirm-btn {
+    @apply relative overflow-hidden shadow-xs rounded-md border border-transparent px-4 py-2 text-sm font-semibold bg-teal-700 text-white shadow-teal-500/20 transition-all hover:bg-teal-800 hover:shadow-teal-500/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 cursor-pointer inline-flex items-center justify-center flex-1;
+  }
+
+  .confirm-confirm-btn::after {
+    @apply absolute top-0 -left-full h-full w-full bg-linear-to-r from-transparent via-white/20 to-transparent transition-all duration-1000 ease-in-out;
+    content: '';
+  }
+
+  .confirm-confirm-btn:hover::after {
+    @apply left-full;
+  }
+
+  .confirm-cancel-btn {
+    @apply inline-flex items-center shadow-xs justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 hover:border-slate-400 cursor-pointer flex-1;
+  }
+
+  .confirm-tone-gray .confirm-icon-wrap {
+    @apply bg-slate-100 text-slate-700;
+  }
+
+  .confirm-tone-gray .confirm-title {
+    @apply text-slate-900;
+  }
+
+  .confirm-tone-gray .confirm-confirm-btn {
+    @apply bg-slate-800 hover:bg-slate-900 focus-visible:outline-slate-700;
+  }
+
+  .confirm-tone-teal .confirm-icon-wrap {
+    @apply bg-teal-500/10 text-teal-600;
+  }
+
+  .confirm-tone-teal .confirm-title {
+    @apply text-teal-900;
+  }
+
+  .confirm-tone-rose .confirm-icon-wrap {
+    @apply bg-rose-500/10 text-rose-600;
+  }
+
+  .confirm-tone-rose .confirm-title {
+    @apply text-rose-900;
+  }
+
+  .confirm-tone-rose .confirm-confirm-btn {
+    @apply bg-rose-600 hover:bg-rose-700 focus-visible:outline-rose-700;
+  }
+}
+
+@layer components {
+  .admin-table {
+    @apply min-w-full divide-y divide-slate-200 text-sm border border-gray-200;
+
+    & thead {
+      @apply bg-slate-100;
+    }
+
+    & thead th {
+      @apply px-3 py-3 text-xs text-left font-bold text-teal-900 uppercase tracking-tighter;
+    }
+
+    & tbody {
+      @apply divide-y divide-slate-100 bg-white;
+    }
+
+    & tbody tr {
+      @apply hover:bg-slate-50 transition-colors;
+    }
+
+    & td {
+      @apply px-3 py-4 text-sm text-slate-700;
+    }
+
+    /* Name column */
+    & tbody td:nth-child(2) p:first-child {
+      @apply text-slate-800 font-medium;
+    }
+
+    & tbody td:nth-child(2) p:last-child {
+      @apply text-[10px] text-slate-500 italic max-w-xs truncate;
+    }
+
+    /* Contacts column */
+    & tbody td:nth-child(3) {
+      @apply whitespace-nowrap;
+    }
+
+    & tbody td:nth-child(3) p:first-child {
+      @apply text-slate-800 text-xs;
+    }
+
+    & tbody td:nth-child(3) p:last-child {
+      @apply text-[10px] text-slate-500;
+    }
+
+    /* Specializations column */
+    & tbody td:nth-child(4) {
+      @apply max-w-[200px];
+    }
+
+    & tbody td:nth-child(4) span {
+      @apply px-2 py-0.5 bg-slate-100 rounded text-[9px] font-bold text-slate-600 uppercase;
+    }
+
+    /* Status column */
+    & tbody td:nth-child(5) {
+      @apply whitespace-nowrap;
+    }
+
+    /* Submitted At column */
+    & tbody td:nth-child(6) {
+      @apply whitespace-nowrap;
+    }
+
+    /* Resume column */
+    & tbody td:nth-child(7) {
+      @apply whitespace-nowrap;
+    }
+
+    /* Actions column */
+    & tbody td:nth-child(8) {
+      @apply whitespace-nowrap;
+    }
+
+    /* Empty state */
+    & tbody td[colspan] {
+      @apply py-10 text-center text-slate-500 italic;
+    }
+  }
 }
 
 .fade-in {

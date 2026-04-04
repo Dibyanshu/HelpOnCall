@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { RotateCw, Plus, Users } from 'lucide-react';
+import { RotateCw, Plus, Users, Pencil, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAdminAuth } from '../../admin/auth/AdminAuthContext.jsx';
 import { useToast } from '../../components/common/Toast.jsx';
 import { useConfirm } from '../../components/common/ConfirmDialog.jsx';
-import AdminEditUser from './AdminEditUser.jsx';
-import { useAdminUserEditForm } from '../../appServices/useAdminUserEditForm.js';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -18,6 +16,41 @@ function formatDateTime(value) {
   }
 
   return date.toLocaleString();
+}
+
+function toRoleLabel(role) {
+  return String(role || '')
+    .split('_')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+function renderRoleBadge(role) {
+  const classes = role === 'super_admin'
+    ? 'bg-indigo-100 text-indigo-800'
+    : role === 'admin'
+      ? 'bg-teal-100 text-teal-800'
+      : role === 'resume_reviewer'
+        ? 'bg-amber-100 text-amber-800'
+        : role === 'job_poster'
+          ? 'bg-emerald-100 text-emerald-800'
+          : 'bg-slate-100 text-slate-700';
+
+  return (
+    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold shadow-sm ${classes}`}>
+      {toRoleLabel(role)}
+    </span>
+  );
+}
+
+function renderUserStatusBadge(isActive) {
+  const classes = isActive ? 'bg-emerald-100 text-emerald-800 capitalize' : 'bg-slate-200 text-slate-700 capitalize';
+
+  return (
+    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold shadow-sm ${classes}`}>
+      {isActive ? 'Active' : 'Inactive'}
+    </span>
+  );
 }
 
 export default function AdminUsersPage() {
@@ -34,6 +67,7 @@ export default function AdminUsersPage() {
   const successMessage = location.state?.message || '';
   const canManageStatus = user?.role === 'super_admin' || user?.role === 'admin';
   const canCreateUsers = user?.role === 'super_admin' || user?.role === 'admin';
+  const canEditUsers = user?.role === 'super_admin' || user?.role === 'admin';
 
   useEffect(() => {
     if (successMessage && !hasShownNavigationToastRef.current) {
@@ -43,27 +77,6 @@ export default function AdminUsersPage() {
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [successMessage, toast, navigate, location.pathname]);
-
-  const {
-    isEditOpen,
-    editFormData,
-    editFieldErrors,
-    editErrorMessage,
-    isSubmittingEdit,
-    canEditUsers,
-    canEditRoles,
-    openEditPanel,
-    closeEditPanel,
-    handleEditFieldChange,
-    handleEditSubmit,
-  } = useAdminUserEditForm({
-    token,
-    user,
-    navigate,
-    signOut,
-    users,
-    setUsers,
-  });
 
   const loadUsers = useCallback(async () => {
     setIsLoading(true);
@@ -108,7 +121,7 @@ export default function AdminUsersPage() {
     if (targetUser.isActive) {
       const confirmed = await confirm({
         title: 'Deactivate User?',
-        message: `Are you sure you want to de-authorize "${targetUser.name}"? They will lose all access to the admin portal immediately.`,
+        message: `Are you sure you want to de-authorize "${targetUser.name}"? They will lose all access to the authorized portal immediately.`,
         confirmText: 'Yes, Deactivate',
         cancelText: 'Cancel',
         type: 'deactivate',
@@ -157,11 +170,11 @@ export default function AdminUsersPage() {
   }, [canManageStatus, navigate, signOut, token, updatingUserId]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-1">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="rounded-md border border-slate-200 bg-white p-6 shadow-md sm:p-8"
+        className="rounded-md border border-slate-200 bg-white p-3 shadow-md sm:p-3"
       >
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="flex items-center gap-4">
@@ -169,7 +182,7 @@ export default function AdminUsersPage() {
               <Users size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Manage Help On Call Staffs</h2>
+              <h2 className="font-bold text-slate-900 tracking-tight">Manage Help On Call Staffs</h2>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-4">
@@ -195,7 +208,7 @@ export default function AdminUsersPage() {
         </div>
       </motion.div>
 
-      <div className="rounded-md border border-slate-200 bg-white p-4 shadow-md sm:p-6 overflow-hidden">
+      <div className="rounded-md border border-slate-200 bg-white p-3 shadow-md sm:p-3 overflow-hidden">
 
 
         {isLoading ? (
@@ -206,50 +219,42 @@ export default function AdminUsersPage() {
 
         {!isLoading ? (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200 text-sm">
-              <thead className="bg-slate-50/50">
+            <table className="admin-table">
+              <thead>
                 <tr>
-                  <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Full Name</th>
-                  <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Email Address</th>
-                  <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">System Role</th>
-                  <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Status</th>
-                  {/* <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Created By</th>
-                  <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Created At</th> */}
+                  <th scope="col">Staff Name</th>
+                  <th scope="col">Email Address</th>
+                  <th scope="col">Staff Role</th>
+                  <th scope="col">Status</th>
                   {canEditUsers ? (
-                    <th scope="col" className="px-3 py-3 text-left font-bold text-teal-900 uppercase tracking-tighter">Action</th>
+                    <th scope="col">Action</th>
                   ) : null}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
+              <tbody>
                 {users.length > 0 ? (
                   users.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="whitespace-nowrap px-3 py-4 text-slate-800 font-medium">{item.name}</td>
-                      <td className="whitespace-nowrap px-3 py-4 text-slate-600 tracking-tight">{item.email}</td>
-                      <td className="whitespace-nowrap px-3 py-4">
-                        <span className={`px-2 py-1 rounded-md text-[10px] uppercase font-black tracking-widest ${item.role === 'super_admin' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>
-                          {item.role.replace('_', ' ')}
-                        </span>
+                    <tr key={item.id}>
+                      <td className="whitespace-nowrap text-slate-800 font-medium">{item.name}</td>
+                      <td className="whitespace-nowrap text-slate-600 tracking-tight">{item.email}</td>
+                      <td className="whitespace-nowrap">
+                        {renderRoleBadge(item.role)}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4">
-                        <span
-                          className={`inline-flex rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-sm ${item.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}`}
-                        >
-                          {item.isActive ? 'Active' : 'Inactive'}
-                        </span>
+                      <td className="whitespace-nowrap">
+                        {renderUserStatusBadge(item.isActive)}
                       </td>
-                      {/* <td className="whitespace-nowrap px-3 py-4 text-slate-500 italic text-xs">{item.createdBy || 'System'}</td>
-                      <td className="whitespace-nowrap px-3 py-4 text-slate-500 text-xs">{formatDateTime(item.createdAt)}</td> */}
                       {canEditUsers ? (
-                        <td className="whitespace-nowrap px-3 py-4">
+                        <td className="whitespace-nowrap">
                           <div className="flex items-center gap-2">
                             <button
                               type="button"
-                              onClick={() => openEditPanel(item)}
+                              onClick={() => navigate('/admin/users/edit-staff-record', { state: { userId: item.id, targetUser: item } })}
                               disabled={user?.role === 'admin' && item.role === 'super_admin'}
-                              className="btn-secondary px-3 py-1.5 text-xs rounded-md hover:bg-slate-100"
+                              className="icon-btn icon-btn-neutral"
+                              title="Edit user"
+                              aria-label="Edit user"
                             >
-                              Edit
+                              <Pencil size={16} />
                             </button>
 
                             {canManageStatus ? (
@@ -257,16 +262,23 @@ export default function AdminUsersPage() {
                                 type="button"
                                 onClick={() => handleUpdateStatus(item)}
                                 disabled={updatingUserId !== null || (user?.role === 'admin' && item.role === 'super_admin')}
-                                className={`px-3 py-1.5 text-xs rounded-md font-bold transition-all ${item.isActive
-                                  ? 'btn-deactivate'
-                                  : 'btn-activate'
-                                  } disabled:opacity-50`}
+                                className={`status-switch ${item.isActive ? 'status-switch-on' : 'status-switch-off'} disabled:opacity-50`}
+                                title={item.isActive ? 'Deactivate user' : 'Activate user'}
+                                aria-label={item.isActive ? 'Deactivate user' : 'Activate user'}
                               >
-                                {updatingUserId === item.id
-                                  ? '...'
-                                  : item.isActive
-                                    ? 'Deactivate'
-                                    : 'Activate'}
+                                {updatingUserId === item.id ? (
+                                  <>
+                                    <Loader2 size={14} className="animate-spin text-current" />
+                                    Updating...
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className="status-switch-label">{item.isActive ? 'Active' : 'Inactive'}</span>
+                                    <span className="status-switch-track" aria-hidden="true">
+                                      <span className="status-switch-thumb" />
+                                    </span>
+                                  </>
+                                )}
                               </button>
                             ) : null}
                           </div>
@@ -276,7 +288,7 @@ export default function AdminUsersPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={canEditUsers ? 7 : 6} className="px-3 py-10 text-center text-slate-500 italic">
+                    <td colSpan={canEditUsers ? 7 : 6}>
                       No administrative users were found in the database.
                     </td>
                   </tr>
@@ -286,17 +298,6 @@ export default function AdminUsersPage() {
           </div>
         ) : null}
       </div>
-      <AdminEditUser
-        isOpen={isEditOpen}
-        formData={editFormData}
-        fieldErrors={editFieldErrors}
-        errorMessage={editErrorMessage}
-        isSubmitting={isSubmittingEdit}
-        canEditRoles={canEditRoles}
-        onChange={handleEditFieldChange}
-        onSubmit={handleEditSubmit}
-        onClose={closeEditPanel}
-      />
     </div>
   );
 }

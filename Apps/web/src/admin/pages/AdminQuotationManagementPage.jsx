@@ -5,11 +5,11 @@ import { useAdminAuth } from '../auth/AdminAuthContext.jsx';
 export default function AdminQuotationManagementPage() {
   const { user } = useAdminAuth();
   return (
-    <div className="space-y-6">
+    <div className="space-y-1">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="rounded-md border border-slate-200 bg-white p-6 shadow-md sm:p-8"
+        className="rounded-md border border-slate-200 bg-white p-3 shadow-md sm:p-3"
       >
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="flex items-center gap-4">
@@ -17,10 +17,7 @@ export default function AdminQuotationManagementPage() {
               <UserCheck size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Quotation Management</h2>
-              <p className="text-sm text-slate-500 font-sans">
-                Signed in as <span className="font-semibold text-teal-700">{user?.name || user?.email}</span> ({user?.role})
-              </p>
+              <h2 className="font-bold text-slate-900 tracking-tight">Review Quotations</h2>
             </div>
           </div>
         </div>

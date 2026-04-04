@@ -223,28 +223,29 @@ function buildApplicantStatusEmail(input: {
 }): { subject: string; text: string; html: string } {
   const isApproved = input.status === "approve";
   const subject = isApproved
-    ? "HelpOnCall employment application approved"
+    ? "Offer of Employment from HelpOnCall"
     : "HelpOnCall employment application update";
 
   const statusLine = isApproved
-    ? "Your employment application has been approved."
-    : "We reviewed your application and it is currently marked as rejected.";
+    ? "Thank you for your interest in joining HelpOnCall. <br/><p><strong>Your application is approved.</strong></p><p>Following our recent interview process, we are pleased to offer you the opportunity to join HelpOnCall. We were impressed by your skills and experience, and believe you will be a valuable addition to our team. <br/>Should you have any questions, please do not hesitate to reach out to us directly.</p><p>We look forward to working with you.</p>"
+    : "Thank you for your interest in joining HelpOnCall and for taking the time to submit your application. <p>After carefully reviewing your application, we regret to inform you that we will not be able to move forward with your application at this time as your skills and experience doesn't seem to be closely aligned with the requirements of this role.</p><p>Please stay in touch and feel free to apply for future openings that match your profile. We wish you the best of luck in your job search and future endeavors.</p>";
 
   const text = [
-    `Hi ${input.fullName},`,
+    `Dear ${input.fullName},`,
     "",
     statusLine,
     `Reference ID: ${input.empId}`,
     "",
-    "Thank you for your interest in HelpOnCall.",
-    "HelpOnCall Team"
+    "Sincerely,",
+    "Recruitment Team,",
+    "HelpOnCall"
   ].join("\n");
 
   const html = `
-    <p>Hi ${input.fullName},</p>
+    <p>Dear ${input.fullName},</p>
     <p>${statusLine}</p>
     <p><strong>Reference ID:</strong> ${input.empId}</p>
-    <p>Thank you for your interest in HelpOnCall.<br/>HelpOnCall Team</p>
+    <p>Sincerely,<br/>Recruitment Team,<br/>HelpOnCall</p>
   `;
 
   return { subject, text, html };
