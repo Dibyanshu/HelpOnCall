@@ -6,19 +6,27 @@ function supportsSqliteIntrospection(): boolean {
   return typeof candidate.get === "function" && typeof candidate.all === "function";
 }
 
-const USERS_TABLE_DDL = sql`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT NOT NULL UNIQUE,
-    name TEXT NOT NULL,
-    password_hash TEXT NOT NULL,
-    role TEXT NOT NULL CHECK (role IN ('content_publisher', 'resume_reviewer', 'job_poster', 'admin', 'super_admin')),
-    created_by TEXT NOT NULL DEFAULT '',
-    is_active INTEGER NOT NULL DEFAULT 1,
-    created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL
-  )
-`;
+function buildUsersTableDdl(tableName = "users") {
+  return sql.raw(`
+    CREATE TABLE IF NOT EXISTS ${tableName} (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      personal_email TEXT NOT NULL UNIQUE,
+      full_name TEXT NOT NULL,
+      gender TEXT,
+      date_of_birth INTEGER,
+      date_of_joining INTEGER,
+      staff_id TEXT UNIQUE,
+      password_hash TEXT NOT NULL,
+      role TEXT NOT NULL CHECK (role IN ('content_publisher', 'resume_reviewer', 'job_poster', 'admin', 'super_admin')),
+      created_by TEXT NOT NULL DEFAULT '',
+      is_active INTEGER NOT NULL DEFAULT 1,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    )
+  `);
+}
+
+const USERS_TABLE_DDL = buildUsersTableDdl();
 
 const SERVICE_CATEGORIES_TABLE_DDL = sql`
   CREATE TABLE IF NOT EXISTS service_categories (
@@ -119,40 +127,120 @@ const EMAIL_VALIDATOR_TABLE_DDL = sql`
   )
 `;
 
-async function migrateUsersRoleConstraintForAdmin(): Promise<void> {
-  const tableMeta = await db.get<{ sql: string | null }>(
-    sql`SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'users'`
-  );
+const RFQS_TABLE_DDL = sql`
+  CREATE TABLE IF NOT EXISTS rfqs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    rfq_id TEXT NOT NULL UNIQUE DEFAULT (
+      lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))), 2) || '-' || substr('89ab', abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))), 2) || '-' || lower(hex(randomblob(6)))
+    ),
+    email TEXT NOT NULL,
+    full_name TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    address TEXT NOT NULL,
+    preferred_contact TEXT NOT NULL CHECK (preferred_contact IN ('email', 'phone', 'any')),
+    service_selected TEXT NOT NULL CHECK (json_valid(service_selected) AND json_type(service_selected) = 'array'),
+    start_date INTEGER NOT NULL, -- Timestamp
+    duration_val INTEGER NOT NULL,
+    duration_type TEXT NOT NULL CHECK (duration_type IN ('Day', 'Week', 'Month')),
+    self_care INTEGER NOT NULL DEFAULT 0, -- Boolean
+    recipient_name TEXT NOT NULL,
+    recipient_relation TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'approve', 'reject')),
+    created_by TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL DEFAULT 0,
+    updated_at INTEGER NOT NULL DEFAULT 0
+  )
+`;
 
-  const currentSql = tableMeta?.sql ?? "";
 
-  if (!currentSql || currentSql.includes("'admin'")) {
+async function migrateUsersTableToCanonicalShape(): Promise<void> {
+  const columns = await db.all<{ name: string }>(sql`PRAGMA table_info(users)`);
+  const columnNames = new Set(columns.map((column) => column.name));
+  const expectedColumns = [
+    "id",
+    "personal_email",
+    "full_name",
+    "gender",
+    "date_of_birth",
+    "date_of_joining",
+    "staff_id",
+    "password_hash",
+    "role",
+    "created_by",
+    "is_active",
+    "created_at",
+    "updated_at"
+  ];
+
+  if (expectedColumns.every((column) => columnNames.has(column)) && columns.length === expectedColumns.length) {
     return;
   }
+
+  const personalEmailExpr = columnNames.has("personal_email")
+    ? "personal_email"
+    : columnNames.has("email")
+      ? "email"
+      : null;
+  const fullNameExpr = columnNames.has("full_name")
+    ? "full_name"
+    : columnNames.has("name")
+      ? "name"
+      : null;
+
+  if (!personalEmailExpr || !fullNameExpr || !columnNames.has("password_hash") || !columnNames.has("role")) {
+    await db.run(sql`DROP TABLE users`);
+    await db.run(USERS_TABLE_DDL);
+    return;
+  }
+
+  const genderExpr = columnNames.has("gender") ? "gender" : "NULL";
+  const dateOfBirthExpr = columnNames.has("date_of_birth") ? "date_of_birth" : "NULL";
+  const dateOfJoiningExpr = columnNames.has("date_of_joining") ? "date_of_joining" : "NULL";
+  const staffIdExpr = columnNames.has("staff_id") ? "staff_id" : "NULL";
+  const createdByExpr = columnNames.has("created_by") ? "COALESCE(created_by, '')" : "''";
+  const isActiveExpr = columnNames.has("is_active") ? "COALESCE(is_active, 1)" : "1";
+  const createdAtExpr = columnNames.has("created_at") ? "created_at" : "strftime('%s', 'now')";
+  const updatedAtExpr = columnNames.has("updated_at") ? "updated_at" : "strftime('%s', 'now')";
 
   await db.run(sql`BEGIN`);
 
   try {
-    await db.run(sql`
-      CREATE TABLE users_new (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT NOT NULL UNIQUE,
-        name TEXT NOT NULL,
-        password_hash TEXT NOT NULL,
-        role TEXT NOT NULL CHECK (role IN ('content_publisher', 'resume_reviewer', 'job_poster', 'admin', 'super_admin')),
-        created_by TEXT NOT NULL DEFAULT '',
-        is_active INTEGER NOT NULL DEFAULT 1,
-        created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL
-      )
-    `);
-
-    await db.run(sql`
-      INSERT INTO users_new (id, email, name, password_hash, role, created_by, is_active, created_at, updated_at)
-      SELECT id, email, name, password_hash, role, '', is_active, created_at, updated_at
-      FROM users
-    `);
-
+    await db.run(sql`DROP TABLE IF EXISTS users_new`);
+    await db.run(buildUsersTableDdl("users_new"));
+    await db.run(
+      sql.raw(`
+        INSERT INTO users_new (
+          id,
+          personal_email,
+          full_name,
+          gender,
+          date_of_birth,
+          date_of_joining,
+          staff_id,
+          password_hash,
+          role,
+          created_by,
+          is_active,
+          created_at,
+          updated_at
+        )
+        SELECT
+          id,
+          ${personalEmailExpr},
+          ${fullNameExpr},
+          ${genderExpr},
+          ${dateOfBirthExpr},
+          ${dateOfJoiningExpr},
+          ${staffIdExpr},
+          password_hash,
+          role,
+          ${createdByExpr},
+          ${isActiveExpr},
+          ${createdAtExpr},
+          ${updatedAtExpr}
+        FROM users
+      `)
+    );
     await db.run(sql`DROP TABLE users`);
     await db.run(sql`ALTER TABLE users_new RENAME TO users`);
     await db.run(sql`COMMIT`);
@@ -160,17 +248,6 @@ async function migrateUsersRoleConstraintForAdmin(): Promise<void> {
     await db.run(sql`ROLLBACK`);
     throw error;
   }
-}
-
-async function migrateUsersAddCreatedByColumn(): Promise<void> {
-  const columns = await db.all<{ name: string }>(sql`PRAGMA table_info(users)`);
-  const hasCreatedBy = columns.some((column) => column.name === "created_by");
-
-  if (hasCreatedBy) {
-    return;
-  }
-
-  await db.run(sql`ALTER TABLE users ADD COLUMN created_by TEXT NOT NULL DEFAULT ''`);
 }
 
 async function migrateServiceCategoriesAddStandardColumns(): Promise<void> {
@@ -311,6 +388,7 @@ export async function ensureTables(): Promise<void> {
   await db.run(CUSTOMER_TESTIMONIALS_TABLE_DDL);
   await db.run(EMAIL_VALIDATOR_TABLE_DDL);
   await db.run(EMAIL_TEMPLATES_TABLE_DDL);
+  await db.run(RFQS_TABLE_DDL);
 
   // These migration helpers depend on better-sqlite3 specific db.get/db.all APIs.
   // Turso/libsql uses a different driver shape, so skip introspection-based migrations there.
@@ -318,8 +396,7 @@ export async function ensureTables(): Promise<void> {
     return;
   }
 
-  await migrateUsersRoleConstraintForAdmin();
-  await migrateUsersAddCreatedByColumn();
+  await migrateUsersTableToCanonicalShape();
   await migrateServiceCategoriesAddStandardColumns();
   await migrateServicesAddStandardColumns();
   await migrateEmploymentToAddIdAndAuditColumns();

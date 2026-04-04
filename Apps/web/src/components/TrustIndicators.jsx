@@ -47,10 +47,10 @@ export default function TrustIndicators() {
             return (
               <div
                 key={feature.name}
-                className="group w-full md:w-[calc(50%-2rem)] lg:w-[calc(33.333%-2rem)] relative flex flex-col bg-white/80 backdrop-blur-sm p-8 rounded-3xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
+                className="group w-full md:w-[calc(50%-2rem)] lg:w-[calc(33.333%-2rem)] relative flex flex-col bg-white/80 backdrop-blur-sm p-8 rounded-md transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
               >
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-teal-50 shadow-inner transition-colors group-hover:bg-teal-100">
+                  <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-md bg-teal-50 shadow-inner transition-colors group-hover:bg-teal-100">
                     <Icon className="h-7 w-7 text-teal-600" aria-hidden="true" />
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 font-sans">

@@ -15,6 +15,11 @@ Optional variables:
 
 - `accessToken` = paste JWT from login response
 
+Last synced:
+
+- Endpoint definitions synced with README.md on 2026-04-01.
+- Timestamp: 2026-04-01 01:48:21 IST.
+
 ---
 
 ## 1) Health Check
@@ -535,7 +540,7 @@ curl --location '{{baseUrl}}/api/v1/email-validator/verify-code' \
 
 ---
 
-## 5) Create User (Super Admin)
+## 5) Create User (Admin or Super Admin)
 
 ### Request
 
@@ -548,8 +553,12 @@ Body (raw JSON):
 
 ```json
 {
-  "email": "publisher@helponcall.local",
-  "name": "Content Publisher User",
+  "personalEmail": "publisher@helponcall.local",
+  "fullName": "Content Publisher User",
+  "gender": "other",
+  "dateOfBirth": "1990-01-15",
+  "dateOfJoining": "2026-04-01",
+  "staffId": "publisher0426",
   "password": "UserPass123!",
   "role": "content_publisher",
   "isActive": true
@@ -561,7 +570,13 @@ Allowed role values:
 - `content_publisher`
 - `resume_reviewer`
 - `job_poster`
+- `admin`
 - `super_admin`
+
+Notes:
+
+- `admin` callers cannot assign the `super_admin` role.
+- The API also accepts legacy aliases `email` and `name`, but `personalEmail` and `fullName` are the canonical fields.
 
 ### cURL
 
@@ -570,8 +585,12 @@ curl --location '{{baseUrl}}/api/v1/admin/users' \
 --header 'Authorization: Bearer {{accessToken}}' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-  "email": "publisher@helponcall.local",
-  "name": "Content Publisher User",
+  "personalEmail": "publisher@helponcall.local",
+  "fullName": "Content Publisher User",
+  "gender": "other",
+  "dateOfBirth": "1990-01-15",
+  "dateOfJoining": "2026-04-01",
+  "staffId": "publisher0426",
   "password": "UserPass123!",
   "role": "content_publisher",
   "isActive": true
@@ -585,8 +604,12 @@ curl --location '{{baseUrl}}/api/v1/admin/users' \
   "message": "User created successfully",
   "user": {
     "id": 2,
-    "email": "publisher@helponcall.local",
-    "name": "Content Publisher User",
+    "personalEmail": "publisher@helponcall.local",
+    "fullName": "Content Publisher User",
+    "gender": "other",
+    "dateOfBirth": "1990-01-15T00:00:00.000Z",
+    "dateOfJoining": "2026-04-01T00:00:00.000Z",
+    "staffId": "publisher0426",
     "role": "content_publisher",
     "isActive": true,
     "createdAt": "2026-03-12T10:00:00.000Z"
@@ -596,7 +619,7 @@ curl --location '{{baseUrl}}/api/v1/admin/users' \
 
 ---
 
-## 6) List Users (Super Admin)
+## 6) List Users (Admin or Super Admin)
 
 ### Request
 
@@ -618,8 +641,12 @@ curl --location '{{baseUrl}}/api/v1/admin/users' \
   "data": [
     {
       "id": 2,
-      "email": "publisher@helponcall.local",
-      "name": "Content Publisher User",
+      "personalEmail": "publisher@helponcall.local",
+      "fullName": "Content Publisher User",
+      "gender": "other",
+      "dateOfBirth": "1990-01-15T00:00:00.000Z",
+      "dateOfJoining": "2026-04-01T00:00:00.000Z",
+      "staffId": "publisher0426",
       "role": "content_publisher",
       "isActive": true,
       "createdAt": "2026-03-12T10:00:00.000Z",
@@ -631,7 +658,7 @@ curl --location '{{baseUrl}}/api/v1/admin/users' \
 
 ---
 
-## 6.1) List Roles (Super Admin)
+## 6.1) List Roles (Admin or Super Admin)
 
 ### Request
 
@@ -677,7 +704,7 @@ curl --location '{{baseUrl}}/api/v1/admin/roles' \
 
 ---
 
-## 7) Update User Status (Super Admin)
+## 7) Update User Status (Admin or Super Admin)
 
 ### Request
 
@@ -714,8 +741,8 @@ curl --location '{{baseUrl}}/api/v1/admin/users/status' \
   "message": "User status updated successfully",
   "user": {
     "id": 2,
-    "email": "publisher@helponcall.local",
-    "name": "Content Publisher User",
+    "personalEmail": "publisher@helponcall.local",
+    "fullName": "Content Publisher User",
     "role": "content_publisher",
     "createdBy": "super_admin",
     "isActive": false,
@@ -740,7 +767,9 @@ Body (raw JSON, any editable fields):
 
 ```json
 {
-  "name": "Updated User Name",
+  "fullName": "Updated User Name",
+  "gender": "female",
+  "staffId": "publisher0926",
   "role": "job_poster",
   "isActive": true
 }
@@ -753,7 +782,9 @@ curl --location --request PATCH '{{baseUrl}}/api/v1/admin/users/2' \
 --header 'Authorization: Bearer {{accessToken}}' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-  "name": "Updated User Name",
+  "fullName": "Updated User Name",
+  "gender": "female",
+  "staffId": "publisher0926",
   "role": "job_poster",
   "isActive": true
 }'
@@ -766,8 +797,10 @@ curl --location --request PATCH '{{baseUrl}}/api/v1/admin/users/2' \
   "message": "User updated successfully",
   "user": {
     "id": 2,
-    "email": "publisher@helponcall.local",
-    "name": "Updated User Name",
+    "personalEmail": "publisher@helponcall.local",
+    "fullName": "Updated User Name",
+    "gender": "female",
+    "staffId": "publisher0926",
     "role": "job_poster",
     "createdBy": "super_admin",
     "isActive": true,
@@ -1269,6 +1302,406 @@ Notes:
 
 ---
 
+<a id="services-list-admin-categories"></a>
+### 9.8) List Service Categories (Admin/Super Admin)
+
+### Request
+
+- Method: `GET`
+- URL: `{{baseUrl}}/api/v1/admin/service-categories`
+- Auth: Bearer Token -> `{{accessToken}}`
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/admin/service-categories' \
+--header 'Authorization: Bearer {{accessToken}}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "Household Chores",
+      "displayOrder": 0,
+      "createdBy": "super_admin",
+      "createdAt": "2026-03-15T10:00:00.000Z",
+      "updatedAt": "2026-03-15T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+<a id="services-list-admin-services"></a>
+### 9.9) List Services (Admin/Super Admin)
+
+### Request
+
+- Method: `GET`
+- URL: `{{baseUrl}}/api/v1/admin/services`
+- Auth: Bearer Token -> `{{accessToken}}`
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/admin/services' \
+--header 'Authorization: Bearer {{accessToken}}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "data": [
+    {
+      "id": 20,
+      "categoryId": 1,
+      "label": "Post-op support",
+      "desc": "Assistance after surgery.",
+      "image": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "icon": "HeartPulse",
+      "displayOrder": 4,
+      "createdBy": "admin",
+      "createdAt": "2026-03-15T10:00:00.000Z",
+      "updatedAt": "2026-03-15T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+## 10) Email Templates CRUD (Super Admin)
+
+<a id="email-templates-list"></a>
+### 10.1) List Email Templates
+
+### Request
+
+- Method: `GET`
+- URL: `{{baseUrl}}/api/v1/admin/email-templates?module=employee&isActive=true&search=verification`
+- Auth: Bearer Token -> `{{accessToken}}`
+
+Optional query params:
+
+- `module`: `employee`, `user_registration`, `rfq`
+- `isActive`: `true` or `false`
+- `search`: partial match on `templateKey` or `description`
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/admin/email-templates?module=employee&isActive=true&search=verification' \
+--header 'Authorization: Bearer {{accessToken}}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "templateKey": "email_verification_code",
+      "module": "employee",
+      "channel": "email",
+      "subjectTemplate": "Your verification code",
+      "textTemplate": "Code: {{code}}",
+      "htmlTemplate": "<p>Code: <strong>{{code}}</strong></p>",
+      "variablesSchema": "{\"code\":\"string\"}",
+      "description": "Employment email verification",
+      "isActive": true,
+      "createdBy": "super_admin",
+      "createdAt": "2026-03-20T12:00:00.000Z",
+      "updatedAt": "2026-03-20T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+<a id="email-templates-get"></a>
+### 10.2) Get Email Template By ID
+
+### Request
+
+- Method: `GET`
+- URL: `{{baseUrl}}/api/v1/admin/email-templates/:id`
+- Auth: Bearer Token -> `{{accessToken}}`
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/admin/email-templates/1' \
+--header 'Authorization: Bearer {{accessToken}}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "data": {
+    "id": 1,
+    "templateKey": "email_verification_code",
+    "module": "employee",
+    "channel": "email",
+    "subjectTemplate": "Your verification code",
+    "textTemplate": "Code: {{code}}",
+    "htmlTemplate": "<p>Code: <strong>{{code}}</strong></p>",
+    "variablesSchema": "{\"code\":\"string\"}",
+    "description": "Employment email verification",
+    "isActive": true,
+    "createdBy": "super_admin",
+    "createdAt": "2026-03-20T12:00:00.000Z",
+    "updatedAt": "2026-03-20T12:00:00.000Z"
+  }
+}
+```
+
+---
+
+<a id="email-templates-create"></a>
+### 10.3) Create Email Template
+
+### Request
+
+- Method: `POST`
+- URL: `{{baseUrl}}/api/v1/admin/email-templates`
+- Auth: Bearer Token -> `{{accessToken}}`
+- Header: `Content-Type: application/json`
+
+Body (raw JSON):
+
+```json
+{
+  "templateKey": "rfq_submission_ack",
+  "module": "rfq",
+  "channel": "email",
+  "subjectTemplate": "We received your quote request",
+  "textTemplate": "Hi {{name}}, we received your request.",
+  "htmlTemplate": "<p>Hi {{name}}, we received your request.</p>",
+  "variablesSchema": "{\"name\":\"string\"}",
+  "description": "RFQ acknowledgement",
+  "isActive": true
+}
+```
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/admin/email-templates' \
+--header 'Authorization: Bearer {{accessToken}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "templateKey": "rfq_submission_ack",
+  "module": "rfq",
+  "channel": "email",
+  "subjectTemplate": "We received your quote request",
+  "textTemplate": "Hi {{name}}, we received your request.",
+  "htmlTemplate": "<p>Hi {{name}}, we received your request.</p>",
+  "variablesSchema": "{\"name\":\"string\"}",
+  "description": "RFQ acknowledgement",
+  "isActive": true
+}'
+```
+
+### Success Response (201)
+
+```json
+{
+  "message": "Email template created successfully",
+  "data": {
+    "id": 7,
+    "templateKey": "rfq_submission_ack",
+    "module": "rfq",
+    "channel": "email",
+    "isActive": true,
+    "createdBy": "super_admin",
+    "createdAt": "2026-03-20T13:00:00.000Z",
+    "updatedAt": "2026-03-20T13:00:00.000Z"
+  }
+}
+```
+
+---
+
+<a id="email-templates-update"></a>
+### 10.4) Update Email Template
+
+### Request
+
+- Method: `PATCH`
+- URL: `{{baseUrl}}/api/v1/admin/email-templates/:id`
+- Auth: Bearer Token -> `{{accessToken}}`
+- Header: `Content-Type: application/json`
+
+Body (raw JSON, at least one field required):
+
+```json
+{
+  "description": "RFQ acknowledgement email",
+  "isActive": true
+}
+```
+
+### cURL
+
+```bash
+curl --location --request PATCH '{{baseUrl}}/api/v1/admin/email-templates/7' \
+--header 'Authorization: Bearer {{accessToken}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "description": "RFQ acknowledgement email",
+  "isActive": true
+}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "message": "Email template updated successfully",
+  "data": {
+    "id": 7,
+    "templateKey": "rfq_submission_ack",
+    "module": "rfq",
+    "channel": "email",
+    "description": "RFQ acknowledgement email",
+    "isActive": true,
+    "updatedAt": "2026-03-20T13:10:00.000Z"
+  }
+}
+```
+
+---
+
+<a id="email-templates-delete"></a>
+### 10.5) Deactivate Email Template
+
+### Request
+
+- Method: `DELETE`
+- URL: `{{baseUrl}}/api/v1/admin/email-templates/:id`
+- Auth: Bearer Token -> `{{accessToken}}`
+
+### cURL
+
+```bash
+curl --location --request DELETE '{{baseUrl}}/api/v1/admin/email-templates/7' \
+--header 'Authorization: Bearer {{accessToken}}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "message": "Email template deactivated successfully",
+  "data": {
+    "id": 7,
+    "templateKey": "rfq_submission_ack",
+    "isActive": false,
+    "updatedAt": "2026-03-20T13:20:00.000Z"
+  }
+}
+```
+
+---
+
+<a id="email-templates-test-send"></a>
+### 10.6) Test Send Email Template
+
+### Request
+
+- Method: `POST`
+- URL: `{{baseUrl}}/api/v1/admin/email-templates/:id/test-send`
+- Auth: Bearer Token -> `{{accessToken}}`
+- Header: `Content-Type: application/json`
+
+Body (raw JSON):
+
+```json
+{
+  "to": "qa@example.com",
+  "data": {
+    "name": "QA User",
+    "code": "123456"
+  }
+}
+```
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/admin/email-templates/1/test-send' \
+--header 'Authorization: Bearer {{accessToken}}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "to": "qa@example.com",
+  "data": {
+    "name": "QA User",
+    "code": "123456"
+  }
+}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "message": "Test email sent successfully"
+}
+```
+
+Notes:
+
+- All email template endpoints require role `super_admin`.
+
+---
+
+## 11) Testimonials
+
+<a id="testimonials-list"></a>
+### 11.1) List Active Testimonials (Public)
+
+### Request
+
+- Method: `GET`
+- URL: `{{baseUrl}}/api/v1/testimonials`
+- Auth: None
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/testimonials'
+```
+
+### Success Response (200)
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "customerName": "Jane Doe",
+      "customerEmail": "jane@example.com",
+      "message": "Excellent and compassionate care.",
+      "rating": 5,
+      "profilePic": "https://example.com/profile/jane.jpg",
+      "createdOn": "2026-03-10T10:00:00.000Z",
+      "status": "active"
+    }
+  ]
+}
+```
+
+---
+
 ## Suggested Postman Run Order
 
 1. `Health Check`
@@ -1276,6 +1709,80 @@ Notes:
 3. `Create User`
 4. `List Users`
 5. `Change Password`
+
+---
+
+## 22) Submit RFQ (Public)
+
+### Request
+
+- Method: `POST`
+- URL: `{{baseUrl}}/api/v1/rfqs`
+- Auth: None
+- Header: `Content-Type: application/json`
+
+Body (raw JSON):
+
+```json
+{
+  "email": "user@example.com",
+  "fullName": "John Doe",
+  "phone": "1234567890",
+  "address": "123 Main St, Toronto",
+  "preferredContact": "email",
+  "serviceSelected": [{"categoryId":1,"serviceId":2}],
+  "startDate": "2024-05-01T10:00:00Z",
+  "durationVal": 2,
+  "durationType": "Week",
+  "selfCare": true,
+  "recipientName": "Jane Doe",
+  "recipientRelation": "Mother"
+}
+```
+
+Notes:
+
+- `preferredContact` allowed values: `email`, `phone`, `any`.
+- `durationType` allowed values: `Day`, `Week`, `Month`.
+- `serviceSelected` is a JSON array of objects, e.g. `[{"categoryId":1,"serviceId":2}]`.
+- `startDate` should be an ISO 8601 date string.
+
+### cURL
+
+```bash
+curl --location '{{baseUrl}}/api/v1/rfqs' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "email": "user@example.com",
+  "fullName": "John Doe",
+  "phone": "1234567890",
+  "address": "123 Main St, Toronto",
+  "preferredContact": "email",
+  "serviceSelected": [{"categoryId":1,"serviceId":2}],
+  "startDate": "2024-05-01T10:00:00Z",
+  "durationVal": 2,
+  "durationType": "Week",
+  "selfCare": true,
+  "recipientName": "Jane Doe",
+  "recipientRelation": "Mother"
+}'
+```
+
+### Success Response (201)
+
+```json
+{
+  "success": true,
+  "message": "RFQ submitted successfully",
+  "data": {
+    "id": 1,
+    "rfqId": "8e4d6574-8f8f-4962-9f65-3a7c3dd67aa1",
+    "status": "new",
+    "createdAt": "2026-03-31T19:35:00.000Z",
+    "updatedAt": "2026-03-31T19:35:00.000Z"
+  }
+}
+```
 
 ---
 

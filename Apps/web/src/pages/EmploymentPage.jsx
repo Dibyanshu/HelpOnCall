@@ -6,12 +6,19 @@ export default function EmploymentPage() {
   const benefits = [
     "Competitive compensation and flexible scheduling tailored to your life.",
     "Comprehensive orientation, mentorship, and continuous learning opportunities.",
-    "A supportive, inclusive team environment that prioritizes your physical and mental well-being.",
-    "Clear, defined pathways for career advancement and clinical specialization.",
     "Meaningful, purpose-driven work that profoundly impacts the lives of our clients and their families.",
-    "Access to exclusive employee assistance programs and wellness resources.",
-    "Recognition and reward programs that celebrate your dedication and achievements.",
-    "Regular team-building events and social gatherings to foster deep connections and a sense of belonging."
+    "A supportive, inclusive team that values your voice and professional growth.",
+    "Recognition programs that celebrate exceptional service and dedication.",
+    "Modern care tools and operational support that help you focus on people-first care."
+  ];
+
+  const expectations = [
+    "A compassionate, client-first mindset with excellent communication skills.",
+    "Professional reliability, accountability, and respect for confidentiality.",
+    "A willingness to learn, adapt, and collaborate in a fast-moving care environment.",
+    "Strong time management and attention to detail in day-to-day responsibilities.",
+    "Commitment to safety standards and high-quality care outcomes.",
+    "A positive, solution-oriented attitude that strengthens team culture and client trust."
   ];
 
   return (
@@ -35,13 +42,13 @@ export default function EmploymentPage() {
         </div>
       </section>
 
-      <section id="employment" className="px-4 py-16 sm:px-6 sm:py-10 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-12 lg:grid-cols-2 lg:gap-8 items-start">
+      <section id="employment" className="px-4 py-16 sm:px-6 sm:py-10 lg:px-4">
+        <div className="mx-auto">
+          <div className="grid lg:grid-cols-2 items-stretch">
 
             {/* Left Column: Why join us? */}
             <div className="flex flex-col justify-start lg:pt-8 xl:pr-12 animate-in fade-in slide-in-from-left-8 duration-700">
-              <div className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+              <div className="rounded-md bg-white p-8 shadow-sm ring-1 ring-slate-200">
                 <h3 className="text-xl font-semibold text-slate-900">Why join us?</h3>
                 <ul className="mt-6 space-y-5">
                   {benefits.map((benefit, index) => (
@@ -52,10 +59,22 @@ export default function EmploymentPage() {
                   ))}
                 </ul>
               </div>
+
+              <div className="rounded-md bg-white p-8 shadow-sm ring-1 ring-slate-200">
+                <h3 className="text-xl font-semibold text-slate-900">What you bring to the table?</h3>
+                <ul className="mt-6 space-y-5">
+                  {expectations.map((item, index) => (
+                    <li key={index} className="flex items-start gap-4">
+                      <CheckCircle2 className="h-6 w-6 shrink-0 text-teal-600" aria-hidden="true" />
+                      <span className="text-slate-700 leading-relaxed">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
 
             {/* Right Column: Employment Form */}
-            <div className="lg:mt-0 flex flex-col items-center justify-start lg:pt-8 animate-in fade-in slide-in-from-right-8 duration-700">
+            <div className="h-full lg:mt-0 xl:px-4 lg:pl-8 flex flex-col items-center justify-start animate-in fade-in slide-in-from-right-8 duration-700">
               <EmploymentForm />
             </div>
 

@@ -66,7 +66,7 @@ export default function ServiceCard() {
                 {service.features.map((feature, index) => (
                   <div
                     key={feature.label}
-                    className="group relative bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300"
+                      className="group relative bg-white rounded-md shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300" // 'rounded-md' is verified to be correct
                   >
                     {/* Image at Top */}
                     <div className="relative h-48 overflow-hidden">

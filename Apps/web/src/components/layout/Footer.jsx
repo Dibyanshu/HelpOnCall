@@ -199,7 +199,7 @@ export default function Footer() {
               {seoNeighborhoods.map((area) => (
                 <span
                   key={area}
-                  className="inline-block rounded-full bg-gray-800 px-3 py-1 text-xs text-gray-300"
+                  className="inline-block rounded-md bg-gray-800 px-3 py-1 text-xs text-gray-300"
                 >
                   {area}
                 </span>

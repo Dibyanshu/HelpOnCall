@@ -11,13 +11,13 @@ import AdminLoginPage from './admin/pages/AdminLoginPage';
 import AdminLayout from './admin/adminLayout/AdminLayout';
 import AdminDashboard from './admin/pages/AdminDashboard';
 import AdminUsersPage from './admin/pages/AdminUsersPage';
-import AdminUserNewPage from './admin/pages/AdminUserNewPage';
+import AdminNewUser from './admin/pages/AdminNewUser';
 import AdminQuotationManagementPage from './admin/pages/AdminQuotationManagementPage';
 import AdminServicePage from './admin/pages/AdminServicePage';
 import AdminEmailTemplatesPage from './admin/pages/email-templates/AdminEmailTemplatesPage';
 import EmploymentAdminPage from './admin/pages/employment/EmploymentAdminPage';
 import RequireAdminAuth from './admin/routes/RequireAdminAuth';
-import RFQSlideInPanel from './components/RFQSlideInPanel';
+import RequestForQuote from './pages/RequestForQuote';
 
 function App() {
   return (
@@ -40,9 +40,9 @@ function App() {
               <AdminUsersPage />
             </RequireAdminAuth>
           } />
-          <Route path="/admin/users/new" element={
-            <RequireAdminAuth allowedRoles={['super_admin']}>
-              <AdminUserNewPage />
+          <Route path="/admin/users/create-new-staff-record" element={
+            <RequireAdminAuth allowedRoles={['super_admin', 'admin']}>
+              <AdminNewUser />
             </RequireAdminAuth>
           } />
           <Route path="/admin/quotations" element={
@@ -74,9 +74,9 @@ function App() {
         <Route path="/employment" element={<Layout><EmploymentPage /></Layout>} />
         <Route path="/sitemap" element={<Layout><SitemapPage /></Layout>} />
         <Route path="/privacy-policy" element={<Layout><PrivacyPolicyPage /></Layout>} />
+        <Route path="/quote" element={<Layout><RequestForQuote /></Layout>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <RFQSlideInPanel />
     </>
   );
 }

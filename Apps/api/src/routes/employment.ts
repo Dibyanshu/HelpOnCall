@@ -12,6 +12,14 @@ import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
 import { employment, serviceCategories, services, users } from "../db/schema.js";
 import type { Role } from "../types/auth.js";
+import {
+  buildAdminSubmissionNotificationEmail,
+  buildApplicantStatusEmail,
+  buildApplicantStatusTemplateData,
+  buildApplicantSubmissionConfirmationEmail
+} from "../utils/email-template/email-builders.js";
+import { sendTemplatedEmail } from "../utils/email-template/email-template.service.js";
+import { TEMPLATE_KEYS } from "../utils/email-template/template-registry.js";
 
 const allowedResumeExtensions = new Set([".pdf", ".doc", ".docx"]);
 
@@ -138,75 +146,10 @@ async function updateEmploymentStatusByEmpId(
   return updated[0] ?? null;
 }
 
-function buildAdminSubmissionNotificationEmail(input: {
-  fullName: string;
-  emailAddress: string;
-  phoneNumber: string;
-  empId: string;
-}): { subject: string; text: string; html: string } {
-  const subject = `New employment application: ${input.fullName}`;
-  const text = [
-    "A new employment application has been submitted.",
-    "",
-    `Candidate: ${input.fullName}`,
-    `Email: ${input.emailAddress}`,
-    `Phone: ${input.phoneNumber}`,
-    `Emp ID: ${input.empId}`,
-    "",
-    "Please review it from the admin employment dashboard."
-  ].join("\n");
-
-  const html = `
-    <p>A new employment application has been submitted.</p>
-    <p>
-      <strong>Candidate:</strong> ${input.fullName}<br/>
-      <strong>Email:</strong> ${input.emailAddress}<br/>
-      <strong>Phone:</strong> ${input.phoneNumber}<br/>
-      <strong>Emp ID:</strong> ${input.empId}
-    </p>
-    <p>Please review it from the admin employment dashboard.</p>
-  `;
-
-  return { subject, text, html };
-}
-
-function buildApplicantStatusEmail(input: {
-  fullName: string;
-  empId: string;
-  status: "approve" | "reject";
-}): { subject: string; text: string; html: string } {
-  const isApproved = input.status === "approve";
-  const subject = isApproved
-    ? "HelpOnCall employment application approved"
-    : "HelpOnCall employment application update";
-
-  const statusLine = isApproved
-    ? "Your employment application has been approved."
-    : "We reviewed your application and it is currently marked as rejected.";
-
-  const text = [
-    `Hi ${input.fullName},`,
-    "",
-    statusLine,
-    `Reference ID: ${input.empId}`,
-    "",
-    "Thank you for your interest in HelpOnCall.",
-    "HelpOnCall Team"
-  ].join("\n");
-
-  const html = `
-    <p>Hi ${input.fullName},</p>
-    <p>${statusLine}</p>
-    <p><strong>Reference ID:</strong> ${input.empId}</p>
-    <p>Thank you for your interest in HelpOnCall.<br/>HelpOnCall Team</p>
-  `;
-
-  return { subject, text, html };
-}
 
 async function findAdminRecipientEmails(): Promise<string[]> {
   const rows = await db
-    .select({ email: users.email })
+    .select({ email: users.personalEmail })
     .from(users)
     .where(
       and(
@@ -394,6 +337,26 @@ const employmentRoutes: FastifyPluginAsync = async (fastify) => {
         .catch((error) => {
           fastify.log.error({ error }, "Failed to send employment submission email to admins");
         });
+
+      void sendTemplatedEmail(
+        {
+          to: createdSubmission.emailAddress,
+          templateKey: TEMPLATE_KEYS.EMPLOYMENT_APPLICANT_CONFIRMATION,
+          data: {
+            fullName: createdSubmission.fullName,
+            emailAddress: createdSubmission.emailAddress
+          },
+          fallback: () => buildApplicantSubmissionConfirmationEmail({
+            fullName: createdSubmission.fullName,
+            emailAddress: createdSubmission.emailAddress
+          }),
+          strict: false
+        },
+        fastify.mail,
+        fastify.log
+      ).catch((error) => {
+        fastify.log.error({ error }, "Failed to send employment submission confirmation email to applicant");
+      });
 
       return reply.code(201).send({
         message: "Employment application submitted successfully",
@@ -627,22 +590,23 @@ const employmentRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.code(404).send({ message: "Employment submission not found" });
       }
 
-      const applicantEmail = buildApplicantStatusEmail({
-        fullName: updated.fullName,
-        empId: updated.empId,
-        status: "approve"
-      });
-
-      void fastify.mail
-        .send({
+      void sendTemplatedEmail(
+        {
           to: updated.emailAddress,
-          subject: applicantEmail.subject,
-          text: applicantEmail.text,
-          html: applicantEmail.html
-        })
-        .catch((error) => {
-          fastify.log.error({ error, empId: updated.empId }, "Failed to send approval email");
-        });
+          templateKey: TEMPLATE_KEYS.EMPLOYMENT_APPLICANT_STATUS,
+          data: {
+            fullName: updated.fullName,
+            empId: updated.empId,
+            ...buildApplicantStatusTemplateData("approve")
+          },
+          fallback: () => buildApplicantStatusEmail({ fullName: updated.fullName, empId: updated.empId, status: "approve" }),
+          strict: false
+        },
+        fastify.mail,
+        fastify.log
+      ).catch((error) => {
+        fastify.log.error({ error, empId: updated.empId }, "Failed to send approval email");
+      });
 
       return reply.send({
         message: "Employment submission approved successfully",
@@ -680,22 +644,23 @@ const employmentRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.code(404).send({ message: "Employment submission not found" });
       }
 
-      const applicantEmail = buildApplicantStatusEmail({
-        fullName: updated.fullName,
-        empId: updated.empId,
-        status: "reject"
-      });
-
-      void fastify.mail
-        .send({
+      void sendTemplatedEmail(
+        {
           to: updated.emailAddress,
-          subject: applicantEmail.subject,
-          text: applicantEmail.text,
-          html: applicantEmail.html
-        })
-        .catch((error) => {
-          fastify.log.error({ error, empId: updated.empId }, "Failed to send rejection email");
-        });
+          templateKey: TEMPLATE_KEYS.EMPLOYMENT_APPLICANT_STATUS,
+          data: {
+            fullName: updated.fullName,
+            empId: updated.empId,
+            ...buildApplicantStatusTemplateData("reject")
+          },
+          fallback: () => buildApplicantStatusEmail({ fullName: updated.fullName, empId: updated.empId, status: "reject" }),
+          strict: false
+        },
+        fastify.mail,
+        fastify.log
+      ).catch((error) => {
+        fastify.log.error({ error, empId: updated.empId }, "Failed to send rejection email");
+      });
 
       return reply.send({
         message: "Employment submission rejected successfully",

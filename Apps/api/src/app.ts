@@ -10,6 +10,7 @@ import emailTemplateRoutes from "./routes/emailTemplates.js";
 import authRoutes from "./routes/auth.js";
 import employmentRoutes from "./routes/employment.js";
 import healthRoutes from "./routes/health.js";
+import rfqsRoute from "./routes/rfqs.js";
 import servicesRoutes from "./routes/services.js";
 import testimonialsRoutes from "./routes/testimonials.js";
 
@@ -39,6 +40,7 @@ export function buildApp() {
   app.register(emailTemplateRoutes, { prefix: "/api/v1" });
   app.register(servicesRoutes, { prefix: "/api/v1" });
   app.register(employmentRoutes, { prefix: "/api/v1" });
+  app.register(rfqsRoute, { prefix: "/api/v1" });
   app.register(testimonialsRoutes, { prefix: "/api/v1" });
 
   return app;

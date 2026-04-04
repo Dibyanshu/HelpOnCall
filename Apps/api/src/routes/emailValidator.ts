@@ -5,6 +5,7 @@ import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
 import { emailValidator, employment } from "../db/schema.js";
 import type { Role } from "../types/auth.js";
+import { buildVerificationCodeEmail } from "../utils/email-template/email-builders.js";
 import { sendTemplatedEmail } from "../utils/email-template/email-template.service.js";
 import { TEMPLATE_KEYS } from "../utils/email-template/template-registry.js";
 
@@ -143,7 +144,7 @@ const emailValidatorRoutes: FastifyPluginAsync = async (fastify) => {
           to: email,
           templateKey: TEMPLATE_KEYS.EMAIL_VERIFICATION_CODE,
           data: { code: verificationCode, moduleLabel: moduleLabelMap[module] },
-          fallback: () => buildVerificationEmailFallback({ module, code: verificationCode }),
+          fallback: () => buildVerificationCodeEmail({ moduleLabel: moduleLabelMap[module], code: verificationCode }),
           strict: false
         },
         fastify.mail,
