@@ -15,6 +15,7 @@ import type { Role } from "../types/auth.js";
 import {
   buildAdminSubmissionNotificationEmail,
   buildApplicantStatusEmail,
+  buildApplicantStatusTemplateData,
   buildApplicantSubmissionConfirmationEmail
 } from "../utils/email-template/email-builders.js";
 import { sendTemplatedEmail } from "../utils/email-template/email-template.service.js";
@@ -596,12 +597,7 @@ const employmentRoutes: FastifyPluginAsync = async (fastify) => {
           data: {
             fullName: updated.fullName,
             empId: updated.empId,
-            statusSubject: "approved",
-            statusHeading: "Approved",
-            statusLine: "Your employment application has been approved.",
-            statusBadgeColor: "#dcfce7",
-            statusTextColor: "#15803d",
-            statusBadgeLabel: "✓ Approved"
+            ...buildApplicantStatusTemplateData("approve")
           },
           fallback: () => buildApplicantStatusEmail({ fullName: updated.fullName, empId: updated.empId, status: "approve" }),
           strict: false
@@ -655,12 +651,7 @@ const employmentRoutes: FastifyPluginAsync = async (fastify) => {
           data: {
             fullName: updated.fullName,
             empId: updated.empId,
-            statusSubject: "update",
-            statusHeading: "Update",
-            statusLine: "We reviewed your application and it is currently marked as rejected.",
-            statusBadgeColor: "#fee2e2",
-            statusTextColor: "#dc2626",
-            statusBadgeLabel: "✗ Not Approved"
+            ...buildApplicantStatusTemplateData("reject")
           },
           fallback: () => buildApplicantStatusEmail({ fullName: updated.fullName, empId: updated.empId, status: "reject" }),
           strict: false

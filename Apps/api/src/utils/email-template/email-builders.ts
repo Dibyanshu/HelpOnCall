@@ -1,5 +1,5 @@
 import type { RenderedEmail } from "../../types/email-template.js";
-import { buildEmailWrapper, buildInfoCard, buildInfoGrid, buildStatusBadge, buildSuccessIconBadge } from "./email-layout.js";
+import { STATUS_STYLE, buildEmailWrapper, buildInfoCard, buildInfoGrid, buildStatusBadge, buildSuccessIconBadge } from "./email-layout.js";
 import { escapeHtml } from "./template-renderer.js";
 
 export function buildRfqConfirmationEmail(input: { fullName: string; email: string }): RenderedEmail {
@@ -139,24 +139,33 @@ export function buildApplicantSubmissionConfirmationEmail(input: {
   return { subject, text, html };
 }
 
+export function buildApplicantStatusTemplateData(status: "approve" | "reject"): Record<string, string> {
+  const style = status === "approve" ? STATUS_STYLE.approved : STATUS_STYLE.rejected;
+  return {
+    statusSubject: style.subject,
+    statusHeading: style.heading,
+    statusLine: style.statusLine,
+    statusBadgeColor: style.badgeColor,
+    statusTextColor: style.textColor,
+    statusBadgeLabel: style.badgeLabel
+  };
+}
+
 export function buildApplicantStatusEmail(input: {
   fullName: string;
   empId: string;
   status: "approve" | "reject";
 }): RenderedEmail {
   const isApproved = input.status === "approve";
+  const style = isApproved ? STATUS_STYLE.approved : STATUS_STYLE.rejected;
   const subject = isApproved
     ? "HelpOnCall employment application approved"
     : "HelpOnCall employment application update";
 
-  const statusLine = isApproved
-    ? "Your employment application has been approved."
-    : "We reviewed your application and it is currently marked as rejected.";
-
   const text = [
     `Hi ${input.fullName},`,
     "",
-    statusLine,
+    style.statusLine,
     `Reference ID: ${input.empId}`,
     "",
     "Thank you for your interest in HelpOnCall.",
@@ -165,10 +174,10 @@ export function buildApplicantStatusEmail(input: {
 
   const html = buildEmailWrapper(`
     ${buildStatusBadge(isApproved)}
-    <h2 style="font-size:32px;line-height:1.2;color:#0f172a;margin:0 0 16px;font-weight:800;">Application ${isApproved ? "Approved" : "Update"}</h2>
+    <h2 style="font-size:32px;line-height:1.2;color:#0f172a;margin:0 0 16px;font-weight:800;">Application ${style.heading}</h2>
     <div style="max-width:560px;margin:0 auto;">
       ${buildInfoCard(`
-        <p style="margin:0 0 16px;color:#374151;font-size:16px;line-height:1.7;">Hi <strong>${escapeHtml(input.fullName)}</strong>, ${escapeHtml(statusLine)}</p>
+        <p style="margin:0 0 16px;color:#374151;font-size:16px;line-height:1.7;">Hi <strong>${escapeHtml(input.fullName)}</strong>, ${escapeHtml(style.statusLine)}</p>
         ${buildInfoGrid([{ label: "Reference ID", value: escapeHtml(input.empId) }])}
       `)}
       <p style="margin:16px 0 0;color:#64748b;font-size:14px;">Thank you for your interest in HelpOnCall.</p>

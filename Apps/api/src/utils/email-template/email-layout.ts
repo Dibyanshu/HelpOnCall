@@ -1,3 +1,22 @@
+export const STATUS_STYLE = {
+  approved: {
+    badgeColor: "#dcfce7",
+    textColor: "#15803d",
+    badgeLabel: "✓ Approved",
+    subject: "approved",
+    heading: "Approved",
+    statusLine: "Your employment application has been approved."
+  },
+  rejected: {
+    badgeColor: "#fee2e2",
+    textColor: "#dc2626",
+    badgeLabel: "✗ Not Approved",
+    subject: "update",
+    heading: "Update",
+    statusLine: "We reviewed your application and it is currently marked as rejected."
+  }
+} as const;
+
 export function buildEmailWrapper(content: string): string {
   return `<div style="font-family:Arial,sans-serif;background:#f8fafc;padding:32px 16px;text-align:center;"><div style="max-width:640px;margin:0 auto;">${content}</div></div>`;
 }
@@ -21,8 +40,6 @@ export function buildInfoGrid(rows: Array<{ label: string; value: string }>): st
 }
 
 export function buildStatusBadge(isApproved: boolean): string {
-  const bg = isApproved ? "#dcfce7" : "#fee2e2";
-  const color = isApproved ? "#15803d" : "#dc2626";
-  const label = isApproved ? "✓ Approved" : "✗ Not Approved";
-  return `<div style="display:inline-block;margin-bottom:24px;padding:10px 24px;border-radius:9999px;background:${bg};color:${color};font-weight:700;font-size:16px;">${label}</div>`;
+  const style = isApproved ? STATUS_STYLE.approved : STATUS_STYLE.rejected;
+  return `<div style="display:inline-block;margin-bottom:24px;padding:10px 24px;border-radius:9999px;background:${style.badgeColor};color:${style.textColor};font-weight:700;font-size:16px;">${style.badgeLabel}</div>`;
 }
