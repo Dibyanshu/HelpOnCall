@@ -5,6 +5,7 @@ import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
 import { users } from "../db/schema.js";
 import { hashPassword, verifyPassword } from "../utils/crypto.js";
+import { buildRegistrationEmail } from "../utils/email-template/email-builders.js";
 import { sendTemplatedEmail } from "../utils/email-template/email-template.service.js";
 import { TEMPLATE_KEYS } from "../utils/email-template/template-registry.js";
 
@@ -31,27 +32,6 @@ const changePasswordSchema = z.object({
   newPassword: z.string().min(8)
 });
 
-function buildRegistrationEmailFallback(name: string) {
-  const subject = "HelpOnCall registration received";
-  const text = [
-    `Hi ${name},`,
-    "",
-    "Your registration has been received successfully.",
-    "An administrator will review and activate your account soon.",
-    "",
-    "Thanks,",
-    "HelpOnCall Team"
-  ].join("\n");
-
-  const html = `
-    <p>Hi ${name},</p>
-    <p>Your registration has been received successfully.</p>
-    <p>An administrator will review and activate your account soon.</p>
-    <p>Thanks,<br/>HelpOnCall Team</p>
-  `;
-
-  return { subject, text, html };
-}
 
 const authRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.post("/auth/register", async (request, reply) => {
@@ -101,7 +81,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         to: email,
         templateKey: TEMPLATE_KEYS.USER_REGISTRATION_ACK,
         data: { name },
-        fallback: () => buildRegistrationEmailFallback(name),
+        fallback: () => buildRegistrationEmail(name),
         strict: false
       },
       fastify.mail,
