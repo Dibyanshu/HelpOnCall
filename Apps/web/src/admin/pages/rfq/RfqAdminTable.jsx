@@ -143,8 +143,8 @@ export default function RfqAdminTable({
                 </td>
                 <td>
                   <div className="flex flex-wrap gap-1">
-                    {renderServices(item.serviceSelected).split(', ').map((svc, sIdx) => (
-                      <span key={sIdx}>{svc}</span>
+                    {renderServices(item.serviceSelected).split(', ').map((svc) => (
+                      <span key={svc}>{svc}</span>
                     ))}
                   </div>
                 </td>
