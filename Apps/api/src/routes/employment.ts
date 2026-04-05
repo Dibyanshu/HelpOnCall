@@ -13,10 +13,7 @@ import { db } from "../db/index.js";
 import { employment, serviceCategories, services, users } from "../db/schema.js";
 import type { Role } from "../types/auth.js";
 import {
-  buildAdminSubmissionNotificationEmail,
-  buildApplicantStatusEmail,
-  buildApplicantStatusTemplateData,
-  buildApplicantSubmissionConfirmationEmail
+  buildApplicantStatusTemplateData
 } from "../utils/email-template/email-builders.js";
 import { sendTemplatedEmail } from "../utils/email-template/email-template.service.js";
 import { TEMPLATE_KEYS } from "../utils/email-template/template-registry.js";
