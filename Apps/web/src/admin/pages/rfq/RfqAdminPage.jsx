@@ -123,7 +123,7 @@ export default function RfqAdminPage() {
         </div>
       </motion.div>
 
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
@@ -154,7 +154,7 @@ export default function RfqAdminPage() {
             </select>
           </div>
         </div>
-      </motion.div>
+      </motion.div> */}
 
       <div className="rounded-md border border-slate-200 bg-white p-3 shadow-xl sm:p-3 overflow-hidden">
         <RfqAdminTable
