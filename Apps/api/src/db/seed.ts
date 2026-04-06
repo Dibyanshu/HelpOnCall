@@ -78,7 +78,7 @@ const INITIAL_EMAIL_TEMPLATES: SeedEmailTemplate[] = [
       <div style="max-width:400px;margin:0 auto;">
         ${buildInfoCard(`
           <p style="margin:0 0 8px;font-size:13px;color:#64748b;">Your verification code:</p>
-          <p style="margin:8px 0 16px;font-size:40px;font-weight:800;letter-spacing:8px;color:#0f766e;">{{code}}</p>
+          <p style="margin:8px 0 16px;font-size:24px;font-weight:800;letter-spacing:8px;color:#0f766e;">{{code}}</p>
           <p style="margin:0;font-size:13px;color:#94a3b8;">This code expires in 15 minutes. If you did not request this, you can ignore this email.</p>
         `)}
       </div>
