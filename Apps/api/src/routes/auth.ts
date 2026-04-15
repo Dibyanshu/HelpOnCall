@@ -5,6 +5,7 @@ import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
 import { users } from "../db/schema.js";
 import { hashPassword, verifyPassword } from "../utils/crypto.js";
+import { buildRegistrationEmail } from "../utils/email-template/email-builders.js";
 import { sendTemplatedEmail } from "../utils/email-template/email-template.service.js";
 import { TEMPLATE_KEYS } from "../utils/email-template/template-registry.js";
 
@@ -31,27 +32,6 @@ const changePasswordSchema = z.object({
   newPassword: z.string().min(8)
 });
 
-function buildRegistrationEmailFallback(name: string) {
-  const subject = "HelpOnCall registration received";
-  const text = [
-    `Hi ${name},`,
-    "",
-    "Your registration has been received successfully.",
-    "An administrator will review and activate your account soon.",
-    "",
-    "Thanks,",
-    "HelpOnCall Team"
-  ].join("\n");
-
-  const html = `
-    <p>Hi ${name},</p>
-    <p>Your registration has been received successfully.</p>
-    <p>An administrator will review and activate your account soon.</p>
-    <p>Thanks,<br/>HelpOnCall Team</p>
-  `;
-
-  return { subject, text, html };
-}
 
 const authRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.post("/auth/register", async (request, reply) => {
@@ -66,7 +46,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
     const { email, name, password, role } = bodyParse.data;
 
-    const exists = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);
+    const exists = await db.select({ id: users.id }).from(users).where(eq(users.personalEmail, email)).limit(1);
 
     if (exists.length > 0) {
       return reply.code(409).send({ message: "User with this email already exists" });
@@ -78,8 +58,8 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
     const inserted = await db
       .insert(users)
       .values({
-        email,
-        name,
+        personalEmail: email,
+        fullName: name,
         passwordHash,
         role,
         ...auditCreateFields,
@@ -87,8 +67,10 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       })
       .returning({
         id: users.id,
-        email: users.email,
-        name: users.name,
+        personalEmail: users.personalEmail,
+        fullName: users.fullName,
+        email: users.personalEmail,
+        name: users.fullName,
         role: users.role,
         isActive: users.isActive,
         createdAt: users.createdAt
@@ -99,7 +81,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         to: email,
         templateKey: TEMPLATE_KEYS.USER_REGISTRATION_ACK,
         data: { name },
-        fallback: () => buildRegistrationEmailFallback(name),
+        fallback: () => buildRegistrationEmail(name),
         strict: false
       },
       fastify.mail,
@@ -126,7 +108,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
     const { email, password } = bodyParse.data;
 
-    const found = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    const found = await db.select().from(users).where(eq(users.personalEmail, email)).limit(1);
     console.log("Login attempt for email:", email, "Found user:", found.length > 0);
     const user = found[0];
 
@@ -142,7 +124,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
     const token = await reply.jwtSign({
       userId: user.id,
-      email: user.email,
+      email: user.personalEmail,
       role: user.role
     });
 
@@ -150,8 +132,8 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       token,
       user: {
         id: user.id,
-        email: user.email,
-        name: user.name,
+        email: user.personalEmail,
+        name: user.fullName,
         role: user.role
       }
     };

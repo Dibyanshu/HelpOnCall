@@ -6,6 +6,9 @@ import { db } from "../db/index.js";
 import { users } from "../db/schema.js";
 import type { Role } from "../types/auth.js";
 import { hashPassword } from "../utils/crypto.js";
+import { buildNewStaffAccountEmail } from "../utils/email-template/email-builders.js";
+import { sendTemplatedEmail } from "../utils/email-template/email-template.service.js";
+import { TEMPLATE_KEYS } from "../utils/email-template/template-registry.js";
 
 const USER_ROLE_VALUES = [
   "content_publisher",
@@ -16,11 +19,38 @@ const USER_ROLE_VALUES = [
 ] as const;
 
 const createUserSchema = z.object({
-  email: z.string().email(),
-  name: z.string().min(2),
+  personalEmail: z.string().email().optional(),
+  email: z.string().email().optional(),
+  fullName: z.string().min(2).optional(),
+  name: z.string().min(2).optional(),
+  gender: z.string().optional(),
+  dateOfBirth: z.string().optional(),
+  dateOfJoining: z.string().optional(),
+  staffId: z.string().optional(),
   password: z.string().min(8),
   role: z.enum(USER_ROLE_VALUES),
-  isActive: z.boolean().optional().default(true)
+  isActive: z.boolean().optional().default(true),
+  newStaffTemplate: z.object({
+    subject: z.string().min(1),
+    text: z.string().min(1),
+    html: z.string().min(1)
+  }).optional()
+}).superRefine((value, ctx) => {
+  if (!value.personalEmail && !value.email) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["personalEmail"],
+      message: "Personal email is required"
+    });
+  }
+
+  if (!value.fullName && !value.name) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["fullName"],
+      message: "Full name is required"
+    });
+  }
 });
 
 const updateUserStatusSchema = z.object({
@@ -34,15 +64,27 @@ const userIdParamSchema = z.object({
 
 const editUserSchema = z
   .object({
+    personalEmail: z.string().email().optional(),
     email: z.string().email().optional(),
+    fullName: z.string().min(2).optional(),
     name: z.string().min(2).optional(),
+    gender: z.string().optional(),
+    dateOfBirth: z.string().optional(),
+    dateOfJoining: z.string().optional(),
+    staffId: z.string().optional(),
     role: z.enum(USER_ROLE_VALUES).optional(),
     isActive: z.boolean().optional()
   })
   .refine(
     (value) =>
+      value.personalEmail !== undefined ||
       value.email !== undefined ||
+      value.fullName !== undefined ||
       value.name !== undefined ||
+      value.gender !== undefined ||
+      value.dateOfBirth !== undefined ||
+      value.dateOfJoining !== undefined ||
+      value.staffId !== undefined ||
       value.role !== undefined ||
       value.isActive !== undefined,
     {
@@ -57,15 +99,24 @@ function roleLabel(role: (typeof USER_ROLE_VALUES)[number]): string {
     .join(" ");
 }
 
+
 const adminRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get(
     "/admin/roles",
     {
-      preHandler: [fastify.authenticate, fastify.authorize(["super_admin" as Role])]
+      preHandler: [
+        fastify.authenticate,
+        fastify.authorize(["super_admin" as Role, "admin" as Role])
+      ]
     },
-    async () => {
+    async (request) => {
+      const authUser = request.authUser;
+      const allowedRoles = authUser?.role === "super_admin"
+        ? USER_ROLE_VALUES
+        : USER_ROLE_VALUES.filter((role) => role !== "super_admin");
+
       return {
-        data: USER_ROLE_VALUES.map((value) => ({
+        data: allowedRoles.map((value) => ({
           value,
           label: roleLabel(value)
         }))
@@ -114,8 +165,10 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         .where(eq(users.id, userId))
         .returning({
           id: users.id,
-          email: users.email,
-          name: users.name,
+          personalEmail: users.personalEmail,
+          fullName: users.fullName,
+          email: users.personalEmail,
+          name: users.fullName,
           role: users.role,
           createdBy: users.createdBy,
           isActive: users.isActive,
@@ -188,11 +241,14 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         }
       }
 
-      if (bodyParse.data.email) {
+      const nextPersonalEmail = bodyParse.data.personalEmail ?? bodyParse.data.email;
+      const nextFullName = bodyParse.data.fullName ?? bodyParse.data.name;
+
+      if (nextPersonalEmail) {
         const duplicate = await db
           .select({ id: users.id })
           .from(users)
-          .where(and(eq(users.email, bodyParse.data.email), ne(users.id, userId)))
+          .where(and(eq(users.personalEmail, nextPersonalEmail), ne(users.id, userId)))
           .limit(1);
 
         if (duplicate.length > 0) {
@@ -200,19 +256,46 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         }
       }
 
+      if (bodyParse.data.staffId) {
+        const duplicateStaffId = await db
+          .select({ id: users.id })
+          .from(users)
+          .where(and(eq(users.staffId, bodyParse.data.staffId), ne(users.id, userId)))
+          .limit(1);
+
+        if (duplicateStaffId.length > 0) {
+          return reply.code(409).send({ message: "A staff member with this ID already exists." });
+        }
+      }
+
       const auditUpdateFields = buildAuditUpdateFields();
+      const nextDateOfBirth = bodyParse.data.dateOfBirth ? new Date(bodyParse.data.dateOfBirth) : undefined;
+      const nextDateOfJoining = bodyParse.data.dateOfJoining ? new Date(bodyParse.data.dateOfJoining) : undefined;
 
       const updated = await db
         .update(users)
         .set({
-          ...bodyParse.data,
+          ...(nextPersonalEmail ? { personalEmail: nextPersonalEmail } : {}),
+          ...(nextFullName ? { fullName: nextFullName } : {}),
+          ...(bodyParse.data.gender !== undefined ? { gender: bodyParse.data.gender } : {}),
+          ...(bodyParse.data.dateOfBirth !== undefined ? { dateOfBirth: nextDateOfBirth } : {}),
+          ...(bodyParse.data.dateOfJoining !== undefined ? { dateOfJoining: nextDateOfJoining } : {}),
+          ...(bodyParse.data.staffId !== undefined ? { staffId: bodyParse.data.staffId } : {}),
+          ...(bodyParse.data.role !== undefined ? { role: bodyParse.data.role } : {}),
+          ...(bodyParse.data.isActive !== undefined ? { isActive: bodyParse.data.isActive } : {}),
           ...auditUpdateFields
         })
         .where(eq(users.id, userId))
         .returning({
           id: users.id,
-          email: users.email,
-          name: users.name,
+          personalEmail: users.personalEmail,
+          fullName: users.fullName,
+          email: users.personalEmail,
+          name: users.fullName,
+          gender: users.gender,
+          dateOfBirth: users.dateOfBirth,
+          dateOfJoining: users.dateOfJoining,
+          staffId: users.staffId,
           role: users.role,
           createdBy: users.createdBy,
           isActive: users.isActive,
@@ -245,22 +328,45 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         });
       }
 
-      const { email, name, password, role, isActive } = bodyParse.data;
-      const createdBy = request.authUser?.role === "super_admin" ? "super_admin" : "";
+      const personalEmail = bodyParse.data.personalEmail ?? bodyParse.data.email!;
+      const fullName = bodyParse.data.fullName ?? bodyParse.data.name!;
+      const { gender, dateOfBirth, dateOfJoining, staffId, password, role, isActive, newStaffTemplate } = bodyParse.data;
+      const authUser = request.authUser;
 
-      const exists = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      if (authUser?.role === "admin" && role === "super_admin") {
+        return reply.code(403).send({ message: "Admin cannot assign super admin role" });
+      }
+
+      const createdBy = authUser?.userId != null ? String(authUser.userId) : "";
+
+      const exists = await db.select().from(users).where(eq(users.personalEmail, personalEmail)).limit(1);
       if (exists.length > 0) {
         return reply.code(409).send({ message: "User with this email already exists" });
+      }
+
+      if (staffId) {
+        const staffIdExists = await db.select().from(users).where(eq(users.staffId, staffId)).limit(1);
+        if (staffIdExists.length > 0) {
+          return reply.code(409).send({ message: "A staff member with this ID already exists." });
+        }
       }
 
       const auditCreateFields = buildAuditCreateFields(createdBy);
       const passwordHash = await hashPassword(password);
 
+      // Convert date strings to timestamps
+      const dateOfBirthTimestamp = dateOfBirth ? new Date(dateOfBirth) : undefined;
+      const dateOfJoiningTimestamp = dateOfJoining ? new Date(dateOfJoining) : undefined;
+
       const inserted = await db
         .insert(users)
         .values({
-          email,
-          name,
+          personalEmail,
+          fullName,
+          gender,
+          dateOfBirth: dateOfBirthTimestamp,
+          dateOfJoining: dateOfJoiningTimestamp,
+          staffId,
           passwordHash,
           role,
           ...auditCreateFields,
@@ -268,13 +374,50 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         })
         .returning({
           id: users.id,
-          email: users.email,
-          name: users.name,
+          personalEmail: users.personalEmail,
+          fullName: users.fullName,
+          email: users.personalEmail,
+          name: users.fullName,
+          gender: users.gender,
+          dateOfBirth: users.dateOfBirth,
+          dateOfJoining: users.dateOfJoining,
+          staffId: users.staffId,
           role: users.role,
           createdBy: users.createdBy,
           isActive: users.isActive,
           createdAt: users.createdAt
         });
+
+      const staffEmail = staffId ? `${staffId.toLowerCase()}@helponcall.com` : personalEmail;
+      const shouldSendWelcomeEmail = isActive !== false;
+
+      if (shouldSendWelcomeEmail) {
+        try {
+          await sendTemplatedEmail(
+            {
+              to: personalEmail,
+              templateKey: TEMPLATE_KEYS.NEW_STAFF_ACCOUNT_CREATED,
+              data: {
+                fullName,
+                personalEmail,
+                staffEmail,
+                password,
+              },
+              fallback: () => newStaffTemplate ?? buildNewStaffAccountEmail({
+                fullName,
+                personalEmail,
+                staffEmail,
+                password,
+              }),
+              strict: false,
+            },
+            fastify.mail,
+            fastify.log
+          );
+        } catch (error) {
+          fastify.log.error({ error, personalEmail }, "Failed to send new staff account email");
+        }
+      }
 
       return reply.code(201).send({
         message: "User created successfully",
@@ -295,8 +438,14 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       let list = await db
         .select({
           id: users.id,
-          email: users.email,
-          name: users.name,
+          personalEmail: users.personalEmail,
+          fullName: users.fullName,
+          email: users.personalEmail,
+          name: users.fullName,
+          gender: users.gender,
+          dateOfBirth: users.dateOfBirth,
+          dateOfJoining: users.dateOfJoining,
+          staffId: users.staffId,
           role: users.role,
           createdBy: users.createdBy,
           isActive: users.isActive,

@@ -83,7 +83,7 @@ export default function PrivacyPolicyPage() {
               Enhance the functionality and security of the HelpOnCall platform.
             </PolicyItem>
           </ul>
-          <div className="mt-4 rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-800">
+          <div className="mt-4 rounded-md border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-800">
             <span className="font-semibold">Note:</span> We maintain a strict policy against the
             sale or unauthorized rental of your personal data to third-party marketers.
           </div>
@@ -159,7 +159,7 @@ function Section({ title, children }) {
 function PolicyItem({ label, children }) {
   return (
     <li className="flex gap-2 text-slate-700">
-      <span className="mt-3 h-1 w-1 shrink-0 rounded-full bg-teal-600" aria-hidden="true" />
+      <span className="mt-3 h-1 w-1 shrink-0 rounded-md bg-teal-600" aria-hidden="true" />
       <span>
         {label ? <span className="font-semibold text-slate-800">{label}: </span> : null}
         {children}

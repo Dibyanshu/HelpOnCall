@@ -1,7 +1,19 @@
 import { useState } from 'react';
-import { ChevronsLeftRight, FileText, Loader2 } from 'lucide-react';
+import { ChevronsLeftRight, Loader2 } from 'lucide-react';
+
+function formatDate(value) {
+  if (!value) return '-';
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return '-';
+  }
+
+  return date.toLocaleDateString();
+}
 
 function formatDateTime(value) {
+  if (!value) return '-';
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
@@ -27,7 +39,7 @@ function renderStatusBadge(status) {
   );
 }
 
-function renderSpecializations(value) {
+function renderServices(value) {
   if (typeof value !== 'string' || value.trim() === '') {
     return '-';
   }
@@ -47,27 +59,25 @@ function renderSpecializations(value) {
   }
 }
 
-export default function EmploymentAdminTable({
+export default function RfqAdminTable({
   submissions,
   isLoading,
-  isUpdatingEmpId,
-  isDownloadingEmpId,
+  isUpdatingRfqId,
   onApprove,
   onReject,
-  onDownloadResume,
 }) {
-  const [isApplicantIdExpanded, setIsApplicantIdExpanded] = useState(false);
-  const [statusEditModeByEmpId, setStatusEditModeByEmpId] = useState({});
+  const [isRfqIdExpanded, setIsRfqIdExpanded] = useState(false);
+  const [statusEditModeByRfqId, setStatusEditModeByRfqId] = useState({});
 
-  const openStatusEditMode = (empId) => {
-    setStatusEditModeByEmpId((prev) => ({ ...prev, [empId]: true }));
+  const openStatusEditMode = (rfqId) => {
+    setStatusEditModeByRfqId((prev) => ({ ...prev, [rfqId]: true }));
   };
 
-  const closeStatusEditMode = (empId) => {
-    setStatusEditModeByEmpId((prev) => {
-      if (!prev[empId]) return prev;
+  const closeStatusEditMode = (rfqId) => {
+    setStatusEditModeByRfqId((prev) => {
+      if (!prev[rfqId]) return prev;
       const next = { ...prev };
-      delete next[empId];
+      delete next[rfqId];
       return next;
     });
   };
@@ -76,7 +86,7 @@ export default function EmploymentAdminTable({
     return (
       <div className="py-12 flex flex-col items-center justify-center space-y-4">
         <div className="h-10 w-10 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-sm text-slate-600 animate-pulse">Syncing Personnel Records...</p>
+        <p className="text-sm text-slate-600 animate-pulse">Loading Quotation Records...</p>
       </div>
     );
   }
@@ -88,126 +98,112 @@ export default function EmploymentAdminTable({
           <tr>
             <th
               scope="col"
-              className={`px-2 transition-all ${isApplicantIdExpanded ? 'w-[130px]' : 'w-[44px]'}`}
+              className={`px-2 transition-all ${isRfqIdExpanded ? 'w-[130px]' : 'w-[44px]'}`}
             >
               <button
                 type="button"
-                onClick={() => setIsApplicantIdExpanded((prev) => !prev)}
+                onClick={() => setIsRfqIdExpanded((prev) => !prev)}
                 className="inline-flex w-full items-center gap-1 rounded px-1.5 py-1 hover:bg-slate-200/70"
-                aria-label={isApplicantIdExpanded ? 'Collapse Applicant ID column' : 'Expand Applicant ID column'}
-                title={isApplicantIdExpanded ? 'Collapse Applicant ID column' : 'Expand Applicant ID column'}
+                aria-label={isRfqIdExpanded ? 'Collapse RFQ ID column' : 'Expand RFQ ID column'}
+                title={isRfqIdExpanded ? 'Collapse RFQ ID column' : 'Expand RFQ ID column'}
               >
                 <ChevronsLeftRight className="h-3.5 w-3.5 shrink-0" />
-                <span className={`${isApplicantIdExpanded ? 'inline' : 'hidden'} whitespace-nowrap`}>Applicant ID</span>
+                <span className={`${isRfqIdExpanded ? 'inline' : 'hidden'} whitespace-nowrap`}>RFQ ID</span>
               </button>
             </th>
             <th scope="col">Name</th>
-            <th scope="col">Contacts</th>
-            <th scope="col">Specializations</th>
+            <th scope="col">Contact</th>
+            <th scope="col">Services</th>
+            <th scope="col">Address</th>
+            <th scope="col">Start Date</th>
             <th scope="col">Status</th>
             <th scope="col">Submitted At</th>
-            <th scope="col">Resume</th>
             <th scope="col">Actions</th>
           </tr>
         </thead>
         <tbody>
           {submissions.length > 0 ? (
             submissions.map((item) => (
-              <tr key={item.empId}>
+              <tr key={item.rfqId}>
                 <td
-                  className={`px-2 text-teal-700 font-mono text-xs font-bold transition-all ${isApplicantIdExpanded ? 'w-[130px]' : 'w-[44px]'}`}
+                  className={`px-2 text-teal-700 font-mono text-xs font-bold transition-all ${isRfqIdExpanded ? 'w-[130px]' : 'w-[44px]'}`}
                 >
-                  {isApplicantIdExpanded ? (
-                    <span className="whitespace-nowrap">{item.empId}</span>
+                  {isRfqIdExpanded ? (
+                    <span className="whitespace-nowrap">{item.rfqId}</span>
                   ) : (
                     <span className="block h-4 w-4 rounded-full bg-slate-200" aria-hidden="true" />
                   )}
                 </td>
                 <td>
                   <p>{item.fullName}</p>
-                  <p>{item.coverLetter || 'No cover letter.'}</p>
                 </td>
                 <td>
-                  <p>{item.emailAddress}</p>
-                  <p>{item.phoneNumber}</p>
+                  <p>{item.email}</p>
+                  <p>{item.phone}</p>
                 </td>
                 <td>
                   <div className="flex flex-wrap gap-1">
-                    {renderSpecializations(item.specializations).split(', ').map((spec, sIdx) => (
-                      <span key={sIdx}>{spec}</span>
+                    {renderServices(item.serviceSelected).split(', ').map((svc) => (
+                      <span key={svc}>{svc}</span>
                     ))}
                   </div>
                 </td>
+                <td>{item.address}</td>
+                <td>{formatDate(item.startDate)}</td>
                 <td>{renderStatusBadge(item.status)}</td>
                 <td>{formatDateTime(item.createdAt)}</td>
-                <td>
-                  <button
-                    type="button"
-                    onClick={() => onDownloadResume(item.empId)}
-                    disabled={isDownloadingEmpId !== ''}
-                    className="h-8 w-8 flex items-center justify-center bg-slate-100 border border-slate-300 rounded-md text-slate-400 hover:text-teal-600 hover:bg-white hover:shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Download Resume"
-                    aria-label="Download Resume"
-                  >
-                    {isDownloadingEmpId === item.empId ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <FileText size={16} />
-                    )}
-                  </button>
-                </td>
                 <td>
                   <div className="flex items-center gap-2">
                     {item.status === 'new' ? (
                       <>
                         <button
                           type="button"
-                          onClick={() => onApprove(item.empId)}
-                          disabled={isUpdatingEmpId !== ''}
+                          onClick={() => onApprove(item.rfqId)}
+                          disabled={isUpdatingRfqId !== ''}
                           className="px-3 py-1.5 text-xs rounded-md font-bold transition-all btn-activate disabled:opacity-50"
                         >
-                          {isUpdatingEmpId === item.empId ? '...' : 'Approve'}
+                          {isUpdatingRfqId === item.rfqId ? '...' : 'Approve'}
                         </button>
                         <button
                           type="button"
-                          onClick={() => onReject(item.empId)}
-                          disabled={isUpdatingEmpId !== ''}
+                          onClick={() => onReject(item.rfqId)}
+                          disabled={isUpdatingRfqId !== ''}
                           className="px-3 py-1.5 text-xs rounded-md font-bold transition-all btn-deactivate disabled:opacity-50"
                         >
-                          {isUpdatingEmpId === item.empId ? '...' : 'Reject'}
+                          {isUpdatingRfqId === item.rfqId ? '...' : 'Reject'}
                         </button>
                       </>
-                    ) : statusEditModeByEmpId[item.empId] ? (
+                    ) : statusEditModeByRfqId[item.rfqId] ? (
                       <>
                         {item.status === 'approve' ? (
                           <button
                             type="button"
                             onClick={() => {
-                              onReject(item.empId);
-                              closeStatusEditMode(item.empId);
+                              onReject(item.rfqId);
+                              closeStatusEditMode(item.rfqId);
                             }}
-                            disabled={isUpdatingEmpId !== ''}
+                            disabled={isUpdatingRfqId !== ''}
                             className="px-3 py-1.5 text-xs rounded-md font-bold transition-all btn-deactivate disabled:opacity-50"
                           >
-                            {isUpdatingEmpId === item.empId ? '...' : 'Reject'}
+                            {isUpdatingRfqId === item.rfqId ? '...' : 'Reject'}
                           </button>
                         ) : (
                           <button
                             type="button"
                             onClick={() => {
-                              onApprove(item.empId);
-                              closeStatusEditMode(item.empId);
+                              onApprove(item.rfqId);
+                              closeStatusEditMode(item.rfqId);
                             }}
-                            disabled={isUpdatingEmpId !== ''}
+                            disabled={isUpdatingRfqId !== ''}
                             className="px-3 py-1.5 text-xs rounded-md font-bold transition-all btn-activate disabled:opacity-50"
                           >
-                            {isUpdatingEmpId === item.empId ? '...' : 'Approve'}
+                            {isUpdatingRfqId === item.rfqId ? '...' : 'Approve'}
                           </button>
                         )}
                         <button
                           type="button"
-                          onClick={() => closeStatusEditMode(item.empId)}
-                          disabled={isUpdatingEmpId !== ''}
+                          onClick={() => closeStatusEditMode(item.rfqId)}
+                          disabled={isUpdatingRfqId !== ''}
                           className="px-3 py-1.5 text-xs rounded-md font-bold transition-all btn-secondary disabled:opacity-50"
                         >
                           Cancel
@@ -216,8 +212,8 @@ export default function EmploymentAdminTable({
                     ) : (
                       <button
                         type="button"
-                        onClick={() => openStatusEditMode(item.empId)}
-                        disabled={isUpdatingEmpId !== ''}
+                        onClick={() => openStatusEditMode(item.rfqId)}
+                        disabled={isUpdatingRfqId !== ''}
                         className="px-3 py-1.5 text-xs rounded-md font-bold transition-all btn-secondary disabled:opacity-50"
                       >
                         Change Status
@@ -229,8 +225,8 @@ export default function EmploymentAdminTable({
             ))
           ) : (
             <tr>
-              <td colSpan={8}>
-                No employment submissions found.
+              <td colSpan={9}>
+                No quotation requests found.
               </td>
             </tr>
           )}

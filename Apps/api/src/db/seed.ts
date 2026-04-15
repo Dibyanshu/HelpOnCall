@@ -4,6 +4,7 @@ import { buildAuditCreateFields } from "./audit.js";
 import { hashPassword } from "../utils/crypto.js";
 import { db } from "./index.js";
 import { customerTestimonials, emailTemplates, serviceCategories, services, users } from "./schema.js";
+import { buildEmailWrapper, buildInfoCard, buildInfoGrid, buildStatusBadge, buildSuccessIconBadge } from "../utils/email-template/email-layout.js";
 
 interface SeedServiceItem {
   label: string;
@@ -51,10 +52,13 @@ const INITIAL_EMAIL_TEMPLATES: SeedEmailTemplate[] = [
       "Thanks,",
       "HelpOnCall Team"
     ].join("\n"),
-    htmlTemplate: `<p>Hi {{name}},</p>
-    <p>Your registration has been received successfully.</p>
-    <p>An administrator will review and activate your account soon.</p>
-    <p>Thanks,<br/>HelpOnCall Team</p>`,
+    htmlTemplate: buildEmailWrapper(`
+      ${buildSuccessIconBadge("✉")}
+      <h2 style="font-size:32px;line-height:1.2;color:#0f172a;margin:0 0 16px;font-weight:800;">Registration Received!</h2>
+      <div style="max-width:560px;margin:0 auto;">
+        ${buildInfoCard(`<p style="margin:0;color:#374151;font-size:16px;line-height:1.7;">Hi <strong>{{name}}</strong>, your registration has been received. An administrator will review and activate your account soon.</p>`)}
+      </div>
+    `),
     variablesSchema: JSON.stringify({ required: ["name"] }),
     description: "Sent to users after public registration"
   },
@@ -68,12 +72,180 @@ const INITIAL_EMAIL_TEMPLATES: SeedEmailTemplate[] = [
       "This code expires in 15 minutes.",
       "If you did not request this, you can ignore this email."
     ].join("\n"),
-    htmlTemplate: `<p>Your HelpOnCall verification code is:</p>
-    <p style="font-size: 22px; font-weight: 700; letter-spacing: 1px;">{{code}}</p>
-    <p>This code expires in 15 minutes.</p>
-    <p>If you did not request this, you can ignore this email.</p>`,
+    htmlTemplate: buildEmailWrapper(`
+      <h2 style="font-size:32px;line-height:1.2;color:#0f172a;margin:0 0 8px;font-weight:800;">Verification Code</h2>
+      <p style="color:#475569;margin:0 0 24px;">HelpOnCall {{moduleLabel}} Email Verification</p>
+      <div style="max-width:400px;margin:0 auto;">
+        ${buildInfoCard(`
+          <p style="margin:0 0 8px;font-size:13px;color:#64748b;">Your verification code:</p>
+          <p style="margin:8px 0 16px;font-size:24px;font-weight:800;letter-spacing:8px;color:#0f766e;">{{code}}</p>
+          <p style="margin:0;font-size:13px;color:#94a3b8;">This code expires in 15 minutes. If you did not request this, you can ignore this email.</p>
+        `)}
+      </div>
+    `),
     variablesSchema: JSON.stringify({ required: ["code", "moduleLabel"] }),
     description: "Sent when a user requests an email verification code"
+  },
+  {
+    templateKey: "new_staff_account_created",
+    module: "system",
+    subjectTemplate: "Your HelpOnCall staff account is ready",
+    textTemplate: [
+      "Hi {{fullName}},",
+      "",
+      "Your HelpOnCall staff account has been created successfully.",
+      "You can now log in using the credentials below:",
+      "",
+      "Staff Email: {{staffEmail}}",
+      "Password: {{password}}",
+      "",
+      "Please change your password after first login.",
+      "",
+      "Regards,",
+      "HelpOnCall Team"
+    ].join("\n"),
+    htmlTemplate: buildEmailWrapper(`
+      ${buildSuccessIconBadge("★")}
+      <h2 style="font-size:32px;line-height:1.2;color:#0f172a;margin:0 0 16px;font-weight:800;">Staff Account Ready!</h2>
+      <div style="max-width:560px;margin:0 auto;">
+        <p style="font-size:18px;line-height:1.6;color:#475569;margin:0 0 24px;">Hi <strong>{{fullName}}</strong>, your HelpOnCall staff account has been created.</p>
+        ${buildInfoGrid([
+          { label: "Staff Email", value: "{{staffEmail}}" },
+          { label: "Password", value: "{{password}}" }
+        ])}
+        <div style="margin-top:16px;">
+          ${buildInfoCard(`<p style="margin:0;color:#64748b;font-size:14px;">Please change your password after your first login.</p>`)}
+        </div>
+      </div>
+    `),
+    variablesSchema: JSON.stringify({ required: ["fullName", "personalEmail", "staffEmail", "password"] }),
+    description: "Sent after admin creates a new staff account"
+  },
+  {
+    templateKey: "rfq_confirmation",
+    module: "rfq",
+    subjectTemplate: "HelpOnCall quotation request received",
+    textTemplate: [
+      "Hi {{fullName}},",
+      "",
+      "Request Received!",
+      "",
+      "Your quotation request has been logged in our premium care system.",
+      "A detailed confirmation and next steps have been sent to {{email}}.",
+      "A care coordinator will be in touch within the next 2 hours.",
+      "",
+      "HelpOnCall Team"
+    ].join("\n"),
+    htmlTemplate: buildEmailWrapper(`
+      ${buildSuccessIconBadge()}
+      <h2 style="font-size:36px;line-height:1.2;color:#0f172a;margin:0 0 16px;font-weight:800;">Request Received!</h2>
+      <div style="max-width:560px;margin:0 auto 16px;">
+        <p style="font-size:20px;line-height:1.6;color:#475569;margin:0 0 20px;font-weight:500;">Your quotation request has been logged in our premium care system.</p>
+        ${buildInfoCard(`<p style="margin:0;color:#374151;font-size:16px;line-height:1.7;">A detailed confirmation and next steps have been sent to <span style="color:#0f766e;font-weight:700;">{{email}}</span>. A care coordinator will be in touch within the next 2 hours.</p>`)}
+      </div>
+    `),
+    variablesSchema: JSON.stringify({ required: ["fullName", "email"] }),
+    description: "Sent to users after a quotation request is submitted"
+  },
+  {
+    templateKey: "employment_applicant_confirmation",
+    module: "employee",
+    subjectTemplate: "HelpOnCall employment application received",
+    textTemplate: [
+      "Hi {{fullName}},",
+      "",
+      "Application Sent!",
+      "",
+      "Your profile has entered our orbit. Our recruitment team will review your application and reach out shortly.",
+      "A confirmation has been sent to {{emailAddress}}.",
+      "",
+      "HelpOnCall Team"
+    ].join("\n"),
+    htmlTemplate: buildEmailWrapper(`
+      ${buildSuccessIconBadge()}
+      <h2 style="font-size:32px;line-height:1.2;color:#0f172a;margin:0 0 16px;font-weight:800;">Application Sent!</h2>
+      <div style="max-width:560px;margin:0 auto;">
+        <p style="font-size:18px;line-height:1.6;color:#475569;margin:0;">Hi <strong>{{fullName}}</strong>, your profile has entered our orbit. Our recruitment team will review your application and reach out shortly.</p>
+      </div>
+    `),
+    variablesSchema: JSON.stringify({ required: ["fullName", "emailAddress"] }),
+    description: "Sent to applicants after successful employment application submission"
+  },
+  {
+    templateKey: "employment_applicant_status",
+    module: "employee",
+    subjectTemplate: "HelpOnCall employment application {{statusSubject}}",
+    textTemplate: [
+      "Hi {{fullName}},",
+      "",
+      "{{statusLine}}",
+      "Reference ID: {{empId}}",
+      "",
+      "Thank you for your interest in HelpOnCall.",
+      "HelpOnCall Team"
+    ].join("\n"),
+    htmlTemplate: buildEmailWrapper(`
+      <div style="display:inline-block;margin-bottom:24px;padding:10px 24px;border-radius:9999px;background:{{statusBadgeColor}};color:{{statusTextColor}};font-weight:700;font-size:16px;">{{statusBadgeLabel}}</div>
+      <h2 style="font-size:32px;line-height:1.2;color:#0f172a;margin:0 0 16px;font-weight:800;">Application {{statusHeading}}</h2>
+      <div style="max-width:560px;margin:0 auto;">
+        ${buildInfoCard(`
+          <p style="margin:0 0 16px;color:#374151;font-size:16px;line-height:1.7;">Hi <strong>{{fullName}}</strong>, {{statusLine}}</p>
+          ${buildInfoGrid([{ label: "Reference ID", value: "{{empId}}" }])}
+        `)}
+        <p style="margin:16px 0 0;color:#64748b;font-size:14px;">Thank you for your interest in HelpOnCall.</p>
+      </div>
+    `),
+    variablesSchema: JSON.stringify({
+      required: [
+        "fullName",
+        "empId",
+        "statusSubject",
+        "statusHeading",
+        "statusLine",
+        "statusBadgeColor",
+        "statusTextColor",
+        "statusBadgeLabel"
+      ]
+    }),
+    description: "Sent to applicants when their employment application status is updated (approved or rejected)"
+  },
+  {
+    templateKey: "rfq_status",
+    module: "rfq",
+    subjectTemplate: "HelpOnCall quotation request {{statusSubject}}",
+    textTemplate: [
+      "Hi {{fullName}},",
+      "",
+      "{{statusLine}}",
+      "Reference ID: {{rfqId}}",
+      "",
+      "Thank you for choosing HelpOnCall.",
+      "HelpOnCall Team"
+    ].join("\n"),
+    htmlTemplate: buildEmailWrapper(`
+      <div style="display:inline-block;margin-bottom:24px;padding:10px 24px;border-radius:9999px;background:{{statusBadgeColor}};color:{{statusTextColor}};font-weight:700;font-size:16px;">{{statusBadgeLabel}}</div>
+      <h2 style="font-size:32px;line-height:1.2;color:#0f172a;margin:0 0 16px;font-weight:800;">Request {{statusHeading}}</h2>
+      <div style="max-width:560px;margin:0 auto;">
+        ${buildInfoCard(`
+          <p style="margin:0 0 16px;color:#374151;font-size:16px;line-height:1.7;">Hi <strong>{{fullName}}</strong>, {{statusLine}}</p>
+          ${buildInfoGrid([{ label: "Reference ID", value: "{{rfqId}}" }])}
+        `)}
+        <p style="margin:16px 0 0;color:#64748b;font-size:14px;">Thank you for choosing HelpOnCall.</p>
+      </div>
+    `),
+    variablesSchema: JSON.stringify({
+      required: [
+        "fullName",
+        "rfqId",
+        "statusSubject",
+        "statusHeading",
+        "statusLine",
+        "statusBadgeColor",
+        "statusTextColor",
+        "statusBadgeLabel"
+      ]
+    }),
+    description: "Sent to users when their quotation request status is updated (approved or rejected)"
   }
 ];
 
@@ -230,7 +402,7 @@ export async function seedSuperAdmin(): Promise<void> {
   const existing = await db
     .select({ id: users.id })
     .from(users)
-    .where(eq(users.email, env.SUPER_ADMIN_EMAIL))
+    .where(eq(users.personalEmail, env.SUPER_ADMIN_EMAIL))
     .limit(1);
 
   if (existing.length > 0) {
@@ -241,8 +413,8 @@ export async function seedSuperAdmin(): Promise<void> {
   const passwordHash = await hashPassword(env.SUPER_ADMIN_PASSWORD);
 
   await db.insert(users).values({
-    email: env.SUPER_ADMIN_EMAIL,
-    name: "Super Admin",
+    personalEmail: env.SUPER_ADMIN_EMAIL,
+    fullName: "Super Admin",
     passwordHash,
     role: "super_admin",
     isActive: true,
@@ -261,6 +433,17 @@ async function ensureEmailTemplateSeed(item: SeedEmailTemplate): Promise<void> {
     .limit(1);
 
   if (existing.length > 0) {
+    await db
+      .update(emailTemplates)
+      .set({
+        subjectTemplate: item.subjectTemplate,
+        textTemplate: item.textTemplate,
+        htmlTemplate: item.htmlTemplate,
+        variablesSchema: item.variablesSchema,
+        description: item.description,
+        updatedAt: new Date()
+      })
+      .where(eq(emailTemplates.templateKey, item.templateKey));
     return;
   }
 
