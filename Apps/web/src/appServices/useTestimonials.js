@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 export function useTestimonials() {
   const [testimonials, setTestimonials] = useState([]);
@@ -11,7 +11,7 @@ export function useTestimonials() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/testimonials`);
+      const response = await fetch(`${API_BASE_URL}/api/v1/testimonials`);
       const result = await response.json();
       if (result.data) {
         setTestimonials(result.data);
