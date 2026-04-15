@@ -41,10 +41,15 @@ fi
 git fetch origin "$DEPLOY_BRANCH"
 current_branch="$(git rev-parse --abbrev-ref HEAD)"
 if [[ "$current_branch" != "$DEPLOY_BRANCH" ]]; then
-  git checkout "$DEPLOY_BRANCH"
+  if git show-ref --verify --quiet "refs/heads/$DEPLOY_BRANCH"; then
+    git checkout "$DEPLOY_BRANCH"
+  else
+    git checkout -B "$DEPLOY_BRANCH" "origin/$DEPLOY_BRANCH"
+  fi
 fi
 
-git pull --ff-only origin "$DEPLOY_BRANCH"
+echo "[deploy-web] syncing branch to origin/$DEPLOY_BRANCH"
+git reset --hard "origin/$DEPLOY_BRANCH"
 
 cd Apps/web
 npm ci
