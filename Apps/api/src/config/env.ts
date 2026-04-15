@@ -70,6 +70,7 @@ const envSchema = z.object({
   MAIL_REPLY_TO: z.string().optional(),
   SMTP_CONNECTION_TIMEOUT_MS: z.coerce.number().int().positive().default(10000),
   SMTP_GREETING_TIMEOUT_MS: z.coerce.number().int().positive().default(10000),
+  CORS_ALLOWED_ORIGINS: optionalNonEmptyStringFromEnv,
   EMPLOYMENT_RESUME_UPLOAD_DIR: z.string().default("./uploads/resumes"),
   EMPLOYMENT_RESUME_MAX_FILE_SIZE_MB: z.coerce.number().int().positive().default(10)
 }).superRefine((data, ctx) => {

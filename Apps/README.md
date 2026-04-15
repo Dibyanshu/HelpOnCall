@@ -43,15 +43,31 @@ Replace placeholders:
 
 The production workflow at `.github/workflows/deploy-production.yml` expects these secrets in GitHub Environment `production`:
 
+Shared:
+
 1. `CLOUDWAYS_SSH_PRIVATE_KEY`
-2. `CLOUDWAYS_SSH_HOST`
-3. `CLOUDWAYS_SSH_PORT`
-4. `CLOUDWAYS_SSH_USER`
-5. `CLOUDWAYS_APP_PATH`
-6. `CLOUDWAYS_PUBLIC_HTML_PATH`
-7. `CLOUDWAYS_PM2_PROCESS_NAME`
-8. `PRODUCTION_WEB_API_BASE_URL`
-9. `PRODUCTION_HEALTHCHECK_URL`
+
+API target app secrets:
+
+1. `API_CLOUDWAYS_SSH_HOST`
+2. `API_CLOUDWAYS_SSH_PORT`
+3. `API_CLOUDWAYS_SSH_USER`
+4. `API_CLOUDWAYS_APP_PATH`
+5. `API_CLOUDWAYS_PM2_PROCESS_NAME`
+6. `API_HEALTHCHECK_URL`
+
+Web target app secrets:
+
+1. `WEB_CLOUDWAYS_SSH_HOST`
+2. `WEB_CLOUDWAYS_SSH_PORT`
+3. `WEB_CLOUDWAYS_SSH_USER`
+4. `WEB_CLOUDWAYS_APP_PATH`
+5. `WEB_CLOUDWAYS_PUBLIC_HTML_PATH`
+6. `WEB_HEALTHCHECK_URL`
+
+Frontend build secret:
+
+1. `PRODUCTION_WEB_API_BASE_URL`
 
 ## Cloudways Configuration Checklist (For This Repository)
 
@@ -75,17 +91,19 @@ Guide:
 
 ### 2) Create and configure the Cloudways application
 
-1. Create or attach the production application on the server.
-2. Ensure application path contains your git checkout with Apps/api and Apps/web.
-3. Identify your application web root path (public_html).
+1. Create or attach the production API application (`xjbdxtgyjr`) on the server.
+2. Create or attach the production Web application (`ytfmrwppdt`) on the server.
+3. Ensure both app paths contain your git checkout with Apps/api and Apps/web.
+4. Identify web application `public_html` path.
 
 Guide:
 
 1. In Cloudways, open Applications and select your production app.
-2. Verify application path and public_html path.
+2. Verify API app path, Web app path, and Web `public_html` path.
 3. Map these to GitHub environment secrets:
-	- CLOUDWAYS_APP_PATH
-	- CLOUDWAYS_PUBLIC_HTML_PATH
+	- API_CLOUDWAYS_APP_PATH
+	- WEB_CLOUDWAYS_APP_PATH
+	- WEB_CLOUDWAYS_PUBLIC_HTML_PATH
 
 ### 3) Configure domain and SSL
 
@@ -122,7 +140,12 @@ Guide:
 Run on server:
 
 ```bash
-cd <CLOUDWAYS_APP_PATH>
+cd <API_CLOUDWAYS_APP_PATH>
+git remote -v
+git fetch origin production
+git rev-parse --abbrev-ref HEAD
+
+cd <WEB_CLOUDWAYS_APP_PATH>
 git remote -v
 git fetch origin production
 git rev-parse --abbrev-ref HEAD
@@ -175,6 +198,7 @@ Optional but recommended:
 3. MAIL_ENABLED and SMTP settings
 4. EMPLOYMENT_RESUME_UPLOAD_DIR
 5. EMPLOYMENT_RESUME_MAX_FILE_SIZE_MB
+6. CORS_ALLOWED_ORIGINS=<comma-separated web origins>
 
 Guide:
 
@@ -205,7 +229,7 @@ test -w Apps/api/uploads/resumes && echo writable
 Guide:
 
 ```bash
-cd <CLOUDWAYS_APP_PATH>/Apps/api
+cd <API_CLOUDWAYS_APP_PATH>/Apps/api
 npm install
 npm run build
 pm2 start dist/server.js --name help-on-call-api || pm2 restart help-on-call-api
@@ -214,7 +238,7 @@ pm2 save
 
 Set GitHub secret:
 
-1. CLOUDWAYS_PM2_PROCESS_NAME=help-on-call-api
+1. API_CLOUDWAYS_PM2_PROCESS_NAME=help-on-call-api
 
 ### 10) Configure web publishing target
 
@@ -224,22 +248,22 @@ Set GitHub secret:
 Guide:
 
 ```bash
-mkdir -p <CLOUDWAYS_PUBLIC_HTML_PATH>
-test -w <CLOUDWAYS_PUBLIC_HTML_PATH> && echo writable
+mkdir -p <WEB_CLOUDWAYS_PUBLIC_HTML_PATH>
+test -w <WEB_CLOUDWAYS_PUBLIC_HTML_PATH> && echo writable
 ```
 
-### 11) Configure Nginx routing for SPA + API proxy
+### 11) Configure split Web/API communication
 
 Requirements:
 
-1. /api requests must proxy to API on 127.0.0.1:3000.
-2. Frontend files must serve from public_html.
-3. SPA routes must fallback to /index.html.
-4. Authorization header should be forwarded to API.
+1. Web is deployed to `ytfmrwppdt` and API to `xjbdxtgyjr`.
+2. Frontend must call API using full URL from `PRODUCTION_WEB_API_BASE_URL`.
+3. API CORS must include web app origin(s) in `CORS_ALLOWED_ORIGINS`.
+4. Frontend files must serve from web `public_html`.
 
 Guide:
 
-Use equivalent Nginx rules from DEPLOY_PRODUCTION_README.md and validate:
+Validate:
 
 1. GET /api/v1/health returns API response.
 2. Direct deep-link route load in frontend works after refresh.
@@ -262,9 +286,8 @@ Guide:
 1. Push a small change to production branch.
 2. Wait for Build and Validate job to pass.
 3. Approve deployment gate.
-4. Verify remote preflight step passes.
-5. Verify remote deploy step passes.
-6. Verify health check step passes.
+4. Verify API preflight/deploy/health steps pass.
+5. Verify Web preflight/deploy/health steps pass.
 
 ### 14) Post-deploy smoke tests
 

@@ -1,6 +1,6 @@
 # Production Cloudways Rollout Checklist
 
-This checklist is aligned with the production workflow at .github/workflows/deploy-production.yml.
+This checklist is aligned with the split-app production workflow at .github/workflows/deploy-production.yml.
 
 ## A. GitHub Setup
 
@@ -10,23 +10,41 @@ This checklist is aligned with the production workflow at .github/workflows/depl
 
 ## B. GitHub Secrets (Required)
 
+Shared:
+
 1. CLOUDWAYS_SSH_PRIVATE_KEY
-2. CLOUDWAYS_SSH_HOST
-3. CLOUDWAYS_SSH_PORT
-4. CLOUDWAYS_SSH_USER
-5. CLOUDWAYS_APP_PATH
-6. CLOUDWAYS_PUBLIC_HTML_PATH
-7. CLOUDWAYS_PM2_PROCESS_NAME
-8. PRODUCTION_WEB_API_BASE_URL
-9. PRODUCTION_HEALTHCHECK_URL
+
+API target app (`xjbdxtgyjr`):
+
+1. API_CLOUDWAYS_SSH_HOST
+2. API_CLOUDWAYS_SSH_PORT
+3. API_CLOUDWAYS_SSH_USER
+4. API_CLOUDWAYS_APP_PATH
+5. API_CLOUDWAYS_PM2_PROCESS_NAME
+6. API_HEALTHCHECK_URL
+
+Web target app (`ytfmrwppdt`):
+
+1. WEB_CLOUDWAYS_SSH_HOST
+2. WEB_CLOUDWAYS_SSH_PORT
+3. WEB_CLOUDWAYS_SSH_USER
+4. WEB_CLOUDWAYS_APP_PATH
+5. WEB_CLOUDWAYS_PUBLIC_HTML_PATH
+6. WEB_HEALTHCHECK_URL
+
+Frontend build target:
+
+1. PRODUCTION_WEB_API_BASE_URL
 
 ## C. Suggested Secret Values for This Repository
 
-1. CLOUDWAYS_PM2_PROCESS_NAME=help-on-call-api
-2. PRODUCTION_HEALTHCHECK_URL=https:/<your-domain>/api/v1/health
-3. PRODUCTION_WEB_API_BASE_URL=https://<your-domain>
-4. CLOUDWAYS_APP_PATH=<cloudways path containing Apps/api and Apps/web>
-5. CLOUDWAYS_PUBLIC_HTML_PATH=<cloudways public_html path for your application>
+1. API_CLOUDWAYS_PM2_PROCESS_NAME=help-on-call-api
+2. API_HEALTHCHECK_URL=https://<api-cloudways-internal-url>/api/v1/health
+3. WEB_HEALTHCHECK_URL=https://<web-cloudways-internal-url>/
+4. PRODUCTION_WEB_API_BASE_URL=https://<api-cloudways-internal-url>
+5. API_CLOUDWAYS_APP_PATH=<cloudways path containing Apps/api and Apps/web for api app>
+6. WEB_CLOUDWAYS_APP_PATH=<cloudways path containing Apps/api and Apps/web for web app>
+7. WEB_CLOUDWAYS_PUBLIC_HTML_PATH=<cloudways web app public_html path>
 
 ## D. Cloudways Server Checks
 
@@ -42,7 +60,13 @@ pm2 --version
 Validate repository and branch access:
 
 ```bash
-cd <CLOUDWAYS_APP_PATH>
+cd <API_CLOUDWAYS_APP_PATH>
+git remote -v
+git fetch origin production
+git rev-parse --abbrev-ref HEAD
+ls Apps/api Apps/web
+
+cd <WEB_CLOUDWAYS_APP_PATH>
 git remote -v
 git fetch origin production
 git rev-parse --abbrev-ref HEAD
@@ -52,8 +76,8 @@ ls Apps/api Apps/web
 Validate web root path:
 
 ```bash
-mkdir -p <CLOUDWAYS_PUBLIC_HTML_PATH>
-test -w <CLOUDWAYS_PUBLIC_HTML_PATH> && echo writable
+mkdir -p <WEB_CLOUDWAYS_PUBLIC_HTML_PATH>
+test -w <WEB_CLOUDWAYS_PUBLIC_HTML_PATH> && echo writable
 ```
 
 ## E. API Runtime Variables on Cloudways
@@ -76,21 +100,22 @@ Optional operational settings:
 4. EMPLOYMENT_RESUME_UPLOAD_DIR
 5. EMPLOYMENT_RESUME_MAX_FILE_SIZE_MB
 
-## F. Nginx Routing Expectations
+## F. Runtime Expectations (Split Apps)
 
-1. /api/* proxies to http://127.0.0.1:3000
-2. / serves frontend static files
-3. SPA fallback rewrites to /index.html
-4. Authorization header is forwarded to API upstream
+1. Web and API are deployed to separate Cloudways applications.
+2. Frontend calls API using full URL from `PRODUCTION_WEB_API_BASE_URL`.
+3. No same-host `/api` reverse proxy is required for web-to-api traffic.
+4. API CORS must allow requests from the web app internal URL.
 
 ## G. First Production Pipeline Run
 
 1. Push a small, safe commit to production branch.
 2. Wait for Build and Validate to pass.
-3. Approve the production environment gate.
-4. Confirm remote preflight checks pass.
-5. Confirm remote deployment step passes.
-6. Confirm health check step passes.
+3. Approve production deployment gate.
+4. Confirm API preflight and API deploy steps pass.
+5. Confirm API health check passes.
+6. Confirm Web preflight and Web deploy steps pass.
+7. Confirm Web health check passes.
 
 ## H. Smoke Tests After Deploy
 
@@ -107,38 +132,88 @@ Optional operational settings:
 2. If needed, SSH and manually checkout known good commit, rebuild API/web, restart PM2.
 3. Re-run health and smoke checks.
 
+## J. Bash Login and SSH Quickstart
 
+Use Git Bash on Windows.
 
-Key Gen Command
-$ ssh-keygen -t ed25519 -C "cloudways-access-help-on-call" -f ~/.ssh/cloudways_help_on_call -N ""
+1. Ensure key permissions are correct:
 
-Then go to folder: 
-/c/Users/dibyanshu/.ssh/cloudways_help_on_call.pub
+```bash
+chmod 600 ~/.ssh/cloudways_help_on_call
+```
 
-CLOUDWAYS_PUBLIC_HTML_PATH = /public_html
+2. Interactive login:
 
-ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "mkdir -p ~/helponcall-repo && cd ~/helponcall-repo && if [ ! -d .git ]; then git clone -b production git@github.com:Dibyanshu/HelpOnCall.git .; else git fetch origin production; fi && ls Apps/api Apps/web"
+```bash
+ssh -i ~/.ssh/cloudways_help_on_call -o StrictHostKeyChecking=accept-new -p 22 master_jhffypnzbd@159.203.16.174
+```
 
-ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 \
-"mkdir -p ~/helponcall-repo && cd ~/helponcall-repo && if [ ! -d .git ]; then git clone -b production git@github.com:Dibyanshu/HelpOnCall.git .; else git fetch origin production; fi && ls Apps/api Apps/web"
+3. In the remote shell, make PM2 available in PATH:
 
-Add GitHub host key on Cloudways server
+```bash
+export PATH=$HOME/.npm-global/bin:$PATH
+pm2 list
+```
 
-ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && ssh-keyscan -H github.com >> ~/.ssh/known_hosts && chmod 600 ~/.ssh/known_hosts && tail -n 3 ~/.ssh/known_hosts"
+4. Exit remote shell:
 
-Generate a GitHub deploy key on Cloudways server
+```bash
+exit
+```
 
-ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "ssh-keygen -t ed25519 -C 'cloudways-github-deploy' -f ~/.ssh/github_deploy -N '' && cat ~/.ssh/github_deploy.pub"
+## K. One-Shot Remote Commands (No Interactive Login)
 
-ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "ls -la /home/master/applications/6323970/public_html"
+```bash
+ssh -i ~/.ssh/cloudways_help_on_call -o BatchMode=yes -o ConnectTimeout=15 -o StrictHostKeyChecking=accept-new -p 22 master_jhffypnzbd@159.203.16.174 "export PATH=\$HOME/.npm-global/bin:\$PATH; pm2 show help-on-call-api"
+```
 
-ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "for d in \$(find /home/master/applications -maxdepth 4 -type d -name public_html 2>/dev/null); do echo '---'; echo \$d; ls -la \$d | head; done"
+Common checks:
 
-cat ~/.ssh/cloudways_help_on_call | clip
-
-# fallback: install with user prefix and expose PATH
-ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "mkdir -p ~/.npm-global && npm config set prefix '~/.npm-global' && echo 'export PATH=\$HOME/.npm-global/bin:\$PATH' >> ~/.profile && export PATH=\$HOME/.npm-global/bin:\$PATH && npm install -g pm2 && command -v pm2 && pm2 --version"
-
-
-Verify values exist:
+```bash
+ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "readlink -f /home/master/applications"
+ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "ls -la /home/master/helponcall-repo/Apps/api"
 ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "grep -E '^(APP_ENV|DB_PROVIDER|TURSO_DATABASE_URL|TURSO_AUTH_TOKEN|JWT_SECRET)=' /home/master/helponcall-repo/Apps/api/.env"
+```
+
+## L. Git Access Setup on Cloudways Server
+
+Add GitHub host key:
+
+```bash
+ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && ssh-keyscan -H github.com >> ~/.ssh/known_hosts && chmod 600 ~/.ssh/known_hosts && tail -n 3 ~/.ssh/known_hosts"
+```
+
+Generate a GitHub deploy key on Cloudways server:
+
+```bash
+ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "ssh-keygen -t ed25519 -C 'cloudways-github-deploy' -f ~/.ssh/github_deploy -N '' && cat ~/.ssh/github_deploy.pub"
+```
+
+Clone or update production branch repo:
+
+```bash
+ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "mkdir -p ~/helponcall-repo && cd ~/helponcall-repo && if [ ! -d .git ]; then git clone -b production git@github.com:Dibyanshu/HelpOnCall.git .; else git fetch origin production; fi && ls Apps/api Apps/web"
+```
+
+## M. Current Environment Snapshot
+
+1. Cloudways applications found: 3
+2. Application IDs:
+	- nmngndxcqm
+	- xjbdxtgyjr
+	- ytfmrwppdt
+3. Active PM2 API process:
+	- name: help-on-call-api
+	- status: online
+	- script: /home/master/helponcall-repo/Apps/api/dist/server.js
+	- cwd: /home/master/helponcall-repo/Apps/api
+4. Application mapping notes:
+	- Web: ytfmrwppdt
+	- API: xjbdxtgyjr
+
+## N. Split Deployment Scripts Used by Workflow
+
+1. API preflight: scripts/cloudways-preflight-api.sh
+2. Web preflight: scripts/cloudways-preflight-web.sh
+3. API deploy: scripts/deploy-production-cloudways-api.sh
+4. Web deploy: scripts/deploy-production-cloudways-web.sh
