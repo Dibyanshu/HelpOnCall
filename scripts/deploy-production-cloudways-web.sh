@@ -21,7 +21,11 @@ echo "[deploy-web] app path: $APP_PATH"
 echo "[deploy-web] branch: $DEPLOY_BRANCH"
 echo "[deploy-web] public html path: $PUBLIC_HTML_PATH"
 
-WEB_API_BASE_URL="${WEB_API_BASE_URL:-https://phpstack-1608575-6325198.cloudwaysapps.com}"
+WEB_API_BASE_URL="${WEB_API_BASE_URL:-}"
+if [[ -z "$WEB_API_BASE_URL" ]]; then
+  echo "[deploy-web] ERROR: WEB_API_BASE_URL is not set" >&2
+  exit 1
+fi
 echo "[deploy-web] web API base URL: $WEB_API_BASE_URL"
 
 cd "$APP_PATH"

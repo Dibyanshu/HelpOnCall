@@ -3,13 +3,28 @@ import { dirname, resolve } from "node:path";
 import type { drizzle as drizzleBetterSqlite } from "drizzle-orm/better-sqlite3";
 import { env } from "../config/env.js";
 
-const usesTurso = env.APP_ENV === "staging" || env.APP_ENV === "production";
 type BetterSqliteDb = ReturnType<typeof drizzleBetterSqlite>;
 
 let dbInstance: BetterSqliteDb;
 let sqliteInstance: any | undefined;
 
-if (usesTurso) {
+if (env.APP_ENV === "production") {
+	const mysql = await import("mysql2/promise");
+	const { drizzle } = await import("drizzle-orm/mysql2");
+
+	const pool = mysql.default.createPool({
+		host: env.MYSQL_HOST!,
+		port: env.MYSQL_PORT,
+		user: env.MYSQL_USER!,
+		password: env.MYSQL_PASSWORD!,
+		database: env.MYSQL_DATABASE!,
+		waitForConnections: true,
+		connectionLimit: 10
+	});
+
+	dbInstance = drizzle(pool) as unknown as BetterSqliteDb;
+	console.log("Connected to CloudWays MySQL (production)");
+} else if (env.APP_ENV === "staging") {
 	const { createClient } = await import("@libsql/client");
 	const { drizzle } = await import("drizzle-orm/libsql");
 

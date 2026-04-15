@@ -43,21 +43,37 @@ Create environment production and set Required reviewers to enforce manual Go/No
 
 Repository or environment secrets required by deploy-production.yml:
 
+API deploy secrets:
+
 - CLOUDWAYS_SSH_PRIVATE_KEY
-- CLOUDWAYS_SSH_HOST
-- CLOUDWAYS_SSH_PORT
-- CLOUDWAYS_SSH_USER
-- CLOUDWAYS_APP_PATH
-- CLOUDWAYS_PUBLIC_HTML_PATH
-- CLOUDWAYS_PM2_PROCESS_NAME
-- PRODUCTION_WEB_API_BASE_URL
-- PRODUCTION_HEALTHCHECK_URL
+- API_CLOUDWAYS_SSH_HOST
+- API_CLOUDWAYS_SSH_PORT
+- API_CLOUDWAYS_SSH_USER
+- API_CLOUDWAYS_APP_PATH
+- API_CLOUDWAYS_PM2_PROCESS_NAME
+- API_HEALTHCHECK_URL
+- MYSQL_HOST
+- MYSQL_PORT
+- MYSQL_USER
+- MYSQL_PASSWORD
+- MYSQL_DATABASE
+
+Web deploy secrets:
+
+- WEB_CLOUDWAYS_SSH_HOST
+- WEB_CLOUDWAYS_SSH_PORT
+- WEB_CLOUDWAYS_SSH_USER
+- WEB_CLOUDWAYS_APP_PATH
+- WEB_CLOUDWAYS_PUBLIC_HTML_PATH
+- WEB_HEALTHCHECK_URL
+- PRODUCTION_API_BASE_URL
 
 Recommended values:
 
-- CLOUDWAYS_PM2_PROCESS_NAME=help-on-call-api
-- PRODUCTION_HEALTHCHECK_URL=https://<your-domain>/api/v1/health
-- PRODUCTION_WEB_API_BASE_URL=https://<your-domain>
+- API_CLOUDWAYS_PM2_PROCESS_NAME=help-on-call-api
+- API_HEALTHCHECK_URL=https://\<your-api-domain\>/api/v1/health
+- PRODUCTION_API_BASE_URL=https://\<your-api-domain\>
+- MYSQL_PORT=3306
 
 ## Cloudways DigitalOcean Setup (Step-by-Step)
 
@@ -85,22 +101,29 @@ Recommended values:
 
 Create/update Apps/api/.env on the server deployment path.
 
-Required baseline:
+Required baseline (set once manually before first deployment):
 
 - APP_ENV=production
 - HOST=0.0.0.0
 - PORT=3000
-- JWT_SECRET=<strong-random-secret-min-16-chars>
+- JWT_SECRET=\<strong-random-secret-min-16-chars\>
+- SUPER_ADMIN_EMAIL=\<admin-email\>
+- SUPER_ADMIN_PASSWORD=\<strong-password\>
 
-Current runtime requirement note:
+MySQL connection variables (written automatically by the deploy script via MYSQL_* GitHub secrets):
 
-- Existing API code currently requires TURSO_DATABASE_URL and TURSO_AUTH_TOKEN when APP_ENV=production.
-- Cloudways non-Turso DB cutover is an in-progress migration and must be completed in API code before disabling Turso vars.
+- MYSQL_HOST
+- MYSQL_PORT (default: 3306)
+- MYSQL_USER
+- MYSQL_PASSWORD
+- MYSQL_DATABASE
 
-Additional commonly required variables:
+The deploy script (scripts/deploy-production-cloudways-api.sh) reads the MYSQL_* values from
+GitHub secrets and writes them into Apps/api/.env on the Cloudways server on every deployment,
+keeping the database credentials in sync with the GitHub secrets store.
 
-- SUPER_ADMIN_EMAIL
-- SUPER_ADMIN_PASSWORD
+Additional commonly required variables (set manually in .env):
+
 - MAIL_ENABLED
 - SMTP_HOST
 - SMTP_PORT
@@ -116,13 +139,14 @@ Additional commonly required variables:
 
 ## Frontend Build Variables
 
-Set via GitHub secret PRODUCTION_WEB_API_BASE_URL used during Apps/web build.
+Set via GitHub secret PRODUCTION_API_BASE_URL used during Apps/web build.
 
-- PRODUCTION_WEB_API_BASE_URL=https://<your-domain>
+- PRODUCTION_API_BASE_URL=https://\<your-api-domain\>
 
 Important:
 
-- Use domain root value so web calls /api/v1/... correctly through Nginx proxy.
+- Use the domain root value so web calls /api/v1/... correctly through Nginx proxy.
+- This secret is used in both the build-and-validate and deploy-web CI jobs.
 
 ## Nginx Routing (Cloudways)
 
@@ -189,14 +213,34 @@ If deployment fails after approval:
 2. Or SSH to server and manually checkout known good commit, rebuild, and PM2 restart.
 3. Re-run health endpoint and smoke tests.
 
-## Cloudways DB Migration Track (Production)
+## MySQL Initial Setup (First-Time Production)
 
-Production pipeline is implemented first without changing staging behavior.
+Before the first production deployment, run the MySQL schema and seed script against the
+CloudWays managed MySQL database:
 
-For full Cloudways managed DB cutover, complete these API changes in a controlled follow-up:
+```bash
+mysql -h <MYSQL_HOST> -P <MYSQL_PORT> -u <MYSQL_USER> -p <MYSQL_DATABASE> \
+  < scripts/mysql-migrate-seed.sql
+```
 
-1. Refactor Apps/api/src/config/env.ts to validate production DB vars for selected engine.
-2. Refactor Apps/api/src/db/index.ts to use Cloudways DB driver for APP_ENV=production.
-3. Align Drizzle schema/dialect and migration workflow with chosen engine.
-4. Migrate data from Turso and validate all API flows.
-5. Remove production dependence on TURSO_DATABASE_URL and TURSO_AUTH_TOKEN only after successful cutover.
+This creates all tables and populates seed reference data (service categories, services,
+testimonials, and baseline email templates). On first server startup, seedInitialEmailTemplates()
+will update email templates with fully rendered HTML.
+
+## Migrating Existing Data from Turso (Optional)
+
+If there is live data in the Turso production database that needs to be carried over:
+
+1. Run the schema script first (above).
+2. Export data from Turso:
+   ```bash
+   TURSO_DATABASE_URL=libsql://... TURSO_AUTH_TOKEN=... \
+   tsx scripts/export-turso-to-mysql.ts > /tmp/turso-export.sql
+   ```
+3. Review the generated SQL file.
+4. Apply to MySQL:
+   ```bash
+   mysql -h <MYSQL_HOST> -P <MYSQL_PORT> -u <MYSQL_USER> -p <MYSQL_DATABASE> \
+     < /tmp/turso-export.sql
+   ```
+5. Verify row counts match between Turso and MySQL before switching traffic.
