@@ -88,16 +88,31 @@ jobs:
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
 
-          printf '%s' "$CLOUDWAYS_SSH_PRIVATE_KEY" > ~/.ssh/cloudways_deploy_key
+          # Normalize common secret formats: quoted, escaped newlines, or base64-encoded key content.
+          key_raw="$CLOUDWAYS_SSH_PRIVATE_KEY"
+          key_raw="${key_raw#\"}"
+          key_raw="${key_raw%\"}"
+          key_raw="${key_raw#\'}"
+          key_raw="${key_raw%\'}"
 
-          sed -i 's/\r$//' ~/.ssh/cloudways_deploy_key
-          if grep -q '\\n' ~/.ssh/cloudways_deploy_key; then
-            perl -0777 -pe 's/\\n/\n/g' ~/.ssh/cloudways_deploy_key > ~/.ssh/cloudways_deploy_key.tmp
-            mv ~/.ssh/cloudways_deploy_key.tmp ~/.ssh/cloudways_deploy_key
+          if [[ "$key_raw" == *"\\n"* ]]; then
+            key_raw="$(printf '%s' "$key_raw" | perl -0777 -pe 's/\\n/\n/g')"
           fi
 
+          if [[ "$key_raw" != *"BEGIN OPENSSH PRIVATE KEY"* ]] && [[ "$key_raw" != *"BEGIN RSA PRIVATE KEY"* ]] && [[ "$key_raw" != *"BEGIN EC PRIVATE KEY"* ]]; then
+            decoded="$(printf '%s' "$key_raw" | base64 -d 2>/dev/null || true)"
+            if [[ -n "$decoded" ]] && [[ "$decoded" == *"BEGIN"*"PRIVATE KEY"* ]]; then
+              key_raw="$decoded"
+            fi
+          fi
+
+          printf '%s\n' "$key_raw" | sed 's/\r$//' > ~/.ssh/cloudways_deploy_key
           chmod 600 ~/.ssh/cloudways_deploy_key
-          ssh-keygen -y -f ~/.ssh/cloudways_deploy_key >/dev/null
+
+          if ! ssh-keygen -y -f ~/.ssh/cloudways_deploy_key >/dev/null 2>&1; then
+            echo "Invalid CLOUDWAYS_SSH_PRIVATE_KEY format (could not parse private key)." >&2
+            exit 1
+          fi
 
       - name: Add API Cloudways host to known_hosts
         shell: bash
@@ -217,16 +232,31 @@ jobs:
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
 
-          printf '%s' "$CLOUDWAYS_SSH_PRIVATE_KEY" > ~/.ssh/cloudways_deploy_key
+          # Normalize common secret formats: quoted, escaped newlines, or base64-encoded key content.
+          key_raw="$CLOUDWAYS_SSH_PRIVATE_KEY"
+          key_raw="${key_raw#\"}"
+          key_raw="${key_raw%\"}"
+          key_raw="${key_raw#\'}"
+          key_raw="${key_raw%\'}"
 
-          sed -i 's/\r$//' ~/.ssh/cloudways_deploy_key
-          if grep -q '\\n' ~/.ssh/cloudways_deploy_key; then
-            perl -0777 -pe 's/\\n/\n/g' ~/.ssh/cloudways_deploy_key > ~/.ssh/cloudways_deploy_key.tmp
-            mv ~/.ssh/cloudways_deploy_key.tmp ~/.ssh/cloudways_deploy_key
+          if [[ "$key_raw" == *"\\n"* ]]; then
+            key_raw="$(printf '%s' "$key_raw" | perl -0777 -pe 's/\\n/\n/g')"
           fi
 
+          if [[ "$key_raw" != *"BEGIN OPENSSH PRIVATE KEY"* ]] && [[ "$key_raw" != *"BEGIN RSA PRIVATE KEY"* ]] && [[ "$key_raw" != *"BEGIN EC PRIVATE KEY"* ]]; then
+            decoded="$(printf '%s' "$key_raw" | base64 -d 2>/dev/null || true)"
+            if [[ -n "$decoded" ]] && [[ "$decoded" == *"BEGIN"*"PRIVATE KEY"* ]]; then
+              key_raw="$decoded"
+            fi
+          fi
+
+          printf '%s\n' "$key_raw" | sed 's/\r$//' > ~/.ssh/cloudways_deploy_key
           chmod 600 ~/.ssh/cloudways_deploy_key
-          ssh-keygen -y -f ~/.ssh/cloudways_deploy_key >/dev/null
+
+          if ! ssh-keygen -y -f ~/.ssh/cloudways_deploy_key >/dev/null 2>&1; then
+            echo "Invalid CLOUDWAYS_SSH_PRIVATE_KEY format (could not parse private key)." >&2
+            exit 1
+          fi
 
       - name: Add Web Cloudways host to known_hosts
         shell: bash
