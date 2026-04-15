@@ -14,6 +14,11 @@ import rfqsRoute from "./routes/rfqs.js";
 import servicesRoutes from "./routes/services.js";
 import testimonialsRoutes from "./routes/testimonials.js";
 
+function registerV1Routes(app: ReturnType<typeof Fastify>, plugin: Parameters<typeof app.register>[0]) {
+  app.register(plugin, { prefix: "/api/v1" });
+  app.register(plugin, { prefix: "/v1" });
+}
+
 export function buildApp() {
   const app = Fastify({
     logger: true
@@ -33,15 +38,15 @@ export function buildApp() {
   app.register(authPlugin);
   app.register(mailPlugin);
 
-  app.register(healthRoutes, { prefix: "/api/v1" });
-  app.register(authRoutes, { prefix: "/api/v1" });
-  app.register(adminUserRoutes, { prefix: "/api/v1" });
-  app.register(emailValidatorRoutes, { prefix: "/api/v1" });
-  app.register(emailTemplateRoutes, { prefix: "/api/v1" });
-  app.register(servicesRoutes, { prefix: "/api/v1" });
-  app.register(employmentRoutes, { prefix: "/api/v1" });
-  app.register(rfqsRoute, { prefix: "/api/v1" });
-  app.register(testimonialsRoutes, { prefix: "/api/v1" });
+  registerV1Routes(app, healthRoutes);
+  registerV1Routes(app, authRoutes);
+  registerV1Routes(app, adminUserRoutes);
+  registerV1Routes(app, emailValidatorRoutes);
+  registerV1Routes(app, emailTemplateRoutes);
+  registerV1Routes(app, servicesRoutes);
+  registerV1Routes(app, employmentRoutes);
+  registerV1Routes(app, rfqsRoute);
+  registerV1Routes(app, testimonialsRoutes);
 
   return app;
 }
