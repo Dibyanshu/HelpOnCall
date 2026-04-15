@@ -47,7 +47,7 @@ export default function EmploymentPage() {
           <div className="grid lg:grid-cols-2 items-stretch">
 
             {/* Left Column: Why join us? */}
-            <div className="flex flex-col justify-start lg:pt-8 xl:pr-12 animate-in fade-in slide-in-from-left-8 duration-700">
+            <div className="flex flex-col justify-start lg:mt-0 xl:px-4 lg:pl-8 animate-in fade-in slide-in-from-left-8 duration-700">
               <div className="rounded-md bg-white p-8 shadow-sm ring-1 ring-slate-200">
                 <h3 className="text-xl font-semibold text-slate-900">Why join us?</h3>
                 <ul className="mt-6 space-y-5">
@@ -60,7 +60,7 @@ export default function EmploymentPage() {
                 </ul>
               </div>
 
-              <div className="rounded-md bg-white p-8 shadow-sm ring-1 ring-slate-200">
+              <div className="rounded-md bg-white p-8 shadow-sm ring-1 ring-slate-200 mt-10">
                 <h3 className="text-xl font-semibold text-slate-900">What you bring to the table?</h3>
                 <ul className="mt-6 space-y-5">
                   {expectations.map((item, index) => (

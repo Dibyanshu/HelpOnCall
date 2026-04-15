@@ -78,7 +78,7 @@ const INITIAL_EMAIL_TEMPLATES: SeedEmailTemplate[] = [
       <div style="max-width:400px;margin:0 auto;">
         ${buildInfoCard(`
           <p style="margin:0 0 8px;font-size:13px;color:#64748b;">Your verification code:</p>
-          <p style="margin:8px 0 16px;font-size:40px;font-weight:800;letter-spacing:8px;color:#0f766e;">{{code}}</p>
+          <p style="margin:8px 0 16px;font-size:24px;font-weight:800;letter-spacing:8px;color:#0f766e;">{{code}}</p>
           <p style="margin:0;font-size:13px;color:#94a3b8;">This code expires in 15 minutes. If you did not request this, you can ignore this email.</p>
         `)}
       </div>
@@ -208,6 +208,44 @@ const INITIAL_EMAIL_TEMPLATES: SeedEmailTemplate[] = [
       ]
     }),
     description: "Sent to applicants when their employment application status is updated (approved or rejected)"
+  },
+  {
+    templateKey: "rfq_status",
+    module: "rfq",
+    subjectTemplate: "HelpOnCall quotation request {{statusSubject}}",
+    textTemplate: [
+      "Hi {{fullName}},",
+      "",
+      "{{statusLine}}",
+      "Reference ID: {{rfqId}}",
+      "",
+      "Thank you for choosing HelpOnCall.",
+      "HelpOnCall Team"
+    ].join("\n"),
+    htmlTemplate: buildEmailWrapper(`
+      <div style="display:inline-block;margin-bottom:24px;padding:10px 24px;border-radius:9999px;background:{{statusBadgeColor}};color:{{statusTextColor}};font-weight:700;font-size:16px;">{{statusBadgeLabel}}</div>
+      <h2 style="font-size:32px;line-height:1.2;color:#0f172a;margin:0 0 16px;font-weight:800;">Request {{statusHeading}}</h2>
+      <div style="max-width:560px;margin:0 auto;">
+        ${buildInfoCard(`
+          <p style="margin:0 0 16px;color:#374151;font-size:16px;line-height:1.7;">Hi <strong>{{fullName}}</strong>, {{statusLine}}</p>
+          ${buildInfoGrid([{ label: "Reference ID", value: "{{rfqId}}" }])}
+        `)}
+        <p style="margin:16px 0 0;color:#64748b;font-size:14px;">Thank you for choosing HelpOnCall.</p>
+      </div>
+    `),
+    variablesSchema: JSON.stringify({
+      required: [
+        "fullName",
+        "rfqId",
+        "statusSubject",
+        "statusHeading",
+        "statusLine",
+        "statusBadgeColor",
+        "statusTextColor",
+        "statusBadgeLabel"
+      ]
+    }),
+    description: "Sent to users when their quotation request status is updated (approved or rejected)"
   }
 ];
 

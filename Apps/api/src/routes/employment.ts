@@ -13,10 +13,7 @@ import { db } from "../db/index.js";
 import { employment, serviceCategories, services, users } from "../db/schema.js";
 import type { Role } from "../types/auth.js";
 import {
-  buildAdminSubmissionNotificationEmail,
-  buildApplicantStatusEmail,
-  buildApplicantStatusTemplateData,
-  buildApplicantSubmissionConfirmationEmail
+  buildApplicantStatusTemplateData
 } from "../utils/email-template/email-builders.js";
 import { sendTemplatedEmail } from "../utils/email-template/email-template.service.js";
 import { TEMPLATE_KEYS } from "../utils/email-template/template-registry.js";
@@ -146,6 +143,118 @@ async function updateEmploymentStatusByEmpId(
   return updated[0] ?? null;
 }
 
+function buildAdminSubmissionNotificationEmail(input: {
+  fullName: string;
+  emailAddress: string;
+  phoneNumber: string;
+  empId: string;
+}): { subject: string; text: string; html: string } {
+  const subject = `New employment application: ${input.fullName}`;
+  const text = [
+    "A new employment application has been submitted.",
+    "",
+    `Candidate: ${input.fullName}`,
+    `Email: ${input.emailAddress}`,
+    `Phone: ${input.phoneNumber}`,
+    `Emp ID: ${input.empId}`,
+    "",
+    "Please review it from the admin employment dashboard."
+  ].join("\n");
+
+  const html = `
+    <p>A new employment application has been submitted.</p>
+    <p>
+      <strong>Candidate:</strong> ${input.fullName}<br/>
+      <strong>Email:</strong> ${input.emailAddress}<br/>
+      <strong>Phone:</strong> ${input.phoneNumber}<br/>
+      <strong>Emp ID:</strong> ${input.empId}
+    </p>
+    <p>Please review it from the admin employment dashboard.</p>
+  `;
+
+  return { subject, text, html };
+}
+
+function escapeHtml(input: string): string {
+  return input
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function buildApplicantSubmissionConfirmationEmail(input: {
+  fullName: string;
+  emailAddress: string;
+}): { subject: string; text: string; html: string } {
+  const subject = "HelpOnCall employment application received";
+
+  const text = [
+    `Hi ${input.fullName},`,
+    "",
+    "Application Sent!",
+    "",
+    "Your profile has entered our orbit. Our recruitment team will review your application and reach out shortly.",
+    `A confirmation has been sent to ${input.emailAddress}.`,
+    "",
+    "HelpOnCall Team"
+  ].join("\n");
+
+  const html = `
+    <div style="display:flex;align-items:center;justify-content:center;padding:16px;background:#f8fafc;font-family:Arial,sans-serif;">
+      <div style="width:100%;max-width:448px;display:flex;flex-direction:column;align-items:center;background:#ffffff;border-radius:40px;padding:48px;box-shadow:0 25px 50px rgba(148,163,184,0.25);text-align:center;">
+        <div style="position:relative;margin-bottom:32px;">
+          <div style="position:absolute;inset:0;border-radius:9999px;background:#ccfbf1;opacity:0.75;"></div>
+          <div style="position:relative;display:flex;height:96px;width:96px;align-items:center;justify-content:center;border-radius:9999px;background:#f0fdfa;color:#0f766e;font-size:48px;line-height:1;">
+            ✓
+          </div>
+        </div>
+        <h2 style="margin:0 0 16px;font-size:30px;font-weight:700;color:#0f172a;">Application Sent!</h2>
+        <p style="margin:0 0 32px;color:#475569;line-height:1.7;">
+          Your profile has entered our orbit. Our recruitment team will review your application and reach out shortly.
+        </p>
+      </div>
+    </div>
+  `;
+
+  return { subject, text, html };
+}
+
+function buildApplicantStatusEmail(input: {
+  fullName: string;
+  empId: string;
+  status: "approve" | "reject";
+}): { subject: string; text: string; html: string } {
+  const isApproved = input.status === "approve";
+  const subject = isApproved
+    ? "Offer of Employment from HelpOnCall"
+    : "HelpOnCall employment application update";
+
+  const statusLine = isApproved
+    ? "Thank you for your interest in joining HelpOnCall. <br/><p><strong>Your application is approved.</strong></p><p>Following our recent interview process, we are pleased to offer you the opportunity to join HelpOnCall. We were impressed by your skills and experience, and believe you will be a valuable addition to our team. <br/>Should you have any questions, please do not hesitate to reach out to us directly.</p><p>We look forward to working with you.</p>"
+    : "Thank you for your interest in joining HelpOnCall and for taking the time to submit your application. <p>After carefully reviewing your application, we regret to inform you that we will not be able to move forward with your application at this time as your skills and experience doesn't seem to be closely aligned with the requirements of this role.</p><p>Please stay in touch and feel free to apply for future openings that match your profile. We wish you the best of luck in your job search and future endeavors.</p>";
+
+  const text = [
+    `Dear ${input.fullName},`,
+    "",
+    statusLine,
+    `Reference ID: ${input.empId}`,
+    "",
+    "Sincerely,",
+    "Recruitment Team,",
+    "HelpOnCall"
+  ].join("\n");
+
+  const html = `
+    <p>Dear ${input.fullName},</p>
+    <p>${statusLine}</p>
+    <p><strong>Reference ID:</strong> ${input.empId}</p>
+    <p>Sincerely,<br/>Recruitment Team,<br/>HelpOnCall</p>
+  `;
+
+  return { subject, text, html };
+}
 
 async function findAdminRecipientEmails(): Promise<string[]> {
   const rows = await db

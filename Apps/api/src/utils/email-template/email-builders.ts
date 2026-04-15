@@ -187,6 +187,99 @@ export function buildApplicantStatusEmail(input: {
   return { subject, text, html };
 }
 
+const RFQ_STATUS_MESSAGES = {
+  approved: {
+    statusLine: "Your quotation request has been approved. A care coordinator will be in touch with you shortly."
+  },
+  rejected: {
+    statusLine: "We reviewed your quotation request and are unable to proceed at this time."
+  }
+} as const;
+
+export function buildRfqAdminNotificationEmail(input: {
+  fullName: string;
+  email: string;
+  phone: string;
+  rfqId: string;
+}): RenderedEmail {
+  const subject = `New RFQ submitted: ${input.fullName}`;
+
+  const text = [
+    "A new quotation request has been submitted.",
+    "",
+    `Name: ${input.fullName}`,
+    `Email: ${input.email}`,
+    `Phone: ${input.phone}`,
+    `RFQ ID: ${input.rfqId}`,
+    "",
+    "Please review it from the admin quotations dashboard."
+  ].join("\n");
+
+  const html = buildEmailWrapper(`
+    <h2 style="font-size:28px;line-height:1.2;color:#0f172a;margin:0 0 24px;font-weight:800;">New Quotation Request</h2>
+    ${buildInfoGrid([
+      { label: "Name", value: escapeHtml(input.fullName) },
+      { label: "Email", value: escapeHtml(input.email) },
+      { label: "Phone", value: escapeHtml(input.phone) },
+      { label: "Reference ID", value: escapeHtml(input.rfqId) }
+    ])}
+    <p style="margin:24px 0 0;color:#475569;font-size:14px;">Please review it from the admin quotations dashboard.</p>
+  `);
+
+  return { subject, text, html };
+}
+
+export function buildRfqStatusTemplateData(status: "approve" | "reject"): Record<string, string> {
+  const style = status === "approve" ? STATUS_STYLE.approved : STATUS_STYLE.rejected;
+  const message = status === "approve" ? RFQ_STATUS_MESSAGES.approved : RFQ_STATUS_MESSAGES.rejected;
+
+  return {
+    statusSubject: style.subject,
+    statusHeading: style.heading,
+    statusLine: message.statusLine,
+    statusBadgeColor: style.badgeColor,
+    statusTextColor: style.textColor,
+    statusBadgeLabel: style.badgeLabel
+  };
+}
+
+export function buildRfqStatusEmail(input: {
+  fullName: string;
+  rfqId: string;
+  status: "approve" | "reject";
+}): RenderedEmail {
+  const isApproved = input.status === "approve";
+  const style = isApproved ? STATUS_STYLE.approved : STATUS_STYLE.rejected;
+  const statusLine = isApproved ? RFQ_STATUS_MESSAGES.approved.statusLine : RFQ_STATUS_MESSAGES.rejected.statusLine;
+  const subject = isApproved
+    ? "HelpOnCall quotation request approved"
+    : "HelpOnCall quotation request update";
+
+  const text = [
+    `Hi ${input.fullName},`,
+    "",
+    statusLine,
+    `Reference ID: ${input.rfqId}`,
+    "",
+    "Thank you for choosing HelpOnCall.",
+    "HelpOnCall Team"
+  ].join("\n");
+
+  const html = buildEmailWrapper(`
+    ${buildStatusBadge(isApproved)}
+    <h2 style="font-size:32px;line-height:1.2;color:#0f172a;margin:0 0 16px;font-weight:800;">Request ${style.heading}</h2>
+    <div style="max-width:560px;margin:0 auto;">
+      ${buildInfoCard(`
+        <p style="margin:0 0 16px;color:#374151;font-size:16px;line-height:1.7;">Hi <strong>${escapeHtml(input.fullName)}</strong>, ${escapeHtml(statusLine)}</p>
+        ${buildInfoGrid([{ label: "Reference ID", value: escapeHtml(input.rfqId) }])}
+      `)}
+      <p style="margin:16px 0 0;color:#64748b;font-size:14px;">Thank you for choosing HelpOnCall.</p>
+    </div>
+  `);
+
+  return { subject, text, html };
+}
+
 export function buildNewStaffAccountEmail(input: {
   fullName: string;
   personalEmail: string;
