@@ -28,6 +28,15 @@ if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   exit 1
 fi
 
+echo "[deploy-api] git status (pre-sync):"
+git status --short || true
+
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  stash_name="deploy-api-autostash-$(date -u +%Y%m%dT%H%M%SZ)"
+  echo "[deploy-api] local tracked changes detected; stashing as $stash_name"
+  git stash push -m "$stash_name"
+fi
+
 git fetch origin "$DEPLOY_BRANCH"
 current_branch="$(git rev-parse --abbrev-ref HEAD)"
 if [[ "$current_branch" != "$DEPLOY_BRANCH" ]]; then
