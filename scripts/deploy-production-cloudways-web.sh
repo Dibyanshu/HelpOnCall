@@ -8,7 +8,6 @@ required_vars=(
   APP_PATH
   DEPLOY_BRANCH
   PUBLIC_HTML_PATH
-  WEB_API_BASE_URL
 )
 
 for var_name in "${required_vars[@]}"; do
@@ -21,6 +20,9 @@ done
 echo "[deploy-web] app path: $APP_PATH"
 echo "[deploy-web] branch: $DEPLOY_BRANCH"
 echo "[deploy-web] public html path: $PUBLIC_HTML_PATH"
+
+WEB_API_BASE_URL="${WEB_API_BASE_URL:-https://phpstack-1608575-6325198.cloudwaysapps.com}"
+echo "[deploy-web] web API base URL: $WEB_API_BASE_URL"
 
 cd "$APP_PATH"
 
