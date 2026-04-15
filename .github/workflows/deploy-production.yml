@@ -1,0 +1,323 @@
+name: Cloudways CI/CD (Production Split Apps)
+
+on:
+  push:
+    branches:
+      - production
+
+concurrency:
+  group: cloudways-production-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-validate:
+    name: Build and Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install and build API
+        working-directory: Apps/api
+        run: |
+          npm ci
+          npm run typecheck
+          npm run build
+
+      - name: Install and build Web
+        working-directory: Apps/web
+        env:
+          VITE_API_BASE_URL: ${{ secrets.PRODUCTION_WEB_API_BASE_URL }}
+          VITE_BASE_PATH: /
+        run: |
+          npm ci
+          npm run build
+
+  deploy-api:
+    name: Approve and Deploy API App
+    needs: build-and-validate
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate required API deploy secrets
+        shell: bash
+        env:
+          CLOUDWAYS_SSH_PRIVATE_KEY: ${{ secrets.CLOUDWAYS_SSH_PRIVATE_KEY }}
+          API_CLOUDWAYS_SSH_HOST: ${{ secrets.API_CLOUDWAYS_SSH_HOST }}
+          API_CLOUDWAYS_SSH_PORT: ${{ secrets.API_CLOUDWAYS_SSH_PORT }}
+          API_CLOUDWAYS_SSH_USER: ${{ secrets.API_CLOUDWAYS_SSH_USER }}
+          API_CLOUDWAYS_APP_PATH: ${{ secrets.API_CLOUDWAYS_APP_PATH }}
+          API_CLOUDWAYS_PM2_PROCESS_NAME: ${{ secrets.API_CLOUDWAYS_PM2_PROCESS_NAME }}
+          API_HEALTHCHECK_URL: ${{ secrets.API_HEALTHCHECK_URL }}
+        run: |
+          set -euo pipefail
+          missing=()
+
+          for var_name in \
+            CLOUDWAYS_SSH_PRIVATE_KEY \
+            API_CLOUDWAYS_SSH_HOST \
+            API_CLOUDWAYS_SSH_PORT \
+            API_CLOUDWAYS_SSH_USER \
+            API_CLOUDWAYS_APP_PATH \
+            API_CLOUDWAYS_PM2_PROCESS_NAME \
+            API_HEALTHCHECK_URL; do
+            if [[ -z "${!var_name:-}" ]]; then
+              missing+=("$var_name")
+            fi
+          done
+
+          if [[ ${#missing[@]} -gt 0 ]]; then
+            echo "Missing required secrets: ${missing[*]}" >&2
+            exit 1
+          fi
+
+      - name: Setup SSH key
+        shell: bash
+        env:
+          CLOUDWAYS_SSH_PRIVATE_KEY: ${{ secrets.CLOUDWAYS_SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          # Normalize common secret formats: quoted, escaped newlines, or base64-encoded key content.
+          key_raw="$CLOUDWAYS_SSH_PRIVATE_KEY"
+          key_raw="${key_raw#\"}"
+          key_raw="${key_raw%\"}"
+          key_raw="${key_raw#\'}"
+          key_raw="${key_raw%\'}"
+
+          if [[ "$key_raw" == *"\\n"* ]]; then
+            key_raw="$(printf '%s' "$key_raw" | perl -0777 -pe 's/\\n/\n/g')"
+          fi
+
+          if [[ "$key_raw" != *"BEGIN OPENSSH PRIVATE KEY"* ]] && [[ "$key_raw" != *"BEGIN RSA PRIVATE KEY"* ]] && [[ "$key_raw" != *"BEGIN EC PRIVATE KEY"* ]]; then
+            decoded="$(printf '%s' "$key_raw" | base64 -d 2>/dev/null || true)"
+            if [[ -n "$decoded" ]] && [[ "$decoded" == *"BEGIN"*"PRIVATE KEY"* ]]; then
+              key_raw="$decoded"
+            fi
+          fi
+
+          printf '%s\n' "$key_raw" | sed 's/\r$//' > ~/.ssh/cloudways_deploy_key
+          chmod 600 ~/.ssh/cloudways_deploy_key
+
+          if ! ssh-keygen -y -f ~/.ssh/cloudways_deploy_key >/dev/null 2>&1; then
+            echo "Invalid CLOUDWAYS_SSH_PRIVATE_KEY format (could not parse private key)." >&2
+            exit 1
+          fi
+
+      - name: Add API Cloudways host to known_hosts
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh-keyscan -p "${{ secrets.API_CLOUDWAYS_SSH_PORT }}" "${{ secrets.API_CLOUDWAYS_SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Run API preflight checks
+        shell: bash
+        env:
+          SSH_PORT: ${{ secrets.API_CLOUDWAYS_SSH_PORT }}
+          SSH_HOST: ${{ secrets.API_CLOUDWAYS_SSH_HOST }}
+          SSH_USER: ${{ secrets.API_CLOUDWAYS_SSH_USER }}
+          APP_PATH: ${{ secrets.API_CLOUDWAYS_APP_PATH }}
+          DEPLOY_BRANCH: production
+          API_PROCESS_NAME: ${{ secrets.API_CLOUDWAYS_PM2_PROCESS_NAME }}
+          HEALTH_URL: ${{ secrets.API_HEALTHCHECK_URL }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/cloudways_deploy_key -o IdentitiesOnly=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "APP_PATH='$APP_PATH' DEPLOY_BRANCH='$DEPLOY_BRANCH' API_PROCESS_NAME='$API_PROCESS_NAME' HEALTH_URL='$HEALTH_URL' bash -s" \
+            < scripts/cloudways-preflight-api.sh
+
+      - name: Run API deployment script
+        shell: bash
+        env:
+          SSH_PORT: ${{ secrets.API_CLOUDWAYS_SSH_PORT }}
+          SSH_HOST: ${{ secrets.API_CLOUDWAYS_SSH_HOST }}
+          SSH_USER: ${{ secrets.API_CLOUDWAYS_SSH_USER }}
+          APP_PATH: ${{ secrets.API_CLOUDWAYS_APP_PATH }}
+          DEPLOY_BRANCH: production
+          API_PROCESS_NAME: ${{ secrets.API_CLOUDWAYS_PM2_PROCESS_NAME }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/cloudways_deploy_key -o IdentitiesOnly=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "APP_PATH='$APP_PATH' DEPLOY_BRANCH='$DEPLOY_BRANCH' API_PROCESS_NAME='$API_PROCESS_NAME' bash -s" \
+            < scripts/deploy-production-cloudways-api.sh
+
+      - name: Health check API
+        shell: bash
+        env:
+          HEALTH_URL: ${{ secrets.API_HEALTHCHECK_URL }}
+        run: |
+          set -euo pipefail
+          ATTEMPTS=3
+          SLEEP_SECONDS=10
+
+          for i in $(seq 1 "$ATTEMPTS"); do
+            HTTP_CODE="$(curl -sS -o /tmp/api-health.json -w "%{http_code}" "$HEALTH_URL" || true)"
+            if [[ "$HTTP_CODE" == "200" ]] && grep -Eiq '"status"[[:space:]]*:[[:space:]]*"ok"' /tmp/api-health.json; then
+              echo "API health check passed"
+              cat /tmp/api-health.json
+              exit 0
+            fi
+
+            echo "Attempt $i/$ATTEMPTS failed with HTTP $HTTP_CODE"
+            cat /tmp/api-health.json || true
+            if [[ "$i" -lt "$ATTEMPTS" ]]; then
+              sleep "$SLEEP_SECONDS"
+            fi
+          done
+
+          echo "API health check failed"
+          exit 1
+
+  deploy-web:
+    name: Deploy Web App
+    needs:
+      - build-and-validate
+      - deploy-api
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate required Web deploy secrets
+        shell: bash
+        env:
+          CLOUDWAYS_SSH_PRIVATE_KEY: ${{ secrets.CLOUDWAYS_SSH_PRIVATE_KEY }}
+          WEB_CLOUDWAYS_SSH_HOST: ${{ secrets.WEB_CLOUDWAYS_SSH_HOST }}
+          WEB_CLOUDWAYS_SSH_PORT: ${{ secrets.WEB_CLOUDWAYS_SSH_PORT }}
+          WEB_CLOUDWAYS_SSH_USER: ${{ secrets.WEB_CLOUDWAYS_SSH_USER }}
+          WEB_CLOUDWAYS_APP_PATH: ${{ secrets.WEB_CLOUDWAYS_APP_PATH }}
+          WEB_CLOUDWAYS_PUBLIC_HTML_PATH: ${{ secrets.WEB_CLOUDWAYS_PUBLIC_HTML_PATH }}
+          PRODUCTION_WEB_API_BASE_URL: ${{ secrets.PRODUCTION_WEB_API_BASE_URL }}
+          WEB_HEALTHCHECK_URL: ${{ secrets.WEB_HEALTHCHECK_URL }}
+        run: |
+          set -euo pipefail
+          missing=()
+
+          for var_name in \
+            CLOUDWAYS_SSH_PRIVATE_KEY \
+            WEB_CLOUDWAYS_SSH_HOST \
+            WEB_CLOUDWAYS_SSH_PORT \
+            WEB_CLOUDWAYS_SSH_USER \
+            WEB_CLOUDWAYS_APP_PATH \
+            WEB_CLOUDWAYS_PUBLIC_HTML_PATH \
+            PRODUCTION_WEB_API_BASE_URL \
+            WEB_HEALTHCHECK_URL; do
+            if [[ -z "${!var_name:-}" ]]; then
+              missing+=("$var_name")
+            fi
+          done
+
+          if [[ ${#missing[@]} -gt 0 ]]; then
+            echo "Missing required secrets: ${missing[*]}" >&2
+            exit 1
+          fi
+
+      - name: Setup SSH key
+        shell: bash
+        env:
+          CLOUDWAYS_SSH_PRIVATE_KEY: ${{ secrets.CLOUDWAYS_SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          # Normalize common secret formats: quoted, escaped newlines, or base64-encoded key content.
+          key_raw="$CLOUDWAYS_SSH_PRIVATE_KEY"
+          key_raw="${key_raw#\"}"
+          key_raw="${key_raw%\"}"
+          key_raw="${key_raw#\'}"
+          key_raw="${key_raw%\'}"
+
+          if [[ "$key_raw" == *"\\n"* ]]; then
+            key_raw="$(printf '%s' "$key_raw" | perl -0777 -pe 's/\\n/\n/g')"
+          fi
+
+          if [[ "$key_raw" != *"BEGIN OPENSSH PRIVATE KEY"* ]] && [[ "$key_raw" != *"BEGIN RSA PRIVATE KEY"* ]] && [[ "$key_raw" != *"BEGIN EC PRIVATE KEY"* ]]; then
+            decoded="$(printf '%s' "$key_raw" | base64 -d 2>/dev/null || true)"
+            if [[ -n "$decoded" ]] && [[ "$decoded" == *"BEGIN"*"PRIVATE KEY"* ]]; then
+              key_raw="$decoded"
+            fi
+          fi
+
+          printf '%s\n' "$key_raw" | sed 's/\r$//' > ~/.ssh/cloudways_deploy_key
+          chmod 600 ~/.ssh/cloudways_deploy_key
+
+          if ! ssh-keygen -y -f ~/.ssh/cloudways_deploy_key >/dev/null 2>&1; then
+            echo "Invalid CLOUDWAYS_SSH_PRIVATE_KEY format (could not parse private key)." >&2
+            exit 1
+          fi
+
+      - name: Add Web Cloudways host to known_hosts
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh-keyscan -p "${{ secrets.WEB_CLOUDWAYS_SSH_PORT }}" "${{ secrets.WEB_CLOUDWAYS_SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Run Web preflight checks
+        shell: bash
+        env:
+          SSH_PORT: ${{ secrets.WEB_CLOUDWAYS_SSH_PORT }}
+          SSH_HOST: ${{ secrets.WEB_CLOUDWAYS_SSH_HOST }}
+          SSH_USER: ${{ secrets.WEB_CLOUDWAYS_SSH_USER }}
+          APP_PATH: ${{ secrets.WEB_CLOUDWAYS_APP_PATH }}
+          DEPLOY_BRANCH: production
+          PUBLIC_HTML_PATH: ${{ secrets.WEB_CLOUDWAYS_PUBLIC_HTML_PATH }}
+          HEALTH_URL: ${{ secrets.WEB_HEALTHCHECK_URL }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/cloudways_deploy_key -o IdentitiesOnly=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "APP_PATH='$APP_PATH' DEPLOY_BRANCH='$DEPLOY_BRANCH' PUBLIC_HTML_PATH='$PUBLIC_HTML_PATH' HEALTH_URL='$HEALTH_URL' bash -s" \
+            < scripts/cloudways-preflight-web.sh
+
+      - name: Run Web deployment script
+        shell: bash
+        env:
+          SSH_PORT: ${{ secrets.WEB_CLOUDWAYS_SSH_PORT }}
+          SSH_HOST: ${{ secrets.WEB_CLOUDWAYS_SSH_HOST }}
+          SSH_USER: ${{ secrets.WEB_CLOUDWAYS_SSH_USER }}
+          APP_PATH: ${{ secrets.WEB_CLOUDWAYS_APP_PATH }}
+          DEPLOY_BRANCH: production
+          PUBLIC_HTML_PATH: ${{ secrets.WEB_CLOUDWAYS_PUBLIC_HTML_PATH }}
+          WEB_API_BASE_URL: ${{ secrets.PRODUCTION_WEB_API_BASE_URL }}
+          WEB_BASE_PATH: /
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/cloudways_deploy_key -o IdentitiesOnly=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "APP_PATH='$APP_PATH' DEPLOY_BRANCH='$DEPLOY_BRANCH' PUBLIC_HTML_PATH='$PUBLIC_HTML_PATH' WEB_API_BASE_URL='$WEB_API_BASE_URL' WEB_BASE_PATH='$WEB_BASE_PATH' bash -s" \
+            < scripts/deploy-production-cloudways-web.sh
+
+      - name: Health check Web
+        shell: bash
+        env:
+          HEALTH_URL: ${{ secrets.WEB_HEALTHCHECK_URL }}
+        run: |
+          set -euo pipefail
+          ATTEMPTS=3
+          SLEEP_SECONDS=10
+
+          for i in $(seq 1 "$ATTEMPTS"); do
+            HTTP_CODE="$(curl -sS -o /tmp/web-health.html -w "%{http_code}" "$HEALTH_URL" || true)"
+            if [[ "$HTTP_CODE" == "200" ]] && grep -Eiq '<div id="root">' /tmp/web-health.html; then
+              echo "Web health check passed"
+              exit 0
+            fi
+
+            echo "Attempt $i/$ATTEMPTS failed with HTTP $HTTP_CODE"
+            if [[ "$i" -lt "$ATTEMPTS" ]]; then
+              sleep "$SLEEP_SECONDS"
+            fi
+          done
+
+          echo "Web health check failed"
+          exit 1
