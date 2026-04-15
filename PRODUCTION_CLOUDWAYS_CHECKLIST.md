@@ -23,7 +23,7 @@ This checklist is aligned with the production workflow at .github/workflows/depl
 ## C. Suggested Secret Values for This Repository
 
 1. CLOUDWAYS_PM2_PROCESS_NAME=help-on-call-api
-2. PRODUCTION_HEALTHCHECK_URL=https://<your-domain>/api/v1/health
+2. PRODUCTION_HEALTHCHECK_URL=https:/<your-domain>/api/v1/health
 3. PRODUCTION_WEB_API_BASE_URL=https://<your-domain>
 4. CLOUDWAYS_APP_PATH=<cloudways path containing Apps/api and Apps/web>
 5. CLOUDWAYS_PUBLIC_HTML_PATH=<cloudways public_html path for your application>

@@ -25,7 +25,7 @@ jobs:
       - name: Install and build API
         working-directory: Apps/api
         run: |
-          npm install
+          npm ci
           npm run typecheck
           npm run build
 
@@ -35,7 +35,7 @@ jobs:
           VITE_API_BASE_URL: ${{ secrets.PRODUCTION_WEB_API_BASE_URL }}
           VITE_BASE_PATH: /
         run: |
-          npm install
+          npm ci
           npm run build
 
   deploy-production:

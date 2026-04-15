@@ -39,7 +39,7 @@ git pull --ff-only origin "$DEPLOY_BRANCH"
 
 # Backend build and restart
 cd Apps/api
-npm install
+npm ci
 npm run build
 
 if pm2 describe "$API_PROCESS_NAME" >/dev/null 2>&1; then
@@ -51,7 +51,7 @@ pm2 save
 
 # Frontend build and publish
 cd ../web
-npm install
+npm ci
 VITE_API_BASE_URL="${WEB_API_BASE_URL:-}" VITE_BASE_PATH="${WEB_BASE_PATH:-/}" npm run build
 
 mkdir -p "$PUBLIC_HTML_PATH"
