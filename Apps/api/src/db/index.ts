@@ -9,10 +9,10 @@ let dbInstance: BetterSqliteDb;
 let sqliteInstance: any | undefined;
 
 if (env.APP_ENV === "production") {
-	const mysql = await import("mysql2/promise");
+	const { createPool } = await import("mysql2/promise");
 	const { drizzle } = await import("drizzle-orm/mysql2");
 
-	const pool = mysql.default.createPool({
+	const pool = createPool({
 		host: env.MYSQL_HOST!,
 		port: env.MYSQL_PORT,
 		user: env.MYSQL_USER!,

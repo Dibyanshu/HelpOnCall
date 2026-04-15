@@ -388,7 +388,7 @@ export async function ensureTables(): Promise<void> {
   // MySQL driver does not expose a .run() method; tables are managed externally
   // via scripts/mysql-migrate-seed.sql. Skip all DDL when using MySQL.
   if (!supportsRunMethod()) {
-    console.log("MySQL driver detected: skipping DDL — tables managed via mysql-migrate-seed.sql");
+    console.log("MySQL driver detected: skipping DDL — tables managed via scripts/mysql-migrate-seed.sql");
     return;
   }
 

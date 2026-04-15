@@ -73,15 +73,6 @@ function escBool(value: unknown): string {
   return value ? "1" : "0";
 }
 
-async function exportTable(tableName: string): Promise<void> {
-  const result = await client.execute(`SELECT * FROM ${tableName}`);
-  if (result.rows.length === 0) {
-    console.log(`-- [${tableName}] no rows to export`);
-    return;
-  }
-  console.log(`-- [${tableName}] ${result.rows.length} row(s)`);
-}
-
 async function exportUsers(): Promise<void> {
   const result = await client.execute("SELECT * FROM users ORDER BY id");
   if (result.rows.length === 0) {
