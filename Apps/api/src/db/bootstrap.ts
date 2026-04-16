@@ -1,6 +1,11 @@
 import { sql } from "drizzle-orm";
 import { db } from "./index.js";
 
+function supportsRunMethod(): boolean {
+  const candidate = db as unknown as { run?: unknown };
+  return typeof candidate.run === "function";
+}
+
 function supportsSqliteIntrospection(): boolean {
   const candidate = db as unknown as { get?: unknown; all?: unknown };
   return typeof candidate.get === "function" && typeof candidate.all === "function";
@@ -380,6 +385,13 @@ async function migrateEmailValidatorAddCreatedByColumn(): Promise<void> {
 }
 
 export async function ensureTables(): Promise<void> {
+  // MySQL driver does not expose a .run() method; tables are managed externally
+  // via scripts/mysql-migrate-seed.sql. Skip all DDL when using MySQL.
+  if (!supportsRunMethod()) {
+    console.log("MySQL driver detected: skipping DDL — tables managed via scripts/mysql-migrate-seed.sql");
+    return;
+  }
+
   await db.run(USERS_TABLE_DDL);
   await db.run(SERVICE_CATEGORIES_TABLE_DDL);
   await db.run(SERVICES_TABLE_DDL);
