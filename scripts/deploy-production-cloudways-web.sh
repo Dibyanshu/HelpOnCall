@@ -8,7 +8,6 @@ required_vars=(
   APP_PATH
   DEPLOY_BRANCH
   PUBLIC_HTML_PATH
-  WEB_API_BASE_URL
 )
 
 for var_name in "${required_vars[@]}"; do
@@ -21,6 +20,9 @@ done
 echo "[deploy-web] app path: $APP_PATH"
 echo "[deploy-web] branch: $DEPLOY_BRANCH"
 echo "[deploy-web] public html path: $PUBLIC_HTML_PATH"
+
+WEB_API_BASE_URL="${WEB_API_BASE_URL:-https://phpstack-1608575-6325198.cloudwaysapps.com}"
+echo "[deploy-web] web API base URL: $WEB_API_BASE_URL"
 
 cd "$APP_PATH"
 
@@ -41,10 +43,15 @@ fi
 git fetch origin "$DEPLOY_BRANCH"
 current_branch="$(git rev-parse --abbrev-ref HEAD)"
 if [[ "$current_branch" != "$DEPLOY_BRANCH" ]]; then
-  git checkout "$DEPLOY_BRANCH"
+  if git show-ref --verify --quiet "refs/heads/$DEPLOY_BRANCH"; then
+    git checkout "$DEPLOY_BRANCH"
+  else
+    git checkout -B "$DEPLOY_BRANCH" "origin/$DEPLOY_BRANCH"
+  fi
 fi
 
-git pull --ff-only origin "$DEPLOY_BRANCH"
+echo "[deploy-web] syncing branch to origin/$DEPLOY_BRANCH"
+git reset --hard "origin/$DEPLOY_BRANCH"
 
 cd Apps/web
 npm ci
