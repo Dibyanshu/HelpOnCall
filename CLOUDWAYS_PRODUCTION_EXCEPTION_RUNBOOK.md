@@ -64,7 +64,7 @@ Web:
 - WEB_HEALTHCHECK_URL
 
 Frontend build:
-- PRODUCTION_WEB_API_BASE_URL
+- PRODUCTION_API_BASE_URL
 
 ## 5) Baseline Pre-Deploy Verification
 
@@ -174,6 +174,13 @@ Web API base URL for Vite build:
 
 Web app URL:
 - https://phpstack-1608575-6323934.cloudwaysapps.com
+
+Cloudways MySQL connection snapshot:
+- MYSQL_HOST=1608575.cloudwaysapps.com
+- MYSQL_PORT=3306
+- MYSQL_USER=xjbdxtgyjr
+- MYSQL_DATABASE=xjbdxtgyjr
+- MYSQL_PASSWORD=<stored in GitHub Environment secret only>
 
 ## 8) Fast Incident Triage Checklist
 
