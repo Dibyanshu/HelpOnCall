@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ChevronDown, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import IconSelect, { availableIcons } from '../../../components/common/IconSelect.jsx';
 
 const DEFAULT_FORM = {
@@ -77,59 +77,55 @@ export default function ServiceForm({ initialData, categories, onSubmit }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" aria-label="Service form">
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div>
-          <label htmlFor="service-category-id" className="mb-1 block text-sm font-medium text-slate-700">
-            Select Service Category
-          </label>
-          <div className="relative h-[38px] overflow-hidden rounded-md border border-gray-200 bg-white focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/10 transition-all duration-200">
-            <select
-              id="service-category-id"
-              name="category_id"
-              value={formData.category_id}
-              onChange={handleChange}
-              className="h-full w-full bg-transparent border-0 py-0 pl-3 pr-9 text-sm text-gray-700 appearance-none cursor-pointer focus:ring-0 outline-none"
-            >
-              {(categories || []).map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.title}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-          </div>
-        </div>
+      <div>
+        <label htmlFor="service-category-id" className="mb-1 block text-sm font-medium text-slate-700">
+          Category
+        </label>
+        <select
+          id="service-category-id"
+          name="category_id"
+          value={formData.category_id}
+          onChange={handleChange}
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-200"
+        >
+          <option value="">Select category</option>
+          {(categories || []).map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.title}
+            </option>
+          ))}
+        </select>
+      </div>
 
-        <div>
-          <label htmlFor="service-label" className="mb-1 block text-sm font-medium text-slate-700">
-            Name of the service
-          </label>
-          <input
-            id="service-label"
-            name="label"
-            type="text"
-            value={formData.label}
-            onChange={handleChange}
-            required
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-200"
-            placeholder="Service label"
-          />
-        </div>
+      <div>
+        <label htmlFor="service-label" className="mb-1 block text-sm font-medium text-slate-700">
+          Label
+        </label>
+        <input
+          id="service-label"
+          name="label"
+          type="text"
+          value={formData.label}
+          onChange={handleChange}
+          required
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-200"
+          placeholder="Service label"
+        />
+      </div>
 
-        <div>
-          <label htmlFor="service-icon-name" className="mb-1 block text-sm font-medium text-slate-700">
-            Relevant Icon
-          </label>
-          <IconSelect
-            value={formData.icon_name}
-            onChange={(val) => handleChange({ target: { name: 'icon_name', value: val } })}
-          />
-        </div>
+      <div>
+        <label htmlFor="service-icon-name" className="mb-1 block text-sm font-medium text-slate-700">
+          Icon
+        </label>
+        <IconSelect
+          value={formData.icon_name}
+          onChange={(val) => handleChange({ target: { name: 'icon_name', value: val } })}
+        />
       </div>
 
       <div>
         <label htmlFor="service-description" className="mb-1 block text-sm font-medium text-slate-700">
-          Service Description
+          Description
         </label>
         <textarea
           id="service-description"
@@ -180,7 +176,7 @@ export default function ServiceForm({ initialData, categories, onSubmit }) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="btn-primary gap-2 px-6 transition-all"
+        className="btn-primary"
       >
         <Save className="h-4 w-4" />
         {isSubmitting ? 'Saving...' : 'Save Service'}

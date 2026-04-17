@@ -384,6 +384,8 @@ async function migrateEmailValidatorAddCreatedByColumn(): Promise<void> {
   await db.run(sql`ALTER TABLE email_validator ADD COLUMN created_by TEXT NOT NULL DEFAULT ''`);
 }
 
+
+
 export async function ensureTables(): Promise<void> {
   // MySQL driver does not expose a .run() method; tables are managed externally
   // via scripts/mysql-migrate-seed.sql. Skip all DDL when using MySQL.
@@ -400,7 +402,6 @@ export async function ensureTables(): Promise<void> {
   await db.run(CUSTOMER_TESTIMONIALS_TABLE_DDL);
   await db.run(EMAIL_VALIDATOR_TABLE_DDL);
   await db.run(EMAIL_TEMPLATES_TABLE_DDL);
-  await db.run(RFQS_TABLE_DDL);
 
   // These migration helpers depend on better-sqlite3 specific db.get/db.all APIs.
   // Turso/libsql uses a different driver shape, so skip introspection-based migrations there.
@@ -408,7 +409,6 @@ export async function ensureTables(): Promise<void> {
     return;
   }
 
-  await migrateUsersTableToCanonicalShape();
   await migrateServiceCategoriesAddStandardColumns();
   await migrateServicesAddStandardColumns();
   await migrateEmploymentToAddIdAndAuditColumns();

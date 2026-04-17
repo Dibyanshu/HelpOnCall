@@ -24,8 +24,42 @@ export function buildApp() {
     logger: true
   });
 
+  const allowedCorsOrigins = (env.CORS_ALLOWED_ORIGINS ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0);
+  const useStrictCorsAllowlist = env.APP_ENV === "production" && allowedCorsOrigins.length > 0;
+
+  if (useStrictCorsAllowlist) {
+    app.log.info(
+      { allowedOrigins: allowedCorsOrigins },
+      "CORS mode: strict allowlist enabled"
+    );
+  } else if (env.APP_ENV === "production") {
+    app.log.warn("CORS_ALLOWED_ORIGINS is not set. Falling back to permissive CORS origin policy.");
+  } else {
+    app.log.info("CORS mode: permissive (non-production environment)");
+  }
+
   app.register(cors, {
-    origin: true
+    origin: (origin, callback) => {
+      if (!useStrictCorsAllowlist) {
+        callback(null, true);
+        return;
+      }
+
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      if (allowedCorsOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error("Not allowed by CORS"), false);
+    }
   });
 
   app.register(multipart, {

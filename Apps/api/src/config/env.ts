@@ -39,12 +39,25 @@ const envBoolean = z.preprocess((value) => {
 
 const envSchema = z.object({
   APP_ENV: z.enum(["development", "staging", "production"]).default("development"),
+  DB_PROVIDER: z.enum(["turso", "cloudways"]).default("turso"),
   PORT: z.coerce.number().default(3000),
   HOST: z.string().default("0.0.0.0"),
   JWT_SECRET: z.string().min(16),
   SQLITE_DB_PATH: z.string().default("./db/database.sqlite"),
   TURSO_DATABASE_URL: optionalUrlFromEnv,
   TURSO_AUTH_TOKEN: optionalNonEmptyStringFromEnv,
+  DB_HOST: optionalNonEmptyStringFromEnv,
+  DB_PORT: z.preprocess((value) => {
+    if (value === undefined || value === null || value === "") {
+      return undefined;
+    }
+
+    return Number(value);
+  }, z.number().int().positive().optional()),
+  DB_NAME: optionalNonEmptyStringFromEnv,
+  DB_USER: optionalNonEmptyStringFromEnv,
+  DB_PASSWORD: optionalNonEmptyStringFromEnv,
+  DB_SSL: envBoolean.default(false),
   // CloudWays managed MySQL — required only when APP_ENV=production
   MYSQL_HOST: optionalNonEmptyStringFromEnv,
   MYSQL_PORT: z.coerce.number().int().positive().default(3306),
@@ -63,6 +76,7 @@ const envSchema = z.object({
   MAIL_REPLY_TO: z.string().optional(),
   SMTP_CONNECTION_TIMEOUT_MS: z.coerce.number().int().positive().default(10000),
   SMTP_GREETING_TIMEOUT_MS: z.coerce.number().int().positive().default(10000),
+  CORS_ALLOWED_ORIGINS: optionalNonEmptyStringFromEnv,
   EMPLOYMENT_RESUME_UPLOAD_DIR: z.string().default("./uploads/resumes"),
   EMPLOYMENT_RESUME_MAX_FILE_SIZE_MB: z.coerce.number().int().positive().default(10)
 }).superRefine((data, ctx) => {

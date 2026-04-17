@@ -3,6 +3,11 @@ import { dirname, resolve } from "node:path";
 import type { drizzle as drizzleBetterSqlite } from "drizzle-orm/better-sqlite3";
 import { env } from "../config/env.js";
 
+const usesTurso =
+	env.APP_ENV === "staging" ||
+	(env.APP_ENV === "production" && env.DB_PROVIDER === "turso");
+
+const usesCloudwaysDb = env.APP_ENV === "production" && env.DB_PROVIDER === "cloudways";
 type BetterSqliteDb = ReturnType<typeof drizzleBetterSqlite>;
 
 let dbInstance: BetterSqliteDb;
@@ -35,6 +40,10 @@ if (env.APP_ENV === "production") {
 
 	dbInstance = drizzle(client) as unknown as BetterSqliteDb;
 	console.log(`Connected to Turso Edge SQLite (${env.APP_ENV})`);
+} else if (usesCloudwaysDb) {
+	throw new Error(
+		"DB_PROVIDER=cloudways selected for production, but Cloudways SQL adapter is not implemented yet. Complete schema and driver migration before enabling this provider."
+	);
 } else {
 	const Database = (await import("better-sqlite3")).default;
 	const { drizzle } = await import("drizzle-orm/better-sqlite3");
