@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import helpOnCallLogo from '../../assets/helpOnCallLogo.png';
 
 const navLinks = [
   { label: 'Home', href: '/', isRoute: true },
@@ -27,17 +26,26 @@ export default function Navbar() {
         className="mx-auto flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
         aria-label="Main navigation"
       >
-        <Link to="/" className="flex items-center gap-3" aria-label="Help On Call home">
-          <img
-            src={helpOnCallLogo}
-            alt="Help On Call"
-            className="h-10 w-auto max-w-[180px] object-contain sm:h-11 sm:max-w-[210px]"
-            loading="eager"
-          />
-          <div className="hidden sm:block leading-tight">
-            <p className="text-[15px] font-semibold tracking-tight text-slate-900">Help On Call</p>
-            <p className="text-[11px] uppercase tracking-[0.12em] text-teal-700">Helping hands, always on call</p>
-          </div>
+        <Link to="/" className="flex items-center gap-2" aria-label="Help On Call home">
+          <svg
+            className="h-8 w-8 text-teal-700"
+            viewBox="0 0 32 32"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M16 2C8.268 2 2 8.268 2 16s6.268 14 14 14 14-6.268 14-14S23.732 2 16 2z"
+              fill="currentColor"
+              opacity="0.15"
+            />
+            <path
+              d="M16 6c-1.5 0-3 1-3 3v4h-4c-2 0-3 1.5-3 3s1 3 3 3h4v4c0 2 1.5 3 3 3s3-1 3-3v-4h4c2 0 3-1.5 3-3s-1-3-3-3h-4V9c0-2-1.5-3-3-3z"
+              fill="currentColor"
+            />
+          </svg>
+          <span className="text-lg font-bold text-gray-900">
+            Help <span className="italic text-teal-700">On Call</span>
+          </span>
         </Link>
 
         <ul className="hidden items-center gap-6 md:flex" role="list">

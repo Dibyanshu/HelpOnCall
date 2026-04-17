@@ -15,11 +15,6 @@ Optional variables:
 
 - `accessToken` = paste JWT from login response
 
-Last synced:
-
-- Endpoint definitions synced with README.md on 2026-04-01.
-- Timestamp: 2026-04-01 01:48:21 IST.
-
 ---
 
 ## 1) Health Check
@@ -540,7 +535,7 @@ curl --location '{{baseUrl}}/api/v1/email-validator/verify-code' \
 
 ---
 
-## 5) Create User (Admin or Super Admin)
+## 5) Create User (Super Admin)
 
 ### Request
 
@@ -553,12 +548,8 @@ Body (raw JSON):
 
 ```json
 {
-  "personalEmail": "publisher@helponcall.local",
-  "fullName": "Content Publisher User",
-  "gender": "other",
-  "dateOfBirth": "1990-01-15",
-  "dateOfJoining": "2026-04-01",
-  "staffId": "publisher0426",
+  "email": "publisher@helponcall.local",
+  "name": "Content Publisher User",
   "password": "UserPass123!",
   "role": "content_publisher",
   "isActive": true
@@ -570,13 +561,7 @@ Allowed role values:
 - `content_publisher`
 - `resume_reviewer`
 - `job_poster`
-- `admin`
 - `super_admin`
-
-Notes:
-
-- `admin` callers cannot assign the `super_admin` role.
-- The API also accepts legacy aliases `email` and `name`, but `personalEmail` and `fullName` are the canonical fields.
 
 ### cURL
 
@@ -585,12 +570,8 @@ curl --location '{{baseUrl}}/api/v1/admin/users' \
 --header 'Authorization: Bearer {{accessToken}}' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-  "personalEmail": "publisher@helponcall.local",
-  "fullName": "Content Publisher User",
-  "gender": "other",
-  "dateOfBirth": "1990-01-15",
-  "dateOfJoining": "2026-04-01",
-  "staffId": "publisher0426",
+  "email": "publisher@helponcall.local",
+  "name": "Content Publisher User",
   "password": "UserPass123!",
   "role": "content_publisher",
   "isActive": true
@@ -604,12 +585,8 @@ curl --location '{{baseUrl}}/api/v1/admin/users' \
   "message": "User created successfully",
   "user": {
     "id": 2,
-    "personalEmail": "publisher@helponcall.local",
-    "fullName": "Content Publisher User",
-    "gender": "other",
-    "dateOfBirth": "1990-01-15T00:00:00.000Z",
-    "dateOfJoining": "2026-04-01T00:00:00.000Z",
-    "staffId": "publisher0426",
+    "email": "publisher@helponcall.local",
+    "name": "Content Publisher User",
     "role": "content_publisher",
     "isActive": true,
     "createdAt": "2026-03-12T10:00:00.000Z"
@@ -619,7 +596,7 @@ curl --location '{{baseUrl}}/api/v1/admin/users' \
 
 ---
 
-## 6) List Users (Admin or Super Admin)
+## 6) List Users (Super Admin)
 
 ### Request
 
@@ -641,12 +618,8 @@ curl --location '{{baseUrl}}/api/v1/admin/users' \
   "data": [
     {
       "id": 2,
-      "personalEmail": "publisher@helponcall.local",
-      "fullName": "Content Publisher User",
-      "gender": "other",
-      "dateOfBirth": "1990-01-15T00:00:00.000Z",
-      "dateOfJoining": "2026-04-01T00:00:00.000Z",
-      "staffId": "publisher0426",
+      "email": "publisher@helponcall.local",
+      "name": "Content Publisher User",
       "role": "content_publisher",
       "isActive": true,
       "createdAt": "2026-03-12T10:00:00.000Z",
@@ -658,7 +631,7 @@ curl --location '{{baseUrl}}/api/v1/admin/users' \
 
 ---
 
-## 6.1) List Roles (Admin or Super Admin)
+## 6.1) List Roles (Super Admin)
 
 ### Request
 
@@ -704,7 +677,7 @@ curl --location '{{baseUrl}}/api/v1/admin/roles' \
 
 ---
 
-## 7) Update User Status (Admin or Super Admin)
+## 7) Update User Status (Super Admin)
 
 ### Request
 
@@ -741,8 +714,8 @@ curl --location '{{baseUrl}}/api/v1/admin/users/status' \
   "message": "User status updated successfully",
   "user": {
     "id": 2,
-    "personalEmail": "publisher@helponcall.local",
-    "fullName": "Content Publisher User",
+    "email": "publisher@helponcall.local",
+    "name": "Content Publisher User",
     "role": "content_publisher",
     "createdBy": "super_admin",
     "isActive": false,
@@ -767,9 +740,7 @@ Body (raw JSON, any editable fields):
 
 ```json
 {
-  "fullName": "Updated User Name",
-  "gender": "female",
-  "staffId": "publisher0926",
+  "name": "Updated User Name",
   "role": "job_poster",
   "isActive": true
 }
@@ -782,9 +753,7 @@ curl --location --request PATCH '{{baseUrl}}/api/v1/admin/users/2' \
 --header 'Authorization: Bearer {{accessToken}}' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-  "fullName": "Updated User Name",
-  "gender": "female",
-  "staffId": "publisher0926",
+  "name": "Updated User Name",
   "role": "job_poster",
   "isActive": true
 }'
@@ -797,10 +766,8 @@ curl --location --request PATCH '{{baseUrl}}/api/v1/admin/users/2' \
   "message": "User updated successfully",
   "user": {
     "id": 2,
-    "personalEmail": "publisher@helponcall.local",
-    "fullName": "Updated User Name",
-    "gender": "female",
-    "staffId": "publisher0926",
+    "email": "publisher@helponcall.local",
+    "name": "Updated User Name",
     "role": "job_poster",
     "createdBy": "super_admin",
     "isActive": true,
@@ -1709,80 +1676,6 @@ curl --location '{{baseUrl}}/api/v1/testimonials'
 3. `Create User`
 4. `List Users`
 5. `Change Password`
-
----
-
-## 22) Submit RFQ (Public)
-
-### Request
-
-- Method: `POST`
-- URL: `{{baseUrl}}/api/v1/rfqs`
-- Auth: None
-- Header: `Content-Type: application/json`
-
-Body (raw JSON):
-
-```json
-{
-  "email": "user@example.com",
-  "fullName": "John Doe",
-  "phone": "1234567890",
-  "address": "123 Main St, Toronto",
-  "preferredContact": "email",
-  "serviceSelected": [{"categoryId":1,"serviceId":2}],
-  "startDate": "2024-05-01T10:00:00Z",
-  "durationVal": 2,
-  "durationType": "Week",
-  "selfCare": true,
-  "recipientName": "Jane Doe",
-  "recipientRelation": "Mother"
-}
-```
-
-Notes:
-
-- `preferredContact` allowed values: `email`, `phone`, `any`.
-- `durationType` allowed values: `Day`, `Week`, `Month`.
-- `serviceSelected` is a JSON array of objects, e.g. `[{"categoryId":1,"serviceId":2}]`.
-- `startDate` should be an ISO 8601 date string.
-
-### cURL
-
-```bash
-curl --location '{{baseUrl}}/api/v1/rfqs' \
---header 'Content-Type: application/json' \
---data-raw '{
-  "email": "user@example.com",
-  "fullName": "John Doe",
-  "phone": "1234567890",
-  "address": "123 Main St, Toronto",
-  "preferredContact": "email",
-  "serviceSelected": [{"categoryId":1,"serviceId":2}],
-  "startDate": "2024-05-01T10:00:00Z",
-  "durationVal": 2,
-  "durationType": "Week",
-  "selfCare": true,
-  "recipientName": "Jane Doe",
-  "recipientRelation": "Mother"
-}'
-```
-
-### Success Response (201)
-
-```json
-{
-  "success": true,
-  "message": "RFQ submitted successfully",
-  "data": {
-    "id": 1,
-    "rfqId": "8e4d6574-8f8f-4962-9f65-3a7c3dd67aa1",
-    "status": "new",
-    "createdAt": "2026-03-31T19:35:00.000Z",
-    "updatedAt": "2026-03-31T19:35:00.000Z"
-  }
-}
-```
 
 ---
 

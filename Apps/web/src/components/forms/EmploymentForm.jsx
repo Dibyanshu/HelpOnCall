@@ -64,31 +64,6 @@ export default function EmploymentForm() {
     e.preventDefault();
     setSubmitError('');
 
-    if (!isEmailVerified) {
-      setSubmitError('Please verify your email address before submitting.');
-      return;
-    }
-
-    if (!formData.fullName.trim()) {
-      setSubmitError('Full Name is required.');
-      return;
-    }
-
-    if (!formData.phone.trim()) {
-      setSubmitError('Phone Number is required.');
-      return;
-    }
-
-    if (!validatePhone(formData.phone.trim())) {
-      setSubmitError('Please enter a valid phone number.');
-      return;
-    }
-
-    if (!formData.coverLetter.trim()) {
-      setSubmitError('Cover Letter is required.');
-      return;
-    }
-
     const normalizedSpecializations = normalizeServiceSelections(formData.specializations);
 
     if (normalizedSpecializations.length === 0) {
@@ -127,16 +102,15 @@ export default function EmploymentForm() {
     return !error;
   };
 
-  const fieldStyles = "block w-full rounded-md border-0 py-3.5 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-100 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-700 transition-all duration-200";
-  const emailLikeFieldStyles = "block w-full rounded-md border bg-white py-2 px-3 text-slate-800 placeholder:text-gray-400 focus:outline-none transition-all duration-200 text-sm border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10";
+  const fieldStyles = "block w-full rounded-xl border-0 py-3.5 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-100 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-700 transition-all duration-200";
 
   if (isSubmitted) {
     return (
       <div className="flex items-center justify-center p-4">
         <div className="w-full max-w-md animate-in fade-in zoom-in slide-in-from-bottom-8 duration-700 ease-out flex flex-col items-center bg-white rounded-[40px] p-12 shadow-2xl shadow-slate-200 text-center">
           <div className="relative mb-8">
-            <div className="absolute inset-0 animate-ping rounded-md bg-teal-100 opacity-75" />
-            <div className="relative flex h-24 w-24 items-center justify-center rounded-md bg-teal-50 text-teal-700">
+            <div className="absolute inset-0 animate-ping rounded-full bg-teal-100 opacity-75" />
+            <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-teal-50 text-teal-700">
               <CheckCircle2 size={48} className="animate-bounce" />
             </div>
           </div>
@@ -149,7 +123,7 @@ export default function EmploymentForm() {
               setIsSubmitted(false);
               setFormData(initialFormData);
             }}
-            className="btn-primary w-full"
+            className="w-full rounded-2xl bg-slate-900 px-6 py-4 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:-translate-y-1 active:scale-95 shadow-lg shadow-slate-200"
           >
             Back to Application
           </button>
@@ -161,30 +135,26 @@ export default function EmploymentForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className={`mx-auto w-full h-full space-y-6 rounded-md bg-white p-8 shadow-2xl shadow-slate-200 ring-1 ring-slate-200 transition-all duration-500 lg:p-10 ${isSubmitting ? 'scale-95 opacity-50 pointer-events-none' : 'scale-100 opacity-100'
+      className={`mx-auto w-full max-w-2xl space-y-6 rounded-3xl bg-white p-8 shadow-2xl shadow-slate-200 ring-1 ring-slate-200 transition-all duration-500 lg:p-10 ${isSubmitting ? 'scale-95 opacity-50 pointer-events-none' : 'scale-100 opacity-100'
         }`}
       aria-label="Employment application form"
     >
-      <div className="space-y-1.5 mb-6">
+      <div className="space-y-1.5 mb-3">
         <h3 className="text-xl font-semibold text-slate-900">Career Application</h3>
       </div>
 
       <EmailAddressValidation
         value={formData.email}
-        onChange={(val) => {
-                setFormData(prev => ({ ...prev, email: val }));
-                if (errors.email) setErrors(prev => ({ ...prev, email: '' }));
-              }}
+        onChange={(val) => setFormData(prev => ({ ...prev, email: val }))}
         onVerifiedStatusChange={setIsEmailVerified}
         isVerified={isEmailVerified}
-        verificationModule="employee"
       />
 
       <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
         <div className="space-y-1.5">
           <label htmlFor="fullName" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
             <User className="h-3.5 w-3.5 text-teal-700/70" />
-            Full Name<span className="text-rose-500">*</span>
+            Full Name
           </label>
           <input
             id="fullName"
@@ -194,7 +164,7 @@ export default function EmploymentForm() {
             value={formData.fullName}
             onChange={handleChange}
             required
-            className={`${emailLikeFieldStyles} ${!isEmailVerified ? 'opacity-75 bg-slate-50 cursor-not-allowed text-slate-500' : ''}`}
+            className={`${fieldStyles} ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : ''}`}
             placeholder="John Doe"
           />
         </div>
@@ -202,7 +172,7 @@ export default function EmploymentForm() {
         <div className="space-y-1.5">
           <label htmlFor="phone" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
             <Phone className="h-3.5 w-3.5 text-teal-700/70" />
-            Phone Number<span className="text-rose-500">*</span>
+            Phone Number
           </label>
           <input
             id="phone"
@@ -217,7 +187,7 @@ export default function EmploymentForm() {
             onBlur={(e) => {
               if (e.target.value) validatePhone(e.target.value);
             }}
-            className={`${emailLikeFieldStyles} ${!isEmailVerified ? 'opacity-75 bg-slate-50 cursor-not-allowed text-slate-500' : ''} ${phoneError ? 'border-rose-400 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/10 bg-rose-50/20' : ''}`}
+            className={`${fieldStyles} ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : ''} ${phoneError ? 'ring-rose-500 border-rose-500 focus:ring-rose-500 text-rose-900 bg-rose-50/50' : ''}`}
             placeholder="+1 (555) 000-0000"
           />
           {phoneError && (
@@ -232,8 +202,6 @@ export default function EmploymentForm() {
         icon={Briefcase}
         placeholder="Select Specializations"
         value={formData.specializations}
-        required
-        disabled={!isEmailVerified}
         onChange={(next) => {
           setFormData((prev) => ({
             ...prev,
@@ -246,7 +214,7 @@ export default function EmploymentForm() {
       <div className="space-y-1.5">
         <label htmlFor="coverLetter" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
           <Briefcase className="h-3.5 w-3.5 text-teal-700/70" />
-          Why are you a good fit for this position at Help On Call ?<span className="text-rose-500">*</span>
+          Cover Letter
         </label>
         <textarea
           id="coverLetter"
@@ -254,9 +222,9 @@ export default function EmploymentForm() {
           disabled={!isEmailVerified}
           value={formData.coverLetter}
           onChange={handleChange}
-          rows={6}
+          rows={4}
           required
-          className={`${fieldStyles} min-h-[180px] resize-none ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : ''}`}
+          className={`${fieldStyles} resize-none ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : ''}`}
           placeholder="Why are you a good fit for Help On Call?"
         />
       </div>
@@ -264,7 +232,7 @@ export default function EmploymentForm() {
       <div className="space-y-1.5">
         <label htmlFor="resume" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
           <Upload className="h-3.5 w-3.5 text-teal-700/70" />
-          Upload Resume<span className="text-rose-500">*</span>
+          Upload Resume
         </label>
         <div className="relative group">
           <input
@@ -277,7 +245,7 @@ export default function EmploymentForm() {
             required={!formData.resume}
           />
           <div className={`
-            flex items-center justify-center rounded-md border-2 border-dashed px-4 py-4 transition-all duration-300
+            flex items-center justify-center rounded-2xl border-2 border-dashed px-4 py-4 transition-all duration-300
             ${!isEmailVerified ? 'border-slate-200 bg-slate-50/50 opacity-50' :
               formData.resume
                 ? 'border-teal-700 bg-teal-50/30'
@@ -286,7 +254,7 @@ export default function EmploymentForm() {
             {formData.resume ? (
               <div className="flex w-full items-center justify-between gap-4 animate-in fade-in duration-300">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-teal-100 text-teal-700 shadow-inner">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-100 text-teal-700 shadow-inner">
                     <CheckCircle2 size={18} />
                   </div>
                   <div className="min-w-0">
@@ -304,7 +272,7 @@ export default function EmploymentForm() {
                     e.stopPropagation();
                     setFormData((prev) => ({ ...prev, resume: null }));
                   }}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-rose-50 text-rose-600 transition-colors hover:bg-rose-100 focus:outline-none"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-rose-50 text-rose-600 transition-colors hover:bg-rose-100 focus:outline-none"
                   title="Remove file"
                 >
                   <X size={14} />
@@ -312,27 +280,27 @@ export default function EmploymentForm() {
               </div>
             ) : (
               <div className="flex items-center gap-4">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white text-slate-400 shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:text-teal-500">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-slate-400 shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:text-teal-500">
                   <Upload size={18} />
                 </div>
                 <div className="text-left">
                   <span className="block text-sm font-bold text-slate-700 leading-none mb-1">
-                    Select your resume here
+                    Click or drag resume here
                   </span>
                   <p className="text-[11px] text-slate-400 leading-none">
-                    PDF or DOCX (Max 2MB)
+                    PDF or DOCX (Max 10MB)
                   </p>
                 </div>
               </div>
             )}
           </div>
           {/* Subtle glow effect on group hover */}
-          <div className="absolute -inset-1 -z-10 rounded-md bg-gradient-to-r from-teal-700 to-emerald-500 opacity-0 blur transition-opacity duration-300 group-hover:opacity-10" />
+          <div className="absolute -inset-1 -z-10 rounded-2xl bg-gradient-to-r from-teal-700 to-emerald-500 opacity-0 blur transition-opacity duration-300 group-hover:opacity-10" />
         </div>
       </div>
 
       {submitError ? (
-        <div className="rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
           {submitError}
         </div>
       ) : null}
