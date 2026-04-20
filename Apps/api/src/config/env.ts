@@ -46,6 +46,12 @@ const envSchema = z.object({
   SQLITE_DB_PATH: z.string().default("./db/database.sqlite"),
   TURSO_DATABASE_URL: optionalUrlFromEnv,
   TURSO_AUTH_TOKEN: optionalNonEmptyStringFromEnv,
+  // CloudWays managed MySQL — required only when APP_ENV=production
+  MYSQL_HOST: optionalNonEmptyStringFromEnv,
+  MYSQL_PORT: z.coerce.number().int().positive().default(3306),
+  MYSQL_USER: optionalNonEmptyStringFromEnv,
+  MYSQL_PASSWORD: optionalNonEmptyStringFromEnv,
+  MYSQL_DATABASE: optionalNonEmptyStringFromEnv,
   DB_HOST: optionalNonEmptyStringFromEnv,
   DB_PORT: z.preprocess((value) => {
     if (value === undefined || value === null || value === "") {
@@ -74,6 +80,8 @@ const envSchema = z.object({
   EMPLOYMENT_RESUME_UPLOAD_DIR: z.string().default("./uploads/resumes"),
   EMPLOYMENT_RESUME_MAX_FILE_SIZE_MB: z.coerce.number().int().positive().default(10)
 }).superRefine((data, ctx) => {
+
+  // --- STAGING and TURSO checks ---
   const usesTursoInStaging = data.APP_ENV === "staging";
   const usesTursoInProduction = data.APP_ENV === "production" && data.DB_PROVIDER === "turso";
   const usesCloudwaysDbInProduction = data.APP_ENV === "production" && data.DB_PROVIDER === "cloudways";
@@ -91,11 +99,47 @@ const envSchema = z.object({
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["TURSO_AUTH_TOKEN"],
-        message: "TURSO_AUTH_TOKEN is required for staging and production when DB_PROVIDER=turso"
+        message: "TURSO_AUTH_TOKEN is required when APP_ENV is staging or production with DB_PROVIDER=turso"
       });
     }
   }
 
+  // --- PRODUCTION checks ---
+  if (data.APP_ENV === "production") {
+    if (!data.MYSQL_HOST) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["MYSQL_HOST"],
+        message: "MYSQL_HOST is required when APP_ENV is production"
+      });
+    }
+
+    if (!data.MYSQL_USER) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["MYSQL_USER"],
+        message: "MYSQL_USER is required when APP_ENV is production"
+      });
+    }
+
+    if (!data.MYSQL_PASSWORD) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["MYSQL_PASSWORD"],
+        message: "MYSQL_PASSWORD is required when APP_ENV is production"
+      });
+    }
+
+    if (!data.MYSQL_DATABASE) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["MYSQL_DATABASE"],
+        message: "MYSQL_DATABASE is required when APP_ENV is production"
+      });
+    }
+  }
+
+  // --- CLOUDWAYS DB checks for production ---
   if (usesCloudwaysDbInProduction) {
     if (!data.DB_HOST) {
       ctx.addIssue({
@@ -138,6 +182,7 @@ const envSchema = z.object({
     }
   }
 
+  // --- MAIL checks ---
   if (!data.MAIL_ENABLED) {
     return;
   }

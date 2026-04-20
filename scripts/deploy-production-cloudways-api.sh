@@ -50,6 +50,41 @@ fi
 echo "[deploy-api] syncing branch to origin/$DEPLOY_BRANCH"
 git reset --hard "origin/$DEPLOY_BRANCH"
 
+# ---------------------------------------------------------------------------
+# Write MySQL connection vars into Apps/api/.env (production only).
+# Only updates the five MySQL_* keys; all other .env content is preserved.
+# The .env file must already exist on the server with the baseline vars
+# (APP_ENV, PORT, HOST, JWT_SECRET, SUPER_ADMIN_*, MAIL_*, etc.).
+# ---------------------------------------------------------------------------
+if [[ -n "${MYSQL_HOST:-}" ]]; then
+  ENV_FILE="$APP_PATH/Apps/api/.env"
+
+  if [[ ! -f "$ENV_FILE" ]]; then
+    echo "[deploy-api] WARNING: $ENV_FILE not found; creating a minimal stub." >&2
+    echo "APP_ENV=production" > "$ENV_FILE"
+  fi
+
+  # Helper: update an existing KEY=value line or append it.
+  update_env_var() {
+    local key="$1"
+    local value="$2"
+    local file="$3"
+    if grep -q "^${key}=" "$file" 2>/dev/null; then
+      sed -i "s|^${key}=.*|${key}=${value}|" "$file"
+    else
+      echo "${key}=${value}" >> "$file"
+    fi
+  }
+
+  update_env_var MYSQL_HOST     "$MYSQL_HOST"              "$ENV_FILE"
+  update_env_var MYSQL_PORT     "${MYSQL_PORT:-3306}"      "$ENV_FILE"
+  update_env_var MYSQL_USER     "$MYSQL_USER"              "$ENV_FILE"
+  update_env_var MYSQL_PASSWORD "$MYSQL_PASSWORD"          "$ENV_FILE"
+  update_env_var MYSQL_DATABASE "$MYSQL_DATABASE"          "$ENV_FILE"
+
+  echo "[deploy-api] MySQL connection vars written to $ENV_FILE"
+fi
+
 cd Apps/api
 npm ci
 npm run build

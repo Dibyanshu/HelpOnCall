@@ -32,7 +32,7 @@ jobs:
       - name: Install and build Web
         working-directory: Apps/web
         env:
-          VITE_API_BASE_URL: https://phpstack-1608575-6325198.cloudwaysapps.com
+          VITE_API_BASE_URL: ${{ secrets.PRODUCTION_API_BASE_URL }}
           VITE_BASE_PATH: /
         run: |
           npm ci
@@ -57,6 +57,11 @@ jobs:
           API_CLOUDWAYS_APP_PATH: ${{ secrets.API_CLOUDWAYS_APP_PATH }}
           API_CLOUDWAYS_PM2_PROCESS_NAME: ${{ secrets.API_CLOUDWAYS_PM2_PROCESS_NAME }}
           API_HEALTHCHECK_URL: ${{ secrets.API_HEALTHCHECK_URL }}
+          MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+          MYSQL_PORT: ${{ secrets.MYSQL_PORT }}
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
         run: |
           set -euo pipefail
           missing=()
@@ -68,7 +73,12 @@ jobs:
             API_CLOUDWAYS_SSH_USER \
             API_CLOUDWAYS_APP_PATH \
             API_CLOUDWAYS_PM2_PROCESS_NAME \
-            API_HEALTHCHECK_URL; do
+            API_HEALTHCHECK_URL \
+            MYSQL_HOST \
+            MYSQL_PORT \
+            MYSQL_USER \
+            MYSQL_PASSWORD \
+            MYSQL_DATABASE; do
             if [[ -z "${!var_name:-}" ]]; then
               missing+=("$var_name")
             fi
@@ -145,10 +155,15 @@ jobs:
           APP_PATH: ${{ secrets.API_CLOUDWAYS_APP_PATH }}
           DEPLOY_BRANCH: production
           API_PROCESS_NAME: ${{ secrets.API_CLOUDWAYS_PM2_PROCESS_NAME }}
+          MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+          MYSQL_PORT: ${{ secrets.MYSQL_PORT }}
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
         run: |
           set -euo pipefail
           ssh -i ~/.ssh/cloudways_deploy_key -o IdentitiesOnly=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
-            "APP_PATH='$APP_PATH' DEPLOY_BRANCH='$DEPLOY_BRANCH' API_PROCESS_NAME='$API_PROCESS_NAME' bash -s" \
+            "APP_PATH='$APP_PATH' DEPLOY_BRANCH='$DEPLOY_BRANCH' API_PROCESS_NAME='$API_PROCESS_NAME' MYSQL_HOST='$MYSQL_HOST' MYSQL_PORT='$MYSQL_PORT' MYSQL_USER='$MYSQL_USER' MYSQL_PASSWORD='$MYSQL_PASSWORD' MYSQL_DATABASE='$MYSQL_DATABASE' bash -s" \
             < scripts/deploy-production-cloudways-api.sh
 
       - name: Health check API
@@ -199,6 +214,7 @@ jobs:
           WEB_CLOUDWAYS_APP_PATH: ${{ secrets.WEB_CLOUDWAYS_APP_PATH }}
           WEB_CLOUDWAYS_PUBLIC_HTML_PATH: ${{ secrets.WEB_CLOUDWAYS_PUBLIC_HTML_PATH }}
           WEB_HEALTHCHECK_URL: ${{ secrets.WEB_HEALTHCHECK_URL }}
+          PRODUCTION_API_BASE_URL: ${{ secrets.PRODUCTION_API_BASE_URL }}
         run: |
           set -euo pipefail
           missing=()
@@ -210,7 +226,8 @@ jobs:
             WEB_CLOUDWAYS_SSH_USER \
             WEB_CLOUDWAYS_APP_PATH \
             WEB_CLOUDWAYS_PUBLIC_HTML_PATH \
-            WEB_HEALTHCHECK_URL; do
+            WEB_HEALTHCHECK_URL \
+            PRODUCTION_API_BASE_URL; do
             if [[ -z "${!var_name:-}" ]]; then
               missing+=("$var_name")
             fi
@@ -287,7 +304,7 @@ jobs:
           APP_PATH: ${{ secrets.WEB_CLOUDWAYS_APP_PATH }}
           DEPLOY_BRANCH: production
           PUBLIC_HTML_PATH: ${{ secrets.WEB_CLOUDWAYS_PUBLIC_HTML_PATH }}
-          WEB_API_BASE_URL: https://phpstack-1608575-6325198.cloudwaysapps.com
+          WEB_API_BASE_URL: ${{ secrets.PRODUCTION_API_BASE_URL }}
           WEB_BASE_PATH: /
         run: |
           set -euo pipefail

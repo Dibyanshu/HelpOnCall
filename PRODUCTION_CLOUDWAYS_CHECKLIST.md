@@ -34,17 +34,27 @@ Web target app (`ytfmrwppdt`):
 
 Frontend build target:
 
-1. PRODUCTION_WEB_API_BASE_URL
+1. PRODUCTION_API_BASE_URL
+2. MYSQL_HOST
+3. MYSQL_PORT
+4. MYSQL_USER
+5. MYSQL_PASSWORD
+6. MYSQL_DATABASE
 
 ## C. Suggested Secret Values for This Repository
 
 1. API_CLOUDWAYS_PM2_PROCESS_NAME=help-on-call-api
 2. API_HEALTHCHECK_URL=https://<api-cloudways-internal-url>/api/v1/health
 3. WEB_HEALTHCHECK_URL=https://<web-cloudways-internal-url>/
-4. PRODUCTION_WEB_API_BASE_URL=https://<api-cloudways-internal-url>
+4. PRODUCTION_API_BASE_URL=https://<api-cloudways-internal-url>
 5. API_CLOUDWAYS_APP_PATH=<cloudways path containing Apps/api and Apps/web for api app>
 6. WEB_CLOUDWAYS_APP_PATH=<cloudways path containing Apps/api and Apps/web for web app>
 7. WEB_CLOUDWAYS_PUBLIC_HTML_PATH=<cloudways web app public_html path>
+8. MYSQL_HOST=1608575.cloudwaysapps.com
+9. MYSQL_PORT=3306
+10. MYSQL_USER=xjbdxtgyjr
+11. MYSQL_DATABASE=xjbdxtgyjr
+12. MYSQL_PASSWORD=<set in GitHub production environment secret; do not commit in repo>
 
 ## D. Cloudways Server Checks
 
@@ -103,7 +113,7 @@ Optional operational settings:
 ## F. Runtime Expectations (Split Apps)
 
 1. Web and API are deployed to separate Cloudways applications.
-2. Frontend calls API using full URL from `PRODUCTION_WEB_API_BASE_URL`.
+2. Frontend calls API using full URL from `PRODUCTION_API_BASE_URL`.
 3. No same-host `/api` reverse proxy is required for web-to-api traffic.
 4. API CORS must allow requests from the web app internal URL.
 
@@ -210,6 +220,12 @@ ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174 "mkd
 4. Application mapping notes:
 	- Web: ytfmrwppdt
 	- API: xjbdxtgyjr
+5. Confirmed MySQL access values:
+	- MYSQL_HOST: 1608575.cloudwaysapps.com
+	- MYSQL_PORT: 3306
+	- MYSQL_USER: xjbdxtgyjr
+	- MYSQL_DATABASE: xjbdxtgyjr
+	- MYSQL_PASSWORD: stored in GitHub Environment secret only
 
 ## N. Split Deployment Scripts Used by Workflow
 
