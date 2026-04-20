@@ -39,6 +39,7 @@ const envBoolean = z.preprocess((value) => {
 
 const envSchema = z.object({
   APP_ENV: z.enum(["development", "staging", "production"]).default("development"),
+  DB_PROVIDER: z.enum(["turso", "cloudways"]).default("turso"),
   PORT: z.coerce.number().default(3000),
   HOST: z.string().default("0.0.0.0"),
   JWT_SECRET: z.string().min(16),
@@ -51,6 +52,18 @@ const envSchema = z.object({
   MYSQL_USER: optionalNonEmptyStringFromEnv,
   MYSQL_PASSWORD: optionalNonEmptyStringFromEnv,
   MYSQL_DATABASE: optionalNonEmptyStringFromEnv,
+  DB_HOST: optionalNonEmptyStringFromEnv,
+  DB_PORT: z.preprocess((value) => {
+    if (value === undefined || value === null || value === "") {
+      return undefined;
+    }
+
+    return Number(value);
+  }, z.number().int().positive().optional()),
+  DB_NAME: optionalNonEmptyStringFromEnv,
+  DB_USER: optionalNonEmptyStringFromEnv,
+  DB_PASSWORD: optionalNonEmptyStringFromEnv,
+  DB_SSL: envBoolean.default(false),
   SUPER_ADMIN_EMAIL: z.string().email().default("superadmin@helponcall.local"),
   SUPER_ADMIN_PASSWORD: z.string().min(8).default("ChangeMe123!"),
   MAIL_ENABLED: envBoolean.default(false),
@@ -63,15 +76,22 @@ const envSchema = z.object({
   MAIL_REPLY_TO: z.string().optional(),
   SMTP_CONNECTION_TIMEOUT_MS: z.coerce.number().int().positive().default(10000),
   SMTP_GREETING_TIMEOUT_MS: z.coerce.number().int().positive().default(10000),
+  CORS_ALLOWED_ORIGINS: optionalNonEmptyStringFromEnv,
   EMPLOYMENT_RESUME_UPLOAD_DIR: z.string().default("./uploads/resumes"),
   EMPLOYMENT_RESUME_MAX_FILE_SIZE_MB: z.coerce.number().int().positive().default(10)
 }).superRefine((data, ctx) => {
   if (data.APP_ENV === "staging") {
+  const usesTursoInStaging = data.APP_ENV === "staging";
+  const usesTursoInProduction = data.APP_ENV === "production" && data.DB_PROVIDER === "turso";
+  const usesCloudwaysDbInProduction = data.APP_ENV === "production" && data.DB_PROVIDER === "cloudways";
+
+  if (usesTursoInStaging || usesTursoInProduction) {
     if (!data.TURSO_DATABASE_URL) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["TURSO_DATABASE_URL"],
         message: "TURSO_DATABASE_URL is required when APP_ENV is staging"
+        message: "TURSO_DATABASE_URL is required for staging and production when DB_PROVIDER=turso"
       });
     }
 
@@ -114,6 +134,49 @@ const envSchema = z.object({
         code: z.ZodIssueCode.custom,
         path: ["MYSQL_DATABASE"],
         message: "MYSQL_DATABASE is required when APP_ENV is production"
+        message: "TURSO_AUTH_TOKEN is required for staging and production when DB_PROVIDER=turso"
+      });
+    }
+  }
+
+  if (usesCloudwaysDbInProduction) {
+    if (!data.DB_HOST) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["DB_HOST"],
+        message: "DB_HOST is required when APP_ENV=production and DB_PROVIDER=cloudways"
+      });
+    }
+
+    if (!data.DB_PORT) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["DB_PORT"],
+        message: "DB_PORT is required when APP_ENV=production and DB_PROVIDER=cloudways"
+      });
+    }
+
+    if (!data.DB_NAME) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["DB_NAME"],
+        message: "DB_NAME is required when APP_ENV=production and DB_PROVIDER=cloudways"
+      });
+    }
+
+    if (!data.DB_USER) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["DB_USER"],
+        message: "DB_USER is required when APP_ENV=production and DB_PROVIDER=cloudways"
+      });
+    }
+
+    if (!data.DB_PASSWORD) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["DB_PASSWORD"],
+        message: "DB_PASSWORD is required when APP_ENV=production and DB_PROVIDER=cloudways"
       });
     }
   }

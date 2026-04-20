@@ -1,5 +1,3 @@
-import { seedInitialEmailTemplates } from "./db/seed.js";
-
 let appPromise: Promise<any> | null = null;
 
 async function getApp() {
@@ -15,7 +13,6 @@ async function getApp() {
         await seedSuperAdmin();
         await seedInitialServices();
         await seedInitialTestimonials();
-        await seedInitialEmailTemplates();
       } catch (error) {
         // Avoid crashing the whole function on startup; log details for Vercel logs.
         app.log.error({ error }, "Startup bootstrap/seed failed in serverless mode");
