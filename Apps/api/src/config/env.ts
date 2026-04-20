@@ -80,7 +80,8 @@ const envSchema = z.object({
   EMPLOYMENT_RESUME_UPLOAD_DIR: z.string().default("./uploads/resumes"),
   EMPLOYMENT_RESUME_MAX_FILE_SIZE_MB: z.coerce.number().int().positive().default(10)
 }).superRefine((data, ctx) => {
-  if (data.APP_ENV === "staging") {
+
+  // --- STAGING and TURSO checks ---
   const usesTursoInStaging = data.APP_ENV === "staging";
   const usesTursoInProduction = data.APP_ENV === "production" && data.DB_PROVIDER === "turso";
   const usesCloudwaysDbInProduction = data.APP_ENV === "production" && data.DB_PROVIDER === "cloudways";
@@ -90,7 +91,6 @@ const envSchema = z.object({
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["TURSO_DATABASE_URL"],
-        message: "TURSO_DATABASE_URL is required when APP_ENV is staging"
         message: "TURSO_DATABASE_URL is required for staging and production when DB_PROVIDER=turso"
       });
     }
@@ -99,11 +99,12 @@ const envSchema = z.object({
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["TURSO_AUTH_TOKEN"],
-        message: "TURSO_AUTH_TOKEN is required when APP_ENV is staging"
+        message: "TURSO_AUTH_TOKEN is required when APP_ENV is staging or production with DB_PROVIDER=turso"
       });
     }
   }
 
+  // --- PRODUCTION checks ---
   if (data.APP_ENV === "production") {
     if (!data.MYSQL_HOST) {
       ctx.addIssue({
@@ -134,11 +135,11 @@ const envSchema = z.object({
         code: z.ZodIssueCode.custom,
         path: ["MYSQL_DATABASE"],
         message: "MYSQL_DATABASE is required when APP_ENV is production"
-        message: "TURSO_AUTH_TOKEN is required for staging and production when DB_PROVIDER=turso"
       });
     }
   }
 
+  // --- CLOUDWAYS DB checks for production ---
   if (usesCloudwaysDbInProduction) {
     if (!data.DB_HOST) {
       ctx.addIssue({
@@ -181,6 +182,7 @@ const envSchema = z.object({
     }
   }
 
+  // --- MAIL checks ---
   if (!data.MAIL_ENABLED) {
     return;
   }
