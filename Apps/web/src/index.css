@@ -331,6 +331,10 @@ body {
     & tbody td[colspan] {
       @apply py-10 text-center text-slate-500 italic;
     }
+
+    & tbody td:nth-child(1) span.block {
+      display: none!important;
+    }
   }
 }
 

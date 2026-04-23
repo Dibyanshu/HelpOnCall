@@ -236,7 +236,7 @@ export default function AdminLayout() {
       </aside>
       {/* MAIN CONTENT (Outlet) */}
       <main className={`flex-1 ${isSidebarCollapsed ? 'xl:ml-20' : 'xl:ml-64'} min-h-screen overflow-y-auto custom-scrollbar pt-20 transition-all duration-300`}>
-        <div className="mx-auto space-y-6 p-1">
+        <div className="mx-auto space-y-1 p-1">
           <Outlet />
         </div>
       </main>

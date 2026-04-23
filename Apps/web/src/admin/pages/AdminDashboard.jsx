@@ -214,7 +214,7 @@ export default function AdminDashboard() {
     <>
       {/* Overview Stats Grid */}
       <div className="bg-white rounded-md border border-slate-100/50 shadow-sm p-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-y-8 divide-x divide-slate-50">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-y-1 divide-x divide-slate-50">
           {[ 
             { label: 'Employees', value: '50' },
             { label: 'Customers', value: '258' },
@@ -233,7 +233,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Line Chart + Donut Grid */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-1">
         <div className="lg:col-span-2 bg-white rounded-md border border-slate-100/50 shadow-sm p-8">
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-base font-bold font-primary text-slate-900 tracking-tight">Break-even Chart</h3>
@@ -318,7 +318,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Bar Chart + Subscription Grid */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-1">
         <div className="lg:col-span-2 bg-white rounded-md border border-slate-100/50 shadow-sm p-8">
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-base font-primary font-bold text-slate-900 tracking-tight">Customer Metrics</h3>
@@ -434,7 +434,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Footer Grid Row */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-1">
         <div className="bg-white rounded-md border border-slate-100/50 shadow-sm p-8 relative overflow-hidden flex flex-col min-h-[400px]">
           <AnimatePresence mode="wait">
             {!selectedUser ? (
