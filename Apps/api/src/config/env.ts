@@ -46,12 +46,6 @@ const envSchema = z.object({
   SQLITE_DB_PATH: z.string().default("./db/database.sqlite"),
   TURSO_DATABASE_URL: optionalUrlFromEnv,
   TURSO_AUTH_TOKEN: optionalNonEmptyStringFromEnv,
-  // CloudWays managed MySQL — required only when APP_ENV=production
-  MYSQL_HOST: optionalNonEmptyStringFromEnv,
-  MYSQL_PORT: z.coerce.number().int().positive().default(3306),
-  MYSQL_USER: optionalNonEmptyStringFromEnv,
-  MYSQL_PASSWORD: optionalNonEmptyStringFromEnv,
-  MYSQL_DATABASE: optionalNonEmptyStringFromEnv,
   DB_HOST: optionalNonEmptyStringFromEnv,
   DB_PORT: z.preprocess((value) => {
     if (value === undefined || value === null || value === "") {
@@ -64,6 +58,12 @@ const envSchema = z.object({
   DB_USER: optionalNonEmptyStringFromEnv,
   DB_PASSWORD: optionalNonEmptyStringFromEnv,
   DB_SSL: envBoolean.default(false),
+  // CloudWays managed MySQL — required only when APP_ENV=production
+  MYSQL_HOST: optionalNonEmptyStringFromEnv,
+  MYSQL_PORT: z.coerce.number().int().positive().default(3306),
+  MYSQL_USER: optionalNonEmptyStringFromEnv,
+  MYSQL_PASSWORD: optionalNonEmptyStringFromEnv,
+  MYSQL_DATABASE: optionalNonEmptyStringFromEnv,
   SUPER_ADMIN_EMAIL: z.string().email().default("superadmin@helponcall.local"),
   SUPER_ADMIN_PASSWORD: z.string().min(8).default("ChangeMe123!"),
   MAIL_ENABLED: envBoolean.default(false),

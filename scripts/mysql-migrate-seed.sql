@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS `employment` (
   `full_name`       TEXT         NOT NULL,
   `email_address`   VARCHAR(255) NOT NULL,
   `phone_number`    VARCHAR(50)  NOT NULL,
-  `specializations` TEXT         NOT NULL DEFAULT '[]',
+  `specializations` TEXT         NOT NULL,
   `cover_letter`    TEXT         DEFAULT NULL,
   `resume_file_name` TEXT        NOT NULL,
   `status`          ENUM('new','approve','reject') NOT NULL DEFAULT 'new',
