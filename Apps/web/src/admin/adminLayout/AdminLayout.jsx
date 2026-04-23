@@ -83,13 +83,29 @@ export default function AdminLayout() {
           >
             {isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
-          <div className="h-11 w-11 rounded-md border border-slate-200 bg-white shadow-sm flex items-center justify-center overflow-hidden shrink-0">
-            <img
+          <div className="h-11 w-11 bg-white flex items-center justify-center overflow-hidden shrink-0">
+            {/* <img
               src={helpOnCallLogo}
               alt="Help On Call"
               className="h-8 w-auto object-contain"
               loading="eager"
+            /> */}
+            <svg
+            className="h-8 w-8 text-teal-700"
+            viewBox="0 0 32 32"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M16 2C8.268 2 2 8.268 2 16s6.268 14 14 14 14-6.268 14-14S23.732 2 16 2z"
+              fill="currentColor"
+              opacity="0.15"
             />
+            <path
+              d="M16 6c-1.5 0-3 1-3 3v4h-4c-2 0-3 1.5-3 3s1 3 3 3h4v4c0 2 1.5 3 3 3s3-1 3-3v-4h4c2 0 3-1.5 3-3s-1-3-3-3h-4V9c0-2-1.5-3-3-3z"
+              fill="currentColor"
+            />
+          </svg>
           </div>
           <div className="min-w-0 leading-tight">
             <p className="text-[15px] font-semibold tracking-tight text-slate-900 truncate">Help On Call (Admin)</p>
