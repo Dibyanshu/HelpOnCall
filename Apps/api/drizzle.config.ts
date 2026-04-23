@@ -31,5 +31,3 @@ export default appEnv === "production"
       verbose: true,
       strict: true
     });
-const dbUrl = process.env.TURSO_DATABASE_URL ?? process.env.SQLITE_DB_PATH ?? "./db/database.sqlite";
-const tursoAuthToken = process.env.TURSO_AUTH_TOKEN;
