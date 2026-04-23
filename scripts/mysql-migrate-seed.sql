@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS `services` (
 
 CREATE TABLE IF NOT EXISTS `employment` (
   `id`              INT          NOT NULL AUTO_INCREMENT,
-  `emp_id`          VARCHAR(36)  NOT NULL DEFAULT (UUID()),
+  `emp_id`          VARCHAR(36)  NOT NULL,
   `full_name`       TEXT         NOT NULL,
   `email_address`   VARCHAR(255) NOT NULL,
   `phone_number`    VARCHAR(50)  NOT NULL,

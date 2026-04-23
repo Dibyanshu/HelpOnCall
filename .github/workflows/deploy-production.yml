@@ -43,6 +43,7 @@ jobs:
     needs: build-and-validate
     runs-on: ubuntu-latest
     environment: production
+    if: always()
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -197,7 +198,6 @@ jobs:
     name: Deploy Web App
     needs:
       - build-and-validate
-      - deploy-api
     runs-on: ubuntu-latest
     environment: production
     steps:

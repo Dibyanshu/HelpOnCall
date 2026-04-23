@@ -80,12 +80,18 @@ const envSchema = z.object({
   EMPLOYMENT_RESUME_UPLOAD_DIR: z.string().default("./uploads/resumes"),
   EMPLOYMENT_RESUME_MAX_FILE_SIZE_MB: z.coerce.number().int().positive().default(10)
 }).superRefine((data, ctx) => {
-  if (data.APP_ENV === "staging") {
+
+  // --- STAGING and TURSO checks ---
+  const usesTursoInStaging = data.APP_ENV === "staging";
+  const usesTursoInProduction = data.APP_ENV === "production" && data.DB_PROVIDER === "turso";
+  const usesCloudwaysDbInProduction = data.APP_ENV === "production" && data.DB_PROVIDER === "cloudways";
+
+  if (usesTursoInStaging || usesTursoInProduction) {
     if (!data.TURSO_DATABASE_URL) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["TURSO_DATABASE_URL"],
-        message: "TURSO_DATABASE_URL is required when APP_ENV is staging"
+        message: "TURSO_DATABASE_URL is required for staging and production when DB_PROVIDER=turso"
       });
     }
 
@@ -93,11 +99,12 @@ const envSchema = z.object({
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["TURSO_AUTH_TOKEN"],
-        message: "TURSO_AUTH_TOKEN is required when APP_ENV is staging"
+        message: "TURSO_AUTH_TOKEN is required when APP_ENV is staging or production with DB_PROVIDER=turso"
       });
     }
   }
 
+  // --- PRODUCTION checks ---
   if (data.APP_ENV === "production") {
     if (!data.MYSQL_HOST) {
       ctx.addIssue({
@@ -132,6 +139,50 @@ const envSchema = z.object({
     }
   }
 
+  // --- CLOUDWAYS DB checks for production ---
+  if (usesCloudwaysDbInProduction) {
+    if (!data.DB_HOST) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["DB_HOST"],
+        message: "DB_HOST is required when APP_ENV=production and DB_PROVIDER=cloudways"
+      });
+    }
+
+    if (!data.DB_PORT) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["DB_PORT"],
+        message: "DB_PORT is required when APP_ENV=production and DB_PROVIDER=cloudways"
+      });
+    }
+
+    if (!data.DB_NAME) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["DB_NAME"],
+        message: "DB_NAME is required when APP_ENV=production and DB_PROVIDER=cloudways"
+      });
+    }
+
+    if (!data.DB_USER) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["DB_USER"],
+        message: "DB_USER is required when APP_ENV=production and DB_PROVIDER=cloudways"
+      });
+    }
+
+    if (!data.DB_PASSWORD) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["DB_PASSWORD"],
+        message: "DB_PASSWORD is required when APP_ENV=production and DB_PROVIDER=cloudways"
+      });
+    }
+  }
+
+  // --- MAIL checks ---
   if (!data.MAIL_ENABLED) {
     return;
   }
