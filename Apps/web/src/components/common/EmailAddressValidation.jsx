@@ -3,6 +3,8 @@ import { Mail, Send, KeyRound, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useToast } from './Toast';
 import { validateEmail as utilValidateEmail } from '../../utils/validation';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 /**
  * Common standalone Email Address Validation component with OTP flow.
  * Supports: 
@@ -24,6 +26,8 @@ export default function EmailAddressValidation({
   onChange, 
   onVerifiedStatusChange, 
   isVerified: externalVerified,
+  verificationModule = 'employee',
+  verificationData = {},
   disabled = false,
   className = ""
 }) {
@@ -31,6 +35,8 @@ export default function EmailAddressValidation({
   const [internalEmailVerified, setInternalEmailVerified] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [isRequestingCode, setIsRequestingCode] = useState(false);
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false);
   const toast = useToast();
 
   const isEmailVerified = externalVerified !== undefined ? externalVerified : internalEmailVerified;
@@ -42,25 +48,84 @@ export default function EmailAddressValidation({
     }
   }, [externalVerified]);
 
-  const handleSendVerification = () => {
+  const readApiError = async (response, fallback) => {
+    const body = await response.json().catch(() => ({}));
+    if (body && typeof body === 'object' && typeof body.message === 'string' && body.message.trim()) {
+      return body.message;
+    }
+    return fallback;
+  };
+
+  const handleSendVerification = async () => {
     const error = utilValidateEmail(value);
     if (error) {
       setEmailError(error);
       toast.error('Please enter a valid email address first.');
       return;
     }
-    setIsVerifyingEmail(true);
-    toast.success('Verification code has been sent. Check your email.', { duration: 4000 });
+
+    setIsRequestingCode(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/email-validator/request-code`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: value.trim(),
+          module: verificationModule,
+          data: verificationData,
+        }),
+      });
+
+      if (!response.ok) {
+        const message = await readApiError(response, 'Failed to send verification code.');
+        throw new Error(message);
+      }
+
+      setVerificationCode('');
+      setIsVerifyingEmail(true);
+      toast.success('Verification code has been sent. Check your email.', { duration: 4000 });
+    } catch (errorObj) {
+      toast.error(errorObj instanceof Error ? errorObj.message : 'Failed to send verification code.');
+    } finally {
+      setIsRequestingCode(false);
+    }
   };
 
-  const handleVerifyCode = () => {
-    if (verificationCode === '123456') { // Mock logic for 123456
+  const handleVerifyCode = async () => {
+    if (!verificationCode.trim()) {
+      toast.error('Please enter the verification code.');
+      return;
+    }
+
+    setIsVerifyingCode(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/email-validator/verify-code`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: value.trim(),
+          module: verificationModule,
+          code: verificationCode.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        const message = await readApiError(response, 'Invalid verification code.');
+        throw new Error(message);
+      }
+
       setIsVerifyingEmail(false);
       setInternalEmailVerified(true);
       onVerifiedStatusChange?.(true);
       toast.success('Email verified successfully.');
-    } else {
-      toast.error('Invalid verification code. Use 123456 for testing.');
+    } catch (errorObj) {
+      toast.error(errorObj instanceof Error ? errorObj.message : 'Invalid verification code.');
+    } finally {
+      setIsVerifyingCode(false);
     }
   };
 
@@ -99,10 +164,11 @@ export default function EmailAddressValidation({
             <button
               type="button"
               onClick={handleSendVerification}
+              disabled={isRequestingCode}
               className="absolute right-1 top-1 bottom-1 px-3 flex items-center justify-center bg-teal-600 hover:bg-teal-700 active:scale-95 text-white rounded-md transition-all shadow-sm"
               title="Verify Email"
             >
-              <Send className="h-3.5 w-3.5" />
+              {isRequestingCode ? '...' : <Send className="h-3.5 w-3.5" />}
             </button>
           )}
           
@@ -127,25 +193,25 @@ export default function EmailAddressValidation({
         <div className="relative space-y-1.5 flex-1 animate-in fade-in slide-in-from-right-4 duration-300">
           <label htmlFor="verification_code" className={labelStyles}>
             <KeyRound className="h-3.5 w-3.5 text-teal-600/60" />
-            Code (Use 123456)
+            Enter Verification Code
           </label>
           <div className="relative flex items-center">
             <input
               id="verification_code"
               type="text"
-              maxLength={6}
               value={verificationCode}
-              onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
+              onChange={(e) => setVerificationCode(e.target.value.trim())}
               className={getFieldStyles(false)}
-              placeholder="000000"
+              placeholder="Enter code from email"
               autoComplete="off"
             />
             <button
               type="button"
               onClick={handleVerifyCode}
+              disabled={isVerifyingCode}
               className="absolute right-1 top-1 bottom-1 px-3 flex items-center justify-center bg-slate-900 hover:bg-slate-800 active:scale-95 text-white rounded-md transition-all font-bold text-[9px] uppercase tracking-widest"
             >
-              Confirm
+              {isVerifyingCode ? '...' : 'Confirm'}
             </button>
           </div>
         </div>

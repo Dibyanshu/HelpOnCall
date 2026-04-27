@@ -13,7 +13,7 @@ import { db } from "../db/index.js";
 import * as mysqlSchema from "../db/schema.mysql.js";
 import * as sqliteSchema from "../db/schema.js";
 const isProd = process.env.APP_ENV === "production";
-const { employment, serviceCategories, services, users } = (isProd ? mysqlSchema : sqliteSchema) as any;
+const { employment, serviceCategories, services, users } = isProd ? mysqlSchema : sqliteSchema;
 import type { Role } from "../types/auth.js";
 import {
   buildApplicantStatusTemplateData
