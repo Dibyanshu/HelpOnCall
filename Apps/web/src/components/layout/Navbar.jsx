@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import helpOnCallLogo from '../../assets/helpOnCallLogo.png';
 
 const navLinks = [
   { label: 'Home', href: '/', isRoute: true },
@@ -37,7 +38,7 @@ export default function Navbar() {
               d="M16 2C8.268 2 2 8.268 2 16s6.268 14 14 14 14-6.268 14-14S23.732 2 16 2z"
               fill="currentColor"
               opacity="0.15"
-            />
+          />
             <path
               d="M16 6c-1.5 0-3 1-3 3v4h-4c-2 0-3 1.5-3 3s1 3 3 3h4v4c0 2 1.5 3 3 3s3-1 3-3v-4h4c2 0 3-1.5 3-3s-1-3-3-3h-4V9c0-2-1.5-3-3-3z"
               fill="currentColor"
