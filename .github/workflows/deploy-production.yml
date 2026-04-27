@@ -63,6 +63,7 @@ jobs:
           MYSQL_USER: ${{ secrets.MYSQL_USER }}
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          DB_PROVIDER: ${{ secrets.DB_PROVIDER }}
         run: |
           set -euo pipefail
           missing=()
@@ -164,7 +165,7 @@ jobs:
         run: |
           set -euo pipefail
           ssh -i ~/.ssh/cloudways_deploy_key -o IdentitiesOnly=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
-            "APP_PATH='$APP_PATH' DEPLOY_BRANCH='$DEPLOY_BRANCH' API_PROCESS_NAME='$API_PROCESS_NAME' MYSQL_HOST='$MYSQL_HOST' MYSQL_PORT='$MYSQL_PORT' MYSQL_USER='$MYSQL_USER' MYSQL_PASSWORD='$MYSQL_PASSWORD' MYSQL_DATABASE='$MYSQL_DATABASE' bash -s" \
+            "APP_PATH='$APP_PATH' DEPLOY_BRANCH='$DEPLOY_BRANCH' API_PROCESS_NAME='$API_PROCESS_NAME' MYSQL_HOST='$MYSQL_HOST' MYSQL_PORT='$MYSQL_PORT' MYSQL_USER='$MYSQL_USER' MYSQL_PASSWORD='$MYSQL_PASSWORD' MYSQL_DATABASE='$MYSQL_DATABASE' DB_PROVIDER='$DB_PROVIDER' bash -s" \
             < scripts/deploy-production-cloudways-api.sh
 
       - name: Health check API
