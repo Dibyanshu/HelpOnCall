@@ -14,7 +14,7 @@ import AdminDashboard from './admin/pages/AdminDashboard';
 import AdminUsersPage from './admin/pages/AdminUsersPage';
 import AdminNewUser from './admin/pages/AdminNewUser';
 import AdminEditUser from './admin/pages/AdminEditUser';
-import AdminQuotationManagementPage from './admin/pages/AdminQuotationManagementPage';
+import RfqAdminPage from './admin/pages/rfq/RfqAdminPage';
 import AdminServicePage from './admin/pages/AdminServicePage';
 import AdminEmailTemplatesPage from './admin/pages/email-templates/AdminEmailTemplatesPage';
 import EmploymentAdminPage from './admin/pages/employment/EmploymentAdminPage';
@@ -65,7 +65,7 @@ function App() {
           } />
           <Route path="/admin/quotations" element={
             <RequireAdminAuth allowedRoles={['super_admin', 'admin']}>
-              <AdminQuotationManagementPage />
+              <RfqAdminPage />
             </RequireAdminAuth>
           } />
           <Route path="/admin/services" element={
