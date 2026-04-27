@@ -3,7 +3,10 @@ import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
-import { rfqs, serviceCategories, services, users } from "../db/schema.js";
+import * as mysqlSchema from "../db/schema.mysql.js";
+import * as sqliteSchema from "../db/schema.js";
+const isProd = process.env.APP_ENV === "production";
+const { rfqs, serviceCategories, services, users } = (isProd ? mysqlSchema : sqliteSchema) as any;
 import type { Role } from "../types/auth.js";
 import {
   buildRfqAdminNotificationEmail,
