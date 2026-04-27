@@ -2,12 +2,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Shield, Lock, ChevronDown, UserPlus, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useAdminAuth } from '../../admin/auth/AdminAuthContext.jsx';
+import { useAdminAuth } from '../auth/AdminAuthContext.jsx';
 import {
   createInitialFieldErrors,
   hasAnyFieldErrors,
   normalizeZodFieldErrors,
-} from '../../admin/utils/formFieldErrors.js';
+} from '../utils/formFieldErrors.js';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
