@@ -3,7 +3,10 @@ import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
-import { emailValidator, employment } from "../db/schema.js";
+import * as mysqlSchema from "../db/schema.mysql.js";
+import * as sqliteSchema from "../db/schema.js";
+const isProd = process.env.APP_ENV === "production";
+const { emailValidator, employment } = isProd ? mysqlSchema : sqliteSchema;
 import type { Role } from "../types/auth.js";
 import { sendTemplatedEmail } from "../utils/email-template/email-template.service.js";
 import { TEMPLATE_KEYS } from "../utils/email-template/template-registry.js";
@@ -129,7 +132,7 @@ const emailValidatorRoutes: FastifyPluginAsync = async (fastify) => {
       })
       .returning({
         code: emailValidator.code
-      });
+      } as any);
 
     const verificationCode = inserted[0]?.code;
 
@@ -265,7 +268,7 @@ const emailValidatorRoutes: FastifyPluginAsync = async (fastify) => {
           module,
           ...auditCreateFields
         })
-        .returning();
+        .returning() as any[];
 
       return reply.code(201).send({
         message: "Email validator created successfully",
@@ -304,7 +307,7 @@ const emailValidatorRoutes: FastifyPluginAsync = async (fastify) => {
           updatedAt: auditUpdateFields.updatedAt
         })
         .where(eq(emailValidator.id, id))
-        .returning();
+        .returning() as any[];
 
       if (updated.length === 0) {
         return reply.code(404).send({ message: "Validator not found" });
@@ -337,7 +340,7 @@ const emailValidatorRoutes: FastifyPluginAsync = async (fastify) => {
       const deleted = await db
         .delete(emailValidator)
         .where(eq(emailValidator.id, id))
-        .returning();
+        .returning() as any[];
 
       if (deleted.length === 0) {
         return reply.code(404).send({ message: "Validator not found" });

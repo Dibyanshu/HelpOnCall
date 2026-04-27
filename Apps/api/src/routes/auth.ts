@@ -3,7 +3,10 @@ import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
-import { users } from "../db/schema.js";
+import * as mysqlSchema from "../db/schema.mysql.js";
+import * as sqliteSchema from "../db/schema.js";
+const isProd = process.env.APP_ENV === "production";
+const { users } = isProd ? mysqlSchema : sqliteSchema;
 import { hashPassword, verifyPassword } from "../utils/crypto.js";
 import { buildRegistrationEmail } from "../utils/email-template/email-builders.js";
 import { sendTemplatedEmail } from "../utils/email-template/email-template.service.js";
@@ -74,7 +77,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         role: users.role,
         isActive: users.isActive,
         createdAt: users.createdAt
-      });
+      } as any);
 
     void sendTemplatedEmail(
       {

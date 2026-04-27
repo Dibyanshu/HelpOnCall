@@ -3,7 +3,10 @@ import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
-import { serviceCategories, services } from "../db/schema.js";
+import * as mysqlSchema from "../db/schema.mysql.js";
+import * as sqliteSchema from "../db/schema.js";
+const isProd = process.env.APP_ENV === "production";
+const { serviceCategories, services } = isProd ? mysqlSchema : sqliteSchema;
 import type { Role } from "../types/auth.js";
 import {
   reindexDisplayOrderAfterDelete,
@@ -217,7 +220,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
           createdBy: serviceCategories.createdBy,
           createdAt: serviceCategories.createdAt,
           updatedAt: serviceCategories.updatedAt
-        });
+        } as any);
 
       return reply.code(201).send({
         message: "Service category created successfully",
@@ -398,7 +401,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
           createdBy: services.createdBy,
           createdAt: services.createdAt,
           updatedAt: services.updatedAt
-        });
+        } as any);
 
       return reply.code(201).send({
         message: "Service created successfully",
@@ -490,7 +493,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
           createdBy: services.createdBy,
           createdAt: services.createdAt,
           updatedAt: services.updatedAt
-        });
+        } as any);
 
       return reply.send({
         message: "Service updated successfully",

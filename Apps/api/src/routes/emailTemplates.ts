@@ -3,7 +3,10 @@ import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
-import { EMAIL_TEMPLATE_MODULE_VALUES, emailTemplates } from "../db/schema.js";
+import * as mysqlSchema from "../db/schema.mysql.js";
+import * as sqliteSchema from "../db/schema.js";
+const isProd = process.env.APP_ENV === "production";
+const { EMAIL_TEMPLATE_MODULE_VALUES, emailTemplates } = isProd ? mysqlSchema : sqliteSchema;
 import { sendTemplatedEmail } from "../utils/email-template/email-template.service.js";
 import { TEMPLATE_KEY_REGEX } from "../utils/email-template/template-registry.js";
 import type { Role } from "../types/auth.js";
@@ -208,7 +211,7 @@ const emailTemplateRoutes: FastifyPluginAsync = async (fastify) => {
           ...bodyParse.data,
           ...auditCreateFields
         })
-        .returning();
+        .returning() as any;
 
       return reply.code(201).send({
         message: "Email template created successfully",
@@ -257,7 +260,7 @@ const emailTemplateRoutes: FastifyPluginAsync = async (fastify) => {
           ...auditUpdateFields
         })
         .where(eq(emailTemplates.id, id))
-        .returning();
+        .returning() as any;
 
       return reply.send({
         message: "Email template updated successfully",
@@ -295,7 +298,7 @@ const emailTemplateRoutes: FastifyPluginAsync = async (fastify) => {
         .update(emailTemplates)
         .set({ isActive: false, ...auditUpdateFields })
         .where(eq(emailTemplates.id, id))
-        .returning();
+        .returning() as any[];
 
       return reply.send({
         message: "Email template deactivated successfully",

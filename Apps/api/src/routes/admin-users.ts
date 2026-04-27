@@ -3,7 +3,10 @@ import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
-import { users } from "../db/schema.js";
+import * as mysqlSchema from "../db/schema.mysql.js";
+import * as sqliteSchema from "../db/schema.js";
+const isProd = process.env.APP_ENV === "production";
+const { users } = isProd ? mysqlSchema : sqliteSchema;
 import type { Role } from "../types/auth.js";
 import { hashPassword } from "../utils/crypto.js";
 import { buildNewStaffAccountEmail } from "../utils/email-template/email-builders.js";
@@ -174,7 +177,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           isActive: users.isActive,
           createdAt: users.createdAt,
           updatedAt: users.updatedAt
-        });
+        } as any);
 
       return reply.send({
         message: "User status updated successfully",
@@ -301,7 +304,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           isActive: users.isActive,
           createdAt: users.createdAt,
           updatedAt: users.updatedAt
-        });
+        } as any);
 
       return reply.send({
         message: "User updated successfully",

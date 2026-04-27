@@ -10,7 +10,10 @@ import { z } from "zod";
 import { env } from "../config/env.js";
 import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
-import { employment, serviceCategories, services, users } from "../db/schema.js";
+import * as mysqlSchema from "../db/schema.mysql.js";
+import * as sqliteSchema from "../db/schema.js";
+const isProd = process.env.APP_ENV === "production";
+const { employment, serviceCategories, services, users } = isProd ? mysqlSchema : sqliteSchema;
 import type { Role } from "../types/auth.js";
 import {
   buildApplicantStatusTemplateData
@@ -131,16 +134,23 @@ async function updateEmploymentStatusByEmpId(
       ...buildAuditUpdateFields()
     })
     .where(eq(employment.empId, empId))
-    .returning({
-      id: employment.id,
-      empId: employment.empId,
-      fullName: employment.fullName,
-      emailAddress: employment.emailAddress,
-      status: employment.status,
-      updatedAt: employment.updatedAt
-    });
+      .returning({
+        id: employment.id,
+        empId: employment.empId,
+        fullName: employment.fullName,
+        emailAddress: employment.emailAddress,
+        status: employment.status,
+        updatedAt: employment.updatedAt
+      } as any);
 
-  return updated[0] ?? null;
+  return (updated[0] as {
+    id: number;
+    empId: string;
+    fullName: string;
+    emailAddress: string;
+    status: "new" | "approve" | "reject";
+    updatedAt: Date;
+  }) ?? null;
 }
 
 function buildAdminSubmissionNotificationEmail(input: {
@@ -410,16 +420,16 @@ const employmentRoutes: FastifyPluginAsync = async (fastify) => {
           status: "new",
           ...buildAuditCreateFields("public_employment_form")
         })
-        .returning({
-          id: employment.id,
-          empId: employment.empId,
-          fullName: employment.fullName,
-          emailAddress: employment.emailAddress,
-          phoneNumber: employment.phoneNumber,
-          status: employment.status,
-          resumeFileName: employment.resumeFileName,
-          createdAt: employment.createdAt
-        });
+          .returning({
+            id: employment.id,
+            empId: employment.empId,
+            fullName: employment.fullName,
+            emailAddress: employment.emailAddress,
+            phoneNumber: employment.phoneNumber,
+            status: employment.status,
+            resumeFileName: employment.resumeFileName,
+            createdAt: employment.createdAt
+          } as any);
 
       const createdSubmission = inserted[0];
 

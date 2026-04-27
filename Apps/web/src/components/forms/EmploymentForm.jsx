@@ -64,6 +64,31 @@ export default function EmploymentForm() {
     e.preventDefault();
     setSubmitError('');
 
+    if (!isEmailVerified) {
+      setSubmitError('Please verify your email address before submitting.');
+      return;
+    }
+
+    if (!formData.fullName.trim()) {
+      setSubmitError('Full Name is required.');
+      return;
+    }
+
+    if (!formData.phone.trim()) {
+      setSubmitError('Phone Number is required.');
+      return;
+    }
+
+    if (!validatePhone(formData.phone.trim())) {
+      setSubmitError('Please enter a valid phone number.');
+      return;
+    }
+
+    if (!formData.coverLetter.trim()) {
+      setSubmitError('Cover Letter is required.');
+      return;
+    }
+
     const normalizedSpecializations = normalizeServiceSelections(formData.specializations);
 
     if (normalizedSpecializations.length === 0) {
@@ -103,6 +128,7 @@ export default function EmploymentForm() {
   };
 
   const fieldStyles = "block w-full rounded-md border-0 py-3.5 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-100 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-700 transition-all duration-200";
+  const emailLikeFieldStyles = "block w-full rounded-md border bg-white py-2 px-3 text-slate-800 placeholder:text-gray-400 focus:outline-none transition-all duration-200 text-sm border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10";
 
   if (isSubmitted) {
     return (
@@ -123,7 +149,7 @@ export default function EmploymentForm() {
               setIsSubmitted(false);
               setFormData(initialFormData);
             }}
-            className="w-full rounded-md bg-slate-900 px-6 py-4 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:-translate-y-1 active:scale-95 shadow-lg shadow-slate-200"
+            className="btn-primary w-full"
           >
             Back to Application
           </button>
@@ -135,26 +161,30 @@ export default function EmploymentForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className={`mx-auto w-full max-w-2xl space-y-6 rounded-md bg-white p-8 shadow-2xl shadow-slate-200 ring-1 ring-slate-200 transition-all duration-500 lg:p-10 ${isSubmitting ? 'scale-95 opacity-50 pointer-events-none' : 'scale-100 opacity-100'
+      className={`mx-auto w-full h-full space-y-6 rounded-md bg-white p-8 shadow-2xl shadow-slate-200 ring-1 ring-slate-200 transition-all duration-500 lg:p-10 ${isSubmitting ? 'scale-95 opacity-50 pointer-events-none' : 'scale-100 opacity-100'
         }`}
       aria-label="Employment application form"
     >
-      <div className="space-y-1.5 mb-3">
+      <div className="space-y-1.5 mb-6">
         <h3 className="text-xl font-semibold text-slate-900">Career Application</h3>
       </div>
 
       <EmailAddressValidation
         value={formData.email}
-        onChange={(val) => setFormData(prev => ({ ...prev, email: val }))}
+        onChange={(val) => {
+                setFormData(prev => ({ ...prev, email: val }));
+                if (errors.email) setErrors(prev => ({ ...prev, email: '' }));
+              }}
         onVerifiedStatusChange={setIsEmailVerified}
         isVerified={isEmailVerified}
+        verificationModule="employee"
       />
 
       <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
         <div className="space-y-1.5">
           <label htmlFor="fullName" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
             <User className="h-3.5 w-3.5 text-teal-700/70" />
-            Full Name
+            Full Name<span className="text-rose-500">*</span>
           </label>
           <input
             id="fullName"
@@ -164,7 +194,7 @@ export default function EmploymentForm() {
             value={formData.fullName}
             onChange={handleChange}
             required
-            className={`${fieldStyles} ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : ''}`}
+            className={`${emailLikeFieldStyles} ${!isEmailVerified ? 'opacity-75 bg-slate-50 cursor-not-allowed text-slate-500' : ''}`}
             placeholder="John Doe"
           />
         </div>
@@ -172,7 +202,7 @@ export default function EmploymentForm() {
         <div className="space-y-1.5">
           <label htmlFor="phone" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
             <Phone className="h-3.5 w-3.5 text-teal-700/70" />
-            Phone Number
+            Phone Number<span className="text-rose-500">*</span>
           </label>
           <input
             id="phone"
@@ -187,7 +217,7 @@ export default function EmploymentForm() {
             onBlur={(e) => {
               if (e.target.value) validatePhone(e.target.value);
             }}
-            className={`${fieldStyles} ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : ''} ${phoneError ? 'ring-rose-500 border-rose-500 focus:ring-rose-500 text-rose-900 bg-rose-50/50' : ''}`}
+            className={`${emailLikeFieldStyles} ${!isEmailVerified ? 'opacity-75 bg-slate-50 cursor-not-allowed text-slate-500' : ''} ${phoneError ? 'border-rose-400 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/10 bg-rose-50/20' : ''}`}
             placeholder="+1 (555) 000-0000"
           />
           {phoneError && (
@@ -202,6 +232,8 @@ export default function EmploymentForm() {
         icon={Briefcase}
         placeholder="Select Specializations"
         value={formData.specializations}
+        required
+        disabled={!isEmailVerified}
         onChange={(next) => {
           setFormData((prev) => ({
             ...prev,
@@ -214,7 +246,7 @@ export default function EmploymentForm() {
       <div className="space-y-1.5">
         <label htmlFor="coverLetter" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
           <Briefcase className="h-3.5 w-3.5 text-teal-700/70" />
-          Cover Letter
+          Why are you a good fit for this position at Help On Call ?<span className="text-rose-500">*</span>
         </label>
         <textarea
           id="coverLetter"
@@ -224,7 +256,7 @@ export default function EmploymentForm() {
           onChange={handleChange}
           rows={6}
           required
-          className={`${fieldStyles} resize-none ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : ''}`}
+          className={`${fieldStyles} min-h-[180px] resize-none ${!isEmailVerified ? 'opacity-50 pointer-events-none bg-slate-50' : ''}`}
           placeholder="Why are you a good fit for Help On Call?"
         />
       </div>
@@ -232,7 +264,7 @@ export default function EmploymentForm() {
       <div className="space-y-1.5">
         <label htmlFor="resume" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
           <Upload className="h-3.5 w-3.5 text-teal-700/70" />
-          Upload Resume
+          Upload Resume<span className="text-rose-500">*</span>
         </label>
         <div className="relative group">
           <input
@@ -285,10 +317,10 @@ export default function EmploymentForm() {
                 </div>
                 <div className="text-left">
                   <span className="block text-sm font-bold text-slate-700 leading-none mb-1">
-                    Click or drag resume here
+                    Select your resume here
                   </span>
                   <p className="text-[11px] text-slate-400 leading-none">
-                    PDF or DOCX (Max 10MB)
+                    PDF or DOCX (Max 2MB)
                   </p>
                 </div>
               </div>
