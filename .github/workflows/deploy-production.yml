@@ -63,7 +63,7 @@ jobs:
           MYSQL_USER: ${{ secrets.MYSQL_USER }}
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-          DB_PROVIDER: ${{ secrets.DB_PROVIDER }}
+          DB_PROVIDER: cloudways
         run: |
           set -euo pipefail
           missing=()
