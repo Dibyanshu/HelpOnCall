@@ -77,7 +77,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         role: users.role,
         isActive: users.isActive,
         createdAt: users.createdAt
-      });
+      } as any);
 
     void sendTemplatedEmail(
       {

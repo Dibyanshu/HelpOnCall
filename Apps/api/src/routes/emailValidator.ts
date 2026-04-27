@@ -132,7 +132,7 @@ const emailValidatorRoutes: FastifyPluginAsync = async (fastify) => {
       })
       .returning({
         code: emailValidator.code
-      });
+      } as any);
 
     const verificationCode = inserted[0]?.code;
 
@@ -268,7 +268,7 @@ const emailValidatorRoutes: FastifyPluginAsync = async (fastify) => {
           module,
           ...auditCreateFields
         })
-        .returning();
+        .returning() as any[];
 
       return reply.code(201).send({
         message: "Email validator created successfully",
@@ -307,7 +307,7 @@ const emailValidatorRoutes: FastifyPluginAsync = async (fastify) => {
           updatedAt: auditUpdateFields.updatedAt
         })
         .where(eq(emailValidator.id, id))
-        .returning();
+        .returning() as any[];
 
       if (updated.length === 0) {
         return reply.code(404).send({ message: "Validator not found" });
@@ -340,7 +340,7 @@ const emailValidatorRoutes: FastifyPluginAsync = async (fastify) => {
       const deleted = await db
         .delete(emailValidator)
         .where(eq(emailValidator.id, id))
-        .returning();
+        .returning() as any[];
 
       if (deleted.length === 0) {
         return reply.code(404).send({ message: "Validator not found" });
