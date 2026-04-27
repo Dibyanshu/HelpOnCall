@@ -268,7 +268,7 @@ function buildApplicantStatusEmail(input: {
 
 async function findAdminRecipientEmails(): Promise<string[]> {
   const rows = await db
-    .select({ email: users.personalEmail })
+    .select({ email: users.personalEmail } as any)
     .from(users)
     .where(
       and(
@@ -389,7 +389,7 @@ const employmentRoutes: FastifyPluginAsync = async (fastify) => {
         .select({
           id: services.id,
           categoryId: services.categoryId
-        })
+        } as any)
         .from(services)
         .where(inArray(services.id, serviceIds));
 
@@ -547,7 +547,7 @@ const employmentRoutes: FastifyPluginAsync = async (fastify) => {
           createdBy: employment.createdBy,
           createdAt: employment.createdAt,
           updatedAt: employment.updatedAt
-        })
+        } as any)
         .from(employment)
         .orderBy(desc(employment.createdAt), desc(employment.id));
 
@@ -574,13 +574,13 @@ const employmentRoutes: FastifyPluginAsync = async (fastify) => {
       const [categoryRows, serviceRows] = await Promise.all([
         categoryIds.size > 0
           ? db
-              .select({ id: serviceCategories.id, title: serviceCategories.title })
+              .select({ id: serviceCategories.id, title: serviceCategories.title } as any)
               .from(serviceCategories)
               .where(inArray(serviceCategories.id, Array.from(categoryIds)))
           : Promise.resolve([]),
         serviceIds.size > 0
           ? db
-              .select({ id: services.id, label: services.label })
+              .select({ id: services.id, label: services.label } as any)
               .from(services)
               .where(inArray(services.id, Array.from(serviceIds)))
           : Promise.resolve([])
@@ -647,7 +647,7 @@ const employmentRoutes: FastifyPluginAsync = async (fastify) => {
         .select({
           empId: employment.empId,
           resumeFileName: employment.resumeFileName
-        })
+        } as any)
         .from(employment)
         .where(eq(employment.empId, paramsParse.data.empId))
         .limit(1);

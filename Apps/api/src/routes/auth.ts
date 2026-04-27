@@ -49,7 +49,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
     const { email, name, password, role } = bodyParse.data;
 
-    const exists = await db.select({ id: users.id }).from(users).where(eq(users.personalEmail, email)).limit(1);
+    const exists = await db.select({ id: users.id } as any).from(users).where(eq(users.personalEmail, email)).limit(1);
 
     if (exists.length > 0) {
       return reply.code(409).send({ message: "User with this email already exists" });
