@@ -63,7 +63,7 @@ jobs:
           MYSQL_USER: ${{ secrets.MYSQL_USER }}
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-          DB_PROVIDER: cloudways
+          DB_PROVIDER: turso
         run: |
           set -euo pipefail
           missing=()
@@ -162,7 +162,7 @@ jobs:
           MYSQL_USER: ${{ secrets.MYSQL_USER }}
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-          DB_PROVIDER: cloudways
+          DB_PROVIDER: turso
         run: |
           set -euo pipefail
           ssh -i ~/.ssh/cloudways_deploy_key -o IdentitiesOnly=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
