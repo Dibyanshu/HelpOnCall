@@ -103,7 +103,7 @@ const emailValidatorRoutes: FastifyPluginAsync = async (fastify) => {
 
     if (module === "employee") {
       const employmentMatch = await db
-        .select({ id: employment.id })
+        .select({ id: employment.id } as any)
         .from(employment)
         .where(eq(employment.emailAddress, email))
         .limit(1);

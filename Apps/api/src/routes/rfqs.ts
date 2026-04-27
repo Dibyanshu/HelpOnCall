@@ -83,7 +83,7 @@ function escapeLikePattern(input: string): string {
 
 async function findAdminRecipientEmails(): Promise<string[]> {
   const rows = await db
-    .select({ email: users.personalEmail })
+    .select({ email: users.personalEmail } as any)
     .from(users)
     .where(
       and(
@@ -242,7 +242,7 @@ const rfqRoutes: FastifyPluginAsync = async (fastify) => {
           createdBy: rfqs.createdBy,
           createdAt: rfqs.createdAt,
           updatedAt: rfqs.updatedAt
-        })
+        } as any)
         .from(rfqs)
         .orderBy(desc(rfqs.createdAt), desc(rfqs.id));
 
@@ -260,14 +260,14 @@ const rfqRoutes: FastifyPluginAsync = async (fastify) => {
 
       const [categoryRows, serviceRows] = await Promise.all([
         categoryIds.size > 0
-          ? db
-              .select({ id: serviceCategories.id, title: serviceCategories.title })
+            ? db
+              .select({ id: serviceCategories.id, title: serviceCategories.title } as any)
               .from(serviceCategories)
               .where(inArray(serviceCategories.id, Array.from(categoryIds)))
           : Promise.resolve([]),
         serviceIds.size > 0
           ? db
-              .select({ id: services.id, label: services.label })
+              .select({ id: services.id, label: services.label } as any)
               .from(services)
               .where(inArray(services.id, Array.from(serviceIds)))
           : Promise.resolve([])
