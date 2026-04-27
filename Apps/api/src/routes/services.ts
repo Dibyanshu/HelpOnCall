@@ -220,7 +220,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
           createdBy: serviceCategories.createdBy,
           createdAt: serviceCategories.createdAt,
           updatedAt: serviceCategories.updatedAt
-        });
+        } as any);
 
       return reply.code(201).send({
         message: "Service category created successfully",
@@ -401,7 +401,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
           createdBy: services.createdBy,
           createdAt: services.createdAt,
           updatedAt: services.updatedAt
-        });
+        } as any);
 
       return reply.code(201).send({
         message: "Service created successfully",
@@ -493,7 +493,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
           createdBy: services.createdBy,
           createdAt: services.createdAt,
           updatedAt: services.updatedAt
-        });
+        } as any);
 
       return reply.send({
         message: "Service updated successfully",

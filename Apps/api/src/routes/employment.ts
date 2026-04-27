@@ -134,16 +134,23 @@ async function updateEmploymentStatusByEmpId(
       ...buildAuditUpdateFields()
     })
     .where(eq(employment.empId, empId))
-    .returning({
-      id: employment.id,
-      empId: employment.empId,
-      fullName: employment.fullName,
-      emailAddress: employment.emailAddress,
-      status: employment.status,
-      updatedAt: employment.updatedAt
-    });
+      .returning({
+        id: employment.id,
+        empId: employment.empId,
+        fullName: employment.fullName,
+        emailAddress: employment.emailAddress,
+        status: employment.status,
+        updatedAt: employment.updatedAt
+      } as any);
 
-  return updated[0] ?? null;
+  return (updated[0] as {
+    id: number;
+    empId: string;
+    fullName: string;
+    emailAddress: string;
+    status: "new" | "approve" | "reject";
+    updatedAt: Date;
+  }) ?? null;
 }
 
 function buildAdminSubmissionNotificationEmail(input: {
@@ -413,16 +420,16 @@ const employmentRoutes: FastifyPluginAsync = async (fastify) => {
           status: "new",
           ...buildAuditCreateFields("public_employment_form")
         })
-        .returning({
-          id: employment.id,
-          empId: employment.empId,
-          fullName: employment.fullName,
-          emailAddress: employment.emailAddress,
-          phoneNumber: employment.phoneNumber,
-          status: employment.status,
-          resumeFileName: employment.resumeFileName,
-          createdAt: employment.createdAt
-        });
+          .returning({
+            id: employment.id,
+            empId: employment.empId,
+            fullName: employment.fullName,
+            emailAddress: employment.emailAddress,
+            phoneNumber: employment.phoneNumber,
+            status: employment.status,
+            resumeFileName: employment.resumeFileName,
+            createdAt: employment.createdAt
+          } as any);
 
       const createdSubmission = inserted[0];
 

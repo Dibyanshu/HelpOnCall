@@ -211,7 +211,7 @@ const emailTemplateRoutes: FastifyPluginAsync = async (fastify) => {
           ...bodyParse.data,
           ...auditCreateFields
         })
-        .returning();
+        .returning() as any;
 
       return reply.code(201).send({
         message: "Email template created successfully",
@@ -260,7 +260,7 @@ const emailTemplateRoutes: FastifyPluginAsync = async (fastify) => {
           ...auditUpdateFields
         })
         .where(eq(emailTemplates.id, id))
-        .returning();
+        .returning() as any;
 
       return reply.send({
         message: "Email template updated successfully",
@@ -298,7 +298,7 @@ const emailTemplateRoutes: FastifyPluginAsync = async (fastify) => {
         .update(emailTemplates)
         .set({ isActive: false, ...auditUpdateFields })
         .where(eq(emailTemplates.id, id))
-        .returning();
+        .returning() as any[];
 
       return reply.send({
         message: "Email template deactivated successfully",

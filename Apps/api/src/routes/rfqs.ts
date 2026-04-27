@@ -135,7 +135,7 @@ const rfqRoutes: FastifyPluginAsync = async (fastify) => {
         fullName: rfqs.fullName,
         phone: rfqs.phone,
         createdAt: rfqs.createdAt
-      });
+      } as any);
 
     const created = inserted[0];
 
@@ -277,7 +277,7 @@ const rfqRoutes: FastifyPluginAsync = async (fastify) => {
       const serviceLabelById = new Map(serviceRows.map((item) => [item.id, item.label]));
 
       const enriched = list.map((row) => {
-        const resolved = row.serviceSelected.map((item) => {
+        const resolved = row.serviceSelected.map((item: { categoryId: number; serviceId: number }) => {
           const categoryTitle = categoryTitleById.get(item.categoryId);
           const serviceLabel = serviceLabelById.get(item.serviceId);
 
@@ -347,7 +347,7 @@ const rfqRoutes: FastifyPluginAsync = async (fastify) => {
           fullName: rfqs.fullName,
           status: rfqs.status,
           updatedAt: rfqs.updatedAt
-        });
+        } as any);
 
       const result = updated[0];
 
