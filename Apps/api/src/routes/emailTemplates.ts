@@ -194,7 +194,7 @@ const emailTemplateRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const existing = await db
-        .select({ id: emailTemplates.id })
+        .select({ id: emailTemplates.id } as any)
         .from(emailTemplates)
         .where(eq(emailTemplates.templateKey, bodyParse.data.templateKey))
         .limit(1);
@@ -244,7 +244,7 @@ const emailTemplateRoutes: FastifyPluginAsync = async (fastify) => {
       const auditUpdateFields = buildAuditUpdateFields();
 
       const existing = await db
-        .select({ id: emailTemplates.id })
+        .select({ id: emailTemplates.id } as any)
         .from(emailTemplates)
         .where(eq(emailTemplates.id, id))
         .limit(1);
@@ -283,7 +283,7 @@ const emailTemplateRoutes: FastifyPluginAsync = async (fastify) => {
       const { id } = paramsParse.data;
 
       const existing = await db
-        .select({ id: emailTemplates.id })
+        .select({ id: emailTemplates.id } as any)
         .from(emailTemplates)
         .where(eq(emailTemplates.id, id))
         .limit(1);

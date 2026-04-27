@@ -18,7 +18,7 @@ const testimonialsRoutes: FastifyPluginAsync = async (fastify) => {
         profilePic: customerTestimonials.profilePic,
         createdOn: customerTestimonials.createdAt,
         status: customerTestimonials.status
-      })
+      } as any)
       .from(customerTestimonials)
       .where(eq(customerTestimonials.status, "active"));
 

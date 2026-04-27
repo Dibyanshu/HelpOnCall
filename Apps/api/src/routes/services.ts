@@ -84,7 +84,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
           createdBy: serviceCategories.createdBy,
           createdAt: serviceCategories.createdAt,
           updatedAt: serviceCategories.updatedAt
-        })
+        } as any)
         .from(serviceCategories)
         .orderBy(asc(serviceCategories.displayOrder), asc(serviceCategories.id));
 
@@ -113,7 +113,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
           createdBy: services.createdBy,
           createdAt: services.createdAt,
           updatedAt: services.updatedAt
-        })
+        } as any)
         .from(services)
         .orderBy(asc(services.displayOrder), asc(services.id));
 
@@ -128,7 +128,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
           id: serviceCategories.id,
           title: serviceCategories.title,
           displayOrder: serviceCategories.displayOrder
-        })
+        } as any)
         .from(serviceCategories)
         .orderBy(asc(serviceCategories.displayOrder), asc(serviceCategories.id)),
       db
@@ -140,7 +140,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
           image: services.imageUrl,
           icon: services.iconName,
           displayOrder: services.displayOrder
-        })
+        } as any)
         .from(services)
         .orderBy(asc(services.displayOrder), asc(services.id))
     ]);
@@ -257,7 +257,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const existing = await db
-        .select({ id: serviceCategories.id })
+        .select({ id: serviceCategories.id } as any)
         .from(serviceCategories)
         .where(eq(serviceCategories.id, paramsParse.data.categoryId))
         .limit(1);
@@ -292,7 +292,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
           createdBy: serviceCategories.createdBy,
           createdAt: serviceCategories.createdAt,
           updatedAt: serviceCategories.updatedAt
-        });
+        } as any);
 
       return reply.send({
         message: "Service category updated successfully",
@@ -320,7 +320,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const existing = await db
-        .select({ id: serviceCategories.id })
+        .select({ id: serviceCategories.id } as any)
         .from(serviceCategories)
         .where(eq(serviceCategories.id, paramsParse.data.categoryId))
         .limit(1);
@@ -365,7 +365,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const categoryExists = await db
-        .select({ id: serviceCategories.id })
+        .select({ id: serviceCategories.id } as any)
         .from(serviceCategories)
         .where(eq(serviceCategories.id, bodyParse.data.categoryId))
         .limit(1);
@@ -438,7 +438,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const existing = await db
-        .select({ id: services.id })
+        .select({ id: services.id } as any)
         .from(services)
         .where(eq(services.id, paramsParse.data.serviceId))
         .limit(1);
@@ -449,7 +449,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
 
       if (bodyParse.data.categoryId !== undefined) {
         const categoryExists = await db
-          .select({ id: serviceCategories.id })
+          .select({ id: serviceCategories.id } as any)
           .from(serviceCategories)
           .where(eq(serviceCategories.id, bodyParse.data.categoryId))
           .limit(1);
@@ -521,7 +521,7 @@ const servicesRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const existing = await db
-        .select({ id: services.id })
+        .select({ id: services.id } as any)
         .from(services)
         .where(eq(services.id, paramsParse.data.serviceId))
         .limit(1);

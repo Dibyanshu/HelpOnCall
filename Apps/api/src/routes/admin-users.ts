@@ -148,7 +148,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       const { userId, isActive } = bodyParse.data;
 
       const existing = await db
-        .select({ id: users.id })
+        .select({ id: users.id } as any)
         .from(users)
         .where(eq(users.id, userId))
         .limit(1);
@@ -223,7 +223,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         .select({
           id: users.id,
           role: users.role
-        })
+        } as any)
         .from(users)
         .where(eq(users.id, userId))
         .limit(1);
@@ -249,7 +249,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
 
       if (nextPersonalEmail) {
         const duplicate = await db
-          .select({ id: users.id })
+          .select({ id: users.id } as any)
           .from(users)
           .where(and(eq(users.personalEmail, nextPersonalEmail), ne(users.id, userId)))
           .limit(1);
@@ -261,7 +261,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
 
       if (bodyParse.data.staffId) {
         const duplicateStaffId = await db
-          .select({ id: users.id })
+          .select({ id: users.id } as any)
           .from(users)
           .where(and(eq(users.staffId, bodyParse.data.staffId), ne(users.id, userId)))
           .limit(1);
@@ -389,7 +389,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           createdBy: users.createdBy,
           isActive: users.isActive,
           createdAt: users.createdAt
-        });
+        } as any);
 
       const staffEmail = staffId ? `${staffId.toLowerCase()}@helponcall.com` : personalEmail;
       const shouldSendWelcomeEmail = isActive !== false;
@@ -454,7 +454,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           isActive: users.isActive,
           createdAt: users.createdAt,
           updatedAt: users.updatedAt
-        })
+        } as any)
         .from(users)
         .orderBy(desc(users.createdAt));
 
