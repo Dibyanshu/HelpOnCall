@@ -177,7 +177,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           isActive: users.isActive,
           createdAt: users.createdAt,
           updatedAt: users.updatedAt
-        });
+        } as any);
 
       return reply.send({
         message: "User status updated successfully",
@@ -304,7 +304,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           isActive: users.isActive,
           createdAt: users.createdAt,
           updatedAt: users.updatedAt
-        });
+        } as any);
 
       return reply.send({
         message: "User updated successfully",
