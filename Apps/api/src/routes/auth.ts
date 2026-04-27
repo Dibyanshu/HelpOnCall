@@ -6,7 +6,7 @@ import { db } from "../db/index.js";
 import * as mysqlSchema from "../db/schema.mysql.js";
 import * as sqliteSchema from "../db/schema.js";
 const isProd = process.env.APP_ENV === "production";
-const { users } = (isProd ? mysqlSchema : sqliteSchema) as any;
+const { users } = isProd ? mysqlSchema : sqliteSchema;
 import { hashPassword, verifyPassword } from "../utils/crypto.js";
 import { buildRegistrationEmail } from "../utils/email-template/email-builders.js";
 import { sendTemplatedEmail } from "../utils/email-template/email-template.service.js";

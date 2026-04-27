@@ -4,7 +4,7 @@ import { db } from "../db/index.js";
 import * as mysqlSchema from "../db/schema.mysql.js";
 import * as sqliteSchema from "../db/schema.js";
 const isProd = process.env.APP_ENV === "production";
-const { customerTestimonials } = (isProd ? mysqlSchema : sqliteSchema) as any;
+const { customerTestimonials } = isProd ? mysqlSchema : sqliteSchema;
 
 const testimonialsRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get("/testimonials", async () => {

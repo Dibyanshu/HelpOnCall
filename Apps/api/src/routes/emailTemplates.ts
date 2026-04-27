@@ -6,7 +6,7 @@ import { db } from "../db/index.js";
 import * as mysqlSchema from "../db/schema.mysql.js";
 import * as sqliteSchema from "../db/schema.js";
 const isProd = process.env.APP_ENV === "production";
-const { EMAIL_TEMPLATE_MODULE_VALUES, emailTemplates } = (isProd ? mysqlSchema : sqliteSchema) as any;
+const { EMAIL_TEMPLATE_MODULE_VALUES, emailTemplates } = isProd ? mysqlSchema : sqliteSchema;
 import { sendTemplatedEmail } from "../utils/email-template/email-template.service.js";
 import { TEMPLATE_KEY_REGEX } from "../utils/email-template/template-registry.js";
 import type { Role } from "../types/auth.js";
