@@ -141,43 +141,43 @@ const envSchema = z.object({
 
   // --- CLOUDWAYS DB checks for production ---
   if (usesCloudwaysDbInProduction) {
-    if (!data.DB_HOST) {
+    if (!data.MYSQL_HOST) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["DB_HOST"],
-        message: "DB_HOST is required when APP_ENV=production and DB_PROVIDER=cloudways"
+        path: ["MYSQL_HOST"],
+        message: "MYSQL_HOST is required when APP_ENV=production and DB_PROVIDER=cloudways"
       });
     }
 
-    if (!data.DB_PORT) {
+    if (!data.MYSQL_PORT) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["DB_PORT"],
-        message: "DB_PORT is required when APP_ENV=production and DB_PROVIDER=cloudways"
+        path: ["MYSQL_PORT"],
+        message: "MYSQL_PORT is required when APP_ENV=production and DB_PROVIDER=cloudways"
       });
     }
 
-    if (!data.DB_NAME) {
+    if (!data.MYSQL_DATABASE) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["DB_NAME"],
-        message: "DB_NAME is required when APP_ENV=production and DB_PROVIDER=cloudways"
+        path: ["MYSQL_DATABASE"],
+        message: "MYSQL_DATABASE is required when APP_ENV=production and DB_PROVIDER=cloudways"
       });
     }
 
-    if (!data.DB_USER) {
+    if (!data.MYSQL_USER) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["DB_USER"],
-        message: "DB_USER is required when APP_ENV=production and DB_PROVIDER=cloudways"
+        path: ["MYSQL_USER"],
+        message: "MYSQL_USER is required when APP_ENV=production and DB_PROVIDER=cloudways"
       });
     }
 
-    if (!data.DB_PASSWORD) {
+    if (!data.MYSQL_PASSWORD) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["DB_PASSWORD"],
-        message: "DB_PASSWORD is required when APP_ENV=production and DB_PROVIDER=cloudways"
+        path: ["MYSQL_PASSWORD"],
+        message: "MYSQL_PASSWORD is required when APP_ENV=production and DB_PROVIDER=cloudways"
       });
     }
   }
