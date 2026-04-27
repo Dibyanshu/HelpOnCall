@@ -105,12 +105,13 @@ const envSchema = z.object({
   }
 
   // --- PRODUCTION checks ---
-  if (data.APP_ENV === "production") {
+  // Only require MySQL configs if DB_PROVIDER is cloudways
+  if (data.APP_ENV === "production" && data.DB_PROVIDER === "cloudways") {
     if (!data.MYSQL_HOST) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["MYSQL_HOST"],
-        message: "MYSQL_HOST is required when APP_ENV is production"
+        message: "MYSQL_HOST is required when APP_ENV=production and DB_PROVIDER=cloudways"
       });
     }
 
@@ -118,7 +119,7 @@ const envSchema = z.object({
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["MYSQL_USER"],
-        message: "MYSQL_USER is required when APP_ENV is production"
+        message: "MYSQL_USER is required when APP_ENV=production and DB_PROVIDER=cloudways"
       });
     }
 
@@ -126,7 +127,7 @@ const envSchema = z.object({
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["MYSQL_PASSWORD"],
-        message: "MYSQL_PASSWORD is required when APP_ENV is production"
+        message: "MYSQL_PASSWORD is required when APP_ENV=production and DB_PROVIDER=cloudways"
       });
     }
 
@@ -134,7 +135,7 @@ const envSchema = z.object({
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["MYSQL_DATABASE"],
-        message: "MYSQL_DATABASE is required when APP_ENV is production"
+        message: "MYSQL_DATABASE is required when APP_ENV=production and DB_PROVIDER=cloudways"
       });
     }
   }

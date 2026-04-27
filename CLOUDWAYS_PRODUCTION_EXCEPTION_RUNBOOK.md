@@ -214,7 +214,79 @@ Repo status:
 
 	ssh -i ~/.ssh/cloudways_help_on_call -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -p 22 master_jhffypnzbd@159.203.16.174 "cd /home/master/helponcall-repo && git status --short && git stash list | head -10"
 
-## 10) Notes for Next Operator
+
+## 11) 502 Bad Gateway - nginx: Troubleshooting and Fix Steps (2026-04-28)
+
+### Symptom
+
+- Visiting the API health URL (e.g., https://phpstack-1608575-6325198.cloudwaysapps.com/api/api/v1/health) returns 502 Bad Gateway (nginx).
+
+### Step-by-step Troubleshooting and Fixes
+
+1. **Check PM2 Process State**
+	 - SSH into the server using:
+		 ```sh
+		 ssh -i ~/.ssh/cloudways_help_on_call -p 22 master_jhffypnzbd@159.203.16.174
+		 ```
+	 - Run:
+		 ```sh
+		 export PATH=$HOME/.npm-global/bin:$PATH; pm2 list
+		 ```
+	 - If no API process is running, start it (see below).
+
+2. **Check .env File**
+	 - Ensure `/home/master/helponcall-repo/Apps/api/.env` exists and is populated.
+	 - Confirm `APP_ENV=production` and `DB_PROVIDER` is set as intended (`turso` for Turso, `cloudways` for MySQL).
+	 - If switching to Turso, ensure all `MYSQL_*` variables are removed or commented out.
+
+3. **Start or Restart API Process**
+	 - Change to the API directory:
+		 ```sh
+		 cd /home/master/helponcall-repo/Apps/api
+		 ```
+	 - If needed, build the project:
+		 ```sh
+		 npm install
+		 npm run build
+		 ```
+	 - Start the server:
+		 ```sh
+		 pm2 start dist/server.js --name help-on-call-api
+		 ```
+	 - Or restart if already running:
+		 ```sh
+		 pm2 restart help-on-call-api
+		 ```
+
+4. **Check PM2 Logs for Errors**
+	 - Run:
+		 ```sh
+		 pm2 logs help-on-call-api
+		 ```
+	 - Look for errors about missing environment variables or database connection issues.
+
+5. **Fix Environment Validation**
+	 - If logs show errors like `MYSQL_USER is required when APP_ENV is production` but you are using Turso, update your validation logic (e.g., in `src/config/env.ts`) so MySQL variables are only required if `DB_PROVIDER` is `cloudways` or `mysql`.
+	 - After updating, restart the API process.
+
+6. **Verify Health Endpoint**
+	 - After the API is running, check:
+		 ```sh
+		 curl -sS -i http://127.0.0.1:3000/api/v1/health
+		 ```
+	 - Or externally:
+		 ```sh
+		 curl -sS -i https://phpstack-1608575-6325198.cloudwaysapps.com/api/api/v1/health
+		 ```
+	 - Expect HTTP 200 and `{ "status": "ok" }`.
+
+### Key Lessons
+
+- The workflow `DB_PROVIDER` environment variable does not update the `.env` file on the server; update `.env` directly for persistent changes.
+- Always check PM2 status and logs for root cause.
+- Environment validation must match the selected DB provider.
+
+---
 
 - Do not edit tracked files directly on server unless unavoidable.
 - If emergency server-side patch is required, document file and reason, then either:
