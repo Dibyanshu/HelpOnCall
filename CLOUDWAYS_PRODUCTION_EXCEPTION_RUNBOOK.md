@@ -251,17 +251,17 @@ Repo status:
 		 ```
 	 - Start the server:
 		 ```sh
-		 pm2 start dist/server.js --name help-on-call-api
+		 export PATH=$HOME/.npm-global/bin:$PATH; pm2 start dist/server.js --name help-on-call-api
 		 ```
 	 - Or restart if already running:
 		 ```sh
-		 pm2 restart help-on-call-api
+		 export PATH=$HOME/.npm-global/bin:$PATH; pm2 restart help-on-call-api
 		 ```
 
 4. **Check PM2 Logs for Errors**
 	 - Run:
 		 ```sh
-		 pm2 logs help-on-call-api
+		 export PATH=$HOME/.npm-global/bin:$PATH; pm2 logs help-on-call-api
 		 ```
 	 - Look for errors about missing environment variables or database connection issues.
 
