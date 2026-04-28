@@ -1,10 +1,11 @@
 import { eq } from "drizzle-orm";
 import type { FastifyPluginAsync } from "fastify";
 import { db } from "../db/index.js";
-import * as mysqlSchema from "../db/schema.mysql.js";
-import * as sqliteSchema from "../db/schema.js";
-const isProd = process.env.APP_ENV === "production";
-const { customerTestimonials } = isProd ? mysqlSchema : sqliteSchema;
+import { env } from "../config/env.js";
+const dbProvider = env.DB_PROVIDER;
+const mysqlSchema = await import("../db/schema.mysql.js");
+const sqliteSchema = await import("../db/schema.js");
+const { customerTestimonials } = dbProvider === "cloudways" ? mysqlSchema : sqliteSchema;
 
 const testimonialsRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get("/testimonials", async () => {
