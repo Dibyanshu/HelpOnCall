@@ -3,10 +3,11 @@ import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import { buildAuditCreateFields, buildAuditUpdateFields } from "../db/audit.js";
 import { db } from "../db/index.js";
-import * as mysqlSchema from "../db/schema.mysql.js";
-import * as sqliteSchema from "../db/schema.js";
-const isProd = process.env.APP_ENV === "production";
-const { serviceCategories, services } = isProd ? mysqlSchema : sqliteSchema;
+import { env } from "../config/env.js";
+const dbProvider = env.DB_PROVIDER;
+const mysqlSchema = await import("../db/schema.mysql.js");
+const sqliteSchema = await import("../db/schema.js");
+const { serviceCategories, services } = dbProvider === "cloudways" ? mysqlSchema : sqliteSchema;
 import type { Role } from "../types/auth.js";
 import {
   reindexDisplayOrderAfterDelete,
